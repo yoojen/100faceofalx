@@ -1,0 +1,22 @@
+{
+  "name": "nodejs_projects",
+  "version": "1.0.0",
+  "description": "Nodejs projects for alx 100faceofalx coding challenge",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yoojen/100faceofalx.git"
+  },
+  "keywords": [
+    "100faceofalx"
+  ],
+  "author": "Eugene Mutuyimana",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yoojen/100faceofalx/issues"
+  },
+  "homepage": "https://github.com/yoojen/100faceofalx#readme"
+}
