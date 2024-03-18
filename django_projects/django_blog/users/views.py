@@ -17,7 +17,5 @@ def register(request):
     return render(request, 'users/register.html', {'form': form})
 
 
-# def login(request):
-#     if request.method == 'POST':
-#         # form =
-#         pass
+def profile(request):
+    return render(request, 'users/profile.html')
