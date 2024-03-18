@@ -28,12 +28,16 @@
                     </div>
                     <!-- Navbar Right Side -->
                     <div class="navbar-nav">
-                        <a class="nav-item nav-link" href="{% url 'login' %}">Login</a>
-                        <a class="nav-item nav-link" href="{% url 'register' %}">Register</a>
+                      {% if user.is_authenticated %}
+                        <a class="nav-item nav-link" href="{% url 'profile' %}">Profile</a>
                         <form action="{% url 'logout' %}" method="post">
                           {% csrf_token %}
                           <button class="btn" style="background-color:transparent; color: rgb(212, 212, 212)">Logout</button>
                         </form>
+                      {% else %}
+                        <a class="nav-item nav-link" href="{% url 'login' %}">Login</a>
+                        <a class="nav-item nav-link" href="{% url 'register' %}">Register</a>
+                      {% endif %}
                     </div>
                 </div>
             </div>
