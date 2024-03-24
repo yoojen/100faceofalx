@@ -1,3 +1,6 @@
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.views import LoginView
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from .forms import UserRegisterForm, UserUpdateForm, ProfileUpdateForm
 from django.contrib import messages
@@ -5,6 +8,9 @@ from django.contrib.auth.decorators import login_required
 
 
 def register(request):
+    if request.user.is_authenticated:
+        messages.success(request, "You're already registered!")
+        return redirect('blog-home')
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
         if form.is_valid():
@@ -37,3 +43,7 @@ def profile(request):
         'p_form': p_form
     }
     return render(request, 'users/profile.html', context)
+
+
+class MyCustomLoginView(LoginView):
+    redirect_authenticated_user = True
