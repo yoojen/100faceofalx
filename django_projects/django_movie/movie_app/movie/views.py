@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 import requests
 from .models import SearchForm
@@ -14,7 +14,6 @@ def movies(request):
     form = SearchForm()
     if request.GET:
         movie_link = requests.get(f"{API_URL}?{API_KEY}", params=request.GET)
-        print(movie_link.url)
         movie = dict(movie_link.json())
 
         movie = {
@@ -25,10 +24,14 @@ def movies(request):
             "Poster": movie.get("Poster")
         }
         if movie:
-          user_history = History(user_id=request.user.id,
-                movie_title=movie.get('Title'),
-                                 searched_link=movie_link.url)
-          user_history.save()
+          if not History.objects.filter(movie_title=movie.get('Title')):
+            if History.objects.filter(user_id=request.user.id).count() == 5:
+                user_hist = History.objects.filter(user_id=request.user.id)
+                user_hist.delete()
+            user_history = History(user_id=request.user.id,
+                  movie_title=movie.get('Title'),
+                                  searched_link=movie_link.url)
+            user_history.save()
         return render(request, 'movie/movie_list.html', {'form': form, "Title": movie.get("Title"),
                                                           "Rated": movie.get("Rated"),
                                                          "Year": movie.get("Year"),
@@ -40,3 +43,4 @@ def movies(request):
                                                          "Poster": movie.get("Poster")})
     else:
         return render(request, 'movie/movie_list.html', {'form': form})
+
