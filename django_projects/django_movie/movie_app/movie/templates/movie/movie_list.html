@@ -3,7 +3,7 @@
  {% block content%}
 <style>
 
-  form {
+  form.movie {
     background-color: rgb(255, 255, 255);
     padding: 20px;
     color: black;
@@ -27,7 +27,7 @@
 </style>
 
 <article>
-  <form action="" method="GET" class="content-section">
+  <form  method="GET" class="content-section movie">
     {{form|crispy}}
     <button
       type="submit"
