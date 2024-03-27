@@ -1,10 +1,16 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.views.generic import CreateView
 from.forms import ProfileUpdateForm, UserUpdateForm, UserRegistrationForm
-from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.views import PasswordResetView, LoginView
+class CustomPasswordResetView(UserPassesTestMixin, PasswordResetView):
+   
+    def test_func(self) -> bool | None:
+        if self.request.user.is_authenticated:
+            return False
+        return True
+    
 
 @login_required
 def profile(request):
@@ -33,10 +39,10 @@ def register(request):
         if user_form.is_valid():
             user_form.save()
             messages.success(request, 'registered successfully')
-            redirect('movie-home')
+            redirect('login')
     form = UserRegistrationForm()
     return render(request, 'users/register.html', {'form': form})
-# class ProfileView(ListView):
-#     model = Profile
-#     context_object_name='person'
-#     form = ProfileUpdateForm()
+
+
+class CustomUserLoginView(LoginView):
+    redirect_authenticated_user = True
