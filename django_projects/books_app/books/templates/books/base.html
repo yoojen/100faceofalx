@@ -46,22 +46,31 @@
         width: 100%;
         margin-bottom: 5px;
       }
-
+      h1 {
+        font-size: 17px;
+      }
       .books {
-        width: 80%;
+        width: 95%;
         display: flex;
         justify-content: center;
         flex-wrap: wrap;
         margin-top: 100px;
+        margin-left: 50%;
+        transform: translateX(-50%);
       }
       .book {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
         background-color: white;
         border-radius: 3px;
         border: 1px solid black;
         padding: 10px;
         margin: 5px;
+        width: 350px;
       }
-      .book p{
+      .book p {
         text-align: center;
       }
       .login-form form input {
@@ -109,7 +118,7 @@
             <!-- Navbar Right Side -->
             <div class="navbar-nav">
               {% if user.is_authenticated %}
-              <small style="color: white;">Hello, {{user.username}}</small>
+              <small style="color: white">Hello, {{user.username}}</small>
               <form action="{% url 'logout' %}" method="post">
                 {% csrf_token %}
                 <button
