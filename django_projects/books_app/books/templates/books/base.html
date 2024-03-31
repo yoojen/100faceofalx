@@ -119,6 +119,9 @@
             <div class="navbar-nav">
               {% if user.is_authenticated %}
               <small style="color: white">Hello, {{user.username}}</small>
+              <a class="nav-item nav-link" href="{% url 'book-add' %}"
+                >New Book</a
+              >
               <form action="{% url 'logout' %}" method="post">
                 {% csrf_token %}
                 <button
