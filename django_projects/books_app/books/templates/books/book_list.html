@@ -1,0 +1,15 @@
+{% extends "books/base.html" %}
+{% block content %}
+    <div class="books">
+        {% if book %}
+            {% for bk in book %}
+                <div class="book">
+                    <h1><a href="{% url 'book-view' bk.id %}">{{bk.title}}</a></h1>
+                    <p>Author: <small>{{bk.author}}</small></p>
+                </div>
+            {% endfor %}
+        {% else %}
+        <p>Nothing to show</p>
+        {% endif %}
+    </div>
+{% endblock %}

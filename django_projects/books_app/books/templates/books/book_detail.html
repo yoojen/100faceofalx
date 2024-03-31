@@ -1,0 +1,9 @@
+{% extends "books/base.html" %}
+{% block content %}
+    <div class="books">
+        <div class="book">
+            <h1><a href="">{{book.title}}</a></h1>
+            <p>Author: <small>{{book.author}}</small></p>
+        </div>
+    </div>
+{% endblock %}

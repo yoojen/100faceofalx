@@ -1,0 +1,12 @@
+{% extends "books/base.html" %} {% load crispy_forms_tags %} {% block content %}
+
+<div class="blue" style="margin-top: 100px;">
+    <div class="form-group">
+        <a href="{% url 'login' %}">
+            <button type="submit" class="btn btn-outline-info">Login again</button>
+        </a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

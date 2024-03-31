@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+    {% if title %}
+    <title>{{title}}</title>
+    {% endif %}
+    <title>Django|Books</title>
+
+    <style>
+      body {
+        background-color: rgb(187, 239, 248);
+        font-family: 'Trebuchet MS', sans-serif;
+        font-size: 18px;
+      }
+      .blue {
+        color: blue;
+      }
+      .login-form,
+      .signup-form {
+        margin-left: 50%;
+        transform: translateX(-50%);
+        margin-top: 7%;
+        width: 400px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        background-color: white;
+      }
+      .signup-form {
+        margin-bottom: 10px;
+      }
+      h1 {
+        text-align: center;
+      }
+
+      .border-bottom {
+        background-color: teal;
+        height: 1px;
+        width: 100%;
+        margin-bottom: 5px;
+      }
+
+      .books {
+        width: 80%;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 100px;
+      }
+      .book {
+        background-color: white;
+        border-radius: 3px;
+        border: 1px solid black;
+        padding: 10px;
+        margin: 5px;
+      }
+      .book p{
+        text-align: center;
+      }
+      .login-form form input {
+        width: 100%;
+        padding: 5px 10px;
+      }
+      .bg-steel {
+        background-color: #096cb3;
+      }
+
+      .site-header .navbar-nav .nav-link {
+        color: #cbd5db;
+      }
+
+      .site-header .navbar-nav .nav-link:hover {
+        color: #ffffff;
+      }
+
+      .site-header .navbar-nav .nav-link.active {
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
+        <div class="container">
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-toggle="collapse"
+            data-target="#navbarToggle"
+            aria-controls="navbarToggle"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarToggle">
+            <div class="navbar-nav mr-auto">
+              <a class="navbar-brand mr-4" href="{% url 'books-home' %}"
+                >Book Store</a
+              >
+            </div>
+            <!-- Navbar Right Side -->
+            <div class="navbar-nav">
+              {% if user.is_authenticated %}
+              <small style="color: white;">Hello, {{user.username}}</small>
+              <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button
+                  class="btn"
+                  style="
+                    background-color: transparent;
+                    color: rgb(212, 212, 212);
+                  "
+                >
+                  Logout
+                </button>
+              </form>
+              {% else %}
+              <a class="nav-item nav-link" href="{% url 'login' %}">Login</a>
+              <a class="nav-item nav-link" href="">Register</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <div class="container" style="margin-top: 30px">
+      {% block content %} {% for msg in message %}
+      <p class="success">{{msg}}</p>
+      {% endfor %} {% endblock %}
+    </div>
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+      integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
