@@ -23,24 +23,25 @@ def movies(request):
             "Director": movie.get("Director"), "Plot": movie.get("Plot"),
             "Poster": movie.get("Poster")
         }
-        if movie:
-          if not History.objects.filter(movie_title=movie.get('Title')):
-            if History.objects.filter(user_id=request.user.id).count() == 5:
-                user_hist = History.objects.filter(user_id=request.user.id)
-                user_hist.delete()
-            user_history = History(user_id=request.user.id,
-                  movie_title=movie.get('Title'),
-                                  searched_link=movie_link.url)
-            user_history.save()
-        return render(request, 'movie/movie_list.html', {'form': form, "Title": movie.get("Title"),
-                                                          "Rated": movie.get("Rated"),
-                                                         "Year": movie.get("Year"),
-                                                           "Released": movie.get("Released"),
-                                                         "Runtime": movie.get("Runtime"),
-                                                           "Genre": movie.get("Genre"),
-                                                         "Director": movie.get("Director"), 
-                                                         "Plot": movie.get("Plot"),
-                                                         "Poster": movie.get("Poster")})
+        if len(movie.get('Title')) > 1:
+            if not History.objects.filter(movie_title=movie.get('Title')):
+                if History.objects.filter(user_id=request.user.id).count() == 5:
+                    user_hist = History.objects.filter(user_id=request.user.id)
+                    user_hist.delete()
+                user_history = History(user_id=request.user.id,
+                                       movie_title=movie.get('Title'),
+                                       searched_link=movie_link.url)
+                user_history.save()
+            return render(request, 'movie/movie_list.html', {'form': form, "Title": movie.get("Title"),
+                                                             "Rated": movie.get("Rated"),
+                                                             "Year": movie.get("Year"),
+                                                             "Released": movie.get("Released"),
+                                                             "Runtime": movie.get("Runtime"),
+                                                             "Genre": movie.get("Genre"),
+                                                             "Director": movie.get("Director"),
+                                                             "Plot": movie.get("Plot"),
+                                                             "Poster": movie.get("Poster")})
+        else:
+            return render(request, 'movie/movie_list.html', {'form': form})
     else:
         return render(request, 'movie/movie_list.html', {'form': form})
-
