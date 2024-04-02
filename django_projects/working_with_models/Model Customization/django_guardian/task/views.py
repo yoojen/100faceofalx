@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from django.template import RequestContext
 from guardian.shortcuts import get_objects_for_user
 
 
