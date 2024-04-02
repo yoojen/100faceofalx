@@ -12,3 +12,6 @@ class Task(models.Model):
         permissions = (
             ('assign_task', 'Assign task'),
         )
+
+    def __str__(self):
+        return f"{self.summary}"
