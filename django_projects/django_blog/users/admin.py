@@ -21,9 +21,10 @@ class ProfileAdmin(admin.ModelAdmin):
     list_per_page = 10
     actions = ["update_image"]
 
-    @admin.action(description="Set image from admin page")
+    @admin.action(description="Set image from admin page", permissions=['change'])
     def update_image(self, request, queryset):
         queryset.update(image="profile_pics/IMG_20201126_083637_9.jpg")
+        self.message_user(request, "Profile picture updated successfully")
 
 
 admin.site.unregister(User)
