@@ -1,6 +1,4 @@
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LoginView
-from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from .forms import UserRegisterForm, UserUpdateForm, ProfileUpdateForm
 from django.contrib import messages
@@ -26,7 +24,6 @@ def register(request):
 
 @login_required
 def profile(request):
-    print(request.headers)
     if request.method == 'POST':
         u_form = UserUpdateForm(request.POST, instance=request.user)
         p_form = ProfileUpdateForm(
