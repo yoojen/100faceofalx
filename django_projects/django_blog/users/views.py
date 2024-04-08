@@ -4,7 +4,6 @@ from .forms import UserRegisterForm, UserUpdateForm, ProfileUpdateForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
-
 def register(request):
     if request.user.is_authenticated:
         messages.success(request, "You're already registered!")
