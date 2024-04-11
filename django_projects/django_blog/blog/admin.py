@@ -1,15 +1,23 @@
+from django.shortcuts import render
 from django.contrib import admin
-from django.http import HttpRequest
 from .models import Post
 from guardian.shortcuts import get_objects_for_user
 from guardian.admin import GuardedModelAdmin
+from guardian.managers import UserObjectPermissionManager
 
+class UserMixinPermission(UserObjectPermissionManager):
+    pass
 class PostAdmin(GuardedModelAdmin, admin.ModelAdmin):
     list_per_page = 10
     search_fields = ["title"]
     actions = ["make_post_inactive"]
 
-
+    # Restrict user from changing object-level allowed permissions
+    def obj_perms_manage_user_view(self, request, object_pk, user_id):
+        if not request.user.has_perm('guardian.change_userobjectpermission'):
+            return render(request, 'blog/not_found.html')
+        return super().obj_perms_manage_user_view(request, object_pk, user_id)
+    
     def has_module_permission(self, request):
         if super().has_module_permission(request):
             return True
@@ -34,6 +42,7 @@ class PostAdmin(GuardedModelAdmin, admin.ModelAdmin):
     def has_permission(self, request, obj, action):
         opts = self.opts
         perm=f"{opts.app_label}.{action}_{opts.model_name}"
+        
         if obj:
             return request.user.has_perm(perm, obj)
         else:
