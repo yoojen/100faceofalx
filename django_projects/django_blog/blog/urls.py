@@ -5,7 +5,7 @@ from .views import (
     PostCreateView,
     PostUpateView,
     PostDeleteView,
-    UserPostListView
+    UserPostListView,
 )
 from . import views
 
