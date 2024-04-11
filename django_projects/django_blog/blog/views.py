@@ -1,7 +1,5 @@
-from django.db.models.query import QuerySet
+from django.shortcuts import redirect
 from django.shortcuts import render,  get_object_or_404
-from django.http import HttpResponse
-from django.template import loader
 from django.contrib.auth.models import User
 from django.views.generic import (
     ListView,
@@ -86,3 +84,4 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 def about(request):
     return render(request, 'blog/about.html', {'title': 'About'})
+
