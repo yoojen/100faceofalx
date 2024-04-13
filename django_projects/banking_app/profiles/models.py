@@ -10,3 +10,4 @@ class CustomerProfile(models.Model):
     district=models.CharField(max_length=250, null=False)
     sector=models.CharField(max_length=250, null=False)
     cell=models.CharField(max_length=250, null=False)
+    image = models.ImageField(default='Contact.png', upload_to='/media/profile_pictures')
