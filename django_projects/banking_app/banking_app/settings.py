@@ -37,8 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'transactions',
     'profiles',
+    'transactions',
     'crispy_forms',
     'crispy_bootstrap4',
     'guardian',
@@ -104,7 +104,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend', 
+                           'guardian.backends.ObjectPermissionBackend')
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -121,8 +122,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+MEDIA_URL = '/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# User model
+AUTH_USER_MODEL="profiles.User"
