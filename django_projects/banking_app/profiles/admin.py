@@ -1,30 +1,9 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from django.http import HttpRequest
-from .models import CustomerProfile, User
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from .models import CustomerProfile
+from .models import User
 from guardian.admin import GuardedModelAdmin
-
-
-class CustomPermissionMixin(GuardedModelAdmin):
-
-    def get_form(self, request, obj, change, **kwargs):
-        form = super().get_form(request, obj, change, **kwargs)
-        if not request.user.is_superuser:
-            form.base_fields['is_superuser'].disabled = True
-            form.base_fields['is_staff'].disabled = True
-            return form
-
-    def has_view_permission(self, request, obj=None) -> bool:
-        return super().has_view_permission(request, obj)
-
-    def has_add_permission(self, request) -> bool:
-        return super().has_add_permission(request)
-
-    def has_change_permission(self, request, obj=None) -> bool:
-        return super().has_change_permission(request, obj)
-
-    def has_delete_permission(self, request, obj=None) -> bool:
-        return super().has_delete_permission(request, obj)
+from guardian.shortcuts import get_objects_for_user
 
 
 class CustomerProfileInline(admin.StackedInline):
@@ -33,32 +12,52 @@ class CustomerProfileInline(admin.StackedInline):
     verbose_name_plural = "customer profile"
 
 
-class CustomUserAdmin(UserAdmin, CustomPermissionMixin):
+@admin.register(User)
+class UserAdmin(GuardedModelAdmin,  BaseUserAdmin):
     model = User
-    search_fields = ("email",)
-    ordering = ("email",)
-    list_per_page = 10
-
-    list_display = ("email", "is_staff", "is_active", "is_superuser")
-    list_filter = ("email", "is_staff", "is_active", "is_superuser")
-    fieldsets = (
-        (None, {"fields": ("email", "password", "type")}),
-        ("Permissions", {"fields": ("is_staff", "is_superuser",
-                                    "is_active", "groups", "user_permissions")}),
-    )
     add_fieldsets = (
         (None, {
-            "classes": ("wide",),
+            "classes": ("wide"),
             "fields": (
-                "email", "password1", "password2", "type", "is_staff",
-                "is_active", "groups", "user_permissions"
-            )}
-         ),
+                "username", "email", "password1", "password2", "first_name", "last_name",
+                "is_staff",  "is_active", "groups", "user_permissions"
+            )
+        }),
     )
-    inlines = [CustomerProfileInline]
+    # Now what's remaining is to start using model level permission and object level
+    # Permission so that user manager can view user queryset except admin
+    # Build function that will check permission before he/she does any action
 
-    # @admin.action("Set user inactive")
+    def has_permission(self, request, obj=None, action=None):
+        opts = self.opts
+        model_name = opts.model_name
+        app_lebel = opts.app_label
+
+        if request.user.is_superuser:
+            return True
+        return request.user.has_perm(f"{app_lebel}.{action}_{model_name}", obj)
+
+    # Change get_queryset it will show objects according to type of user
+    def get_queryset(self, request):
+        if request.user.is_superuser:
+            return super().get_queryset(request)
+        return User.objects.filter(username='jera').first()
+
+    def has_module_permission(self, request):
+        if super().has_module_permission(request):
+            return True
+
+    def has_view_permission(self, request, obj=None):
+        return self.has_permission(request, obj, 'view')
+
+    def has_add_permission(self, request):
+        return super().has_add_permission(request)
+
+    def has_change_permission(self, request, obj=None):
+        return super().has_change_permission(request, obj)
+
+    def has_delete_permission(self, request, obj=None):
+        return super().has_delete_permission(request, obj)
 
 
 admin.site.register(CustomerProfile)
-admin.site.register(User, CustomUserAdmin)
