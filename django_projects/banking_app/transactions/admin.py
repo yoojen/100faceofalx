@@ -26,6 +26,7 @@ class CardAdmin(admin.ModelAdmin):
     list_per_page = 10
 
 
+@admin.register(BillInfo)
 class BillInfoAdmin(admin.ModelAdmin):
     search_fields = ["payee_account__exact"]
     list_display = ["customer", "payee_name",
@@ -36,4 +37,4 @@ class BillInfoAdmin(admin.ModelAdmin):
 admin.site.register(Account, AccountAdmin)
 admin.site.register(Transactions, TransactionsAdmin)
 admin.site.register(Card, CardAdmin)
-admin.site.register(BillInfo, BillInfoAdmin)
+# admin.site.register(BillInfo, BillInfoAdmin)
