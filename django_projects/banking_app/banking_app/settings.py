@@ -104,7 +104,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend', 
+AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',
                            'guardian.backends.ObjectPermissionBackend')
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -130,4 +130,4 @@ MEDIA_URL = '/media/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # User model
-AUTH_USER_MODEL="profiles.User"
+AUTH_USER_MODEL = "profiles.User"
