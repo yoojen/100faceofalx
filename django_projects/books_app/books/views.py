@@ -17,6 +17,7 @@ class BookAuthMixin(PermissionRequiredMixin):
                                      self.get_redirect_field_name())
 
         if not self.has_permission():
+            messages.success(request, "You're redirected")
             return redirect('books-home')
         return super(BookAuthMixin, self).dispatch(request, *args, **kwargs)
 
