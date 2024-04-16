@@ -1,23 +1,24 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser, AbstractBaseUser
-from .managers import CustomUserManager
+from django.contrib.auth.models import AbstractUser
+# from django.contrib.auth.models import User
 
 
 class User(AbstractUser):
-    username = None
-    email = models.EmailField(unique=True, blank=True, null=True)
-    type = models.CharField(max_length=250, default="CUSTOMER")
+    """Custom user """
+    pass
+#     username = None
+#     type = models.CharField(max_length=250, default="CUSTOMER")
+#     email = models.EmailField(unique=True)
+#     USERNAME_FIELD = 'email'
+#     REQUIRED_FIELDS = []
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+#     objects = CustomUserManager()
 
-    objects = CustomUserManager()
-
-    class Meta:
-        permissions = [
-            ("can_control_manager", "Can add, change or delete manager"),
-            ("can_control_cashier", "Can add, change or delete"),
-        ]
+#     class Meta:
+#         permissions = [
+#             ("can_control_manager", "Can add, change or delete manager"),
+#             ("can_control_cashier", "Can add, change or delete"),
+#         ]
 
 
 class CustomerProfile(models.Model):
