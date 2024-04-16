@@ -1,5 +1,13 @@
 {% extends "books/base.html" %}
 {% block content %}
+    {% if messages %}
+        {% for msg in messages %}
+            <p class="danger" style="position: absolute; top: 60px;left:0; text-align:center;
+             background-color: red; color: white; width: 100%">
+             {{msg}}
+            </p>
+        {% endfor %}
+    {% endif %}
     <div class="books">
         {% if book %}
             {% for bk in book %}
