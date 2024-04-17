@@ -24,40 +24,49 @@ class UserAdmin(GuardedModelAdmin,  BaseUserAdmin):
             )
         }),
     )
-    # Now what's remaining is to start using model level permission and object level
-    # Permission so that user manager can view user queryset except admin
-    # Build function that will check permission before he/she does any action
+
+    def has_module_permission(self, request):
+        if super().has_module_permission(request):
+            return True
+        return self.model_objects_for_user(request, actions=[
+            "view", "change", "add", "delete"]
+        ).exists()
+
+    def model_objects_for_user(self, request, klass=None, actions: list = None):
+        klass = self.opts.model if not klass else klass
+        perms = [
+            f"{self.opts.app_label}.{perm}_{self.opts.model_name}" for perm in actions]
+        return get_objects_for_user(
+            user=request.user, perms=perms, klass=klass, any_perm=True)
 
     def has_permission(self, request, obj=None, action=None):
         opts = self.opts
         model_name = opts.model_name
         app_lebel = opts.app_label
+        if obj:
+            return request.user.has_perm(f"{app_lebel}.{action}_{model_name}", obj)
+        return request.user.has_perm(f"{app_lebel}.{action}_{model_name}")
 
-        if request.user.is_superuser:
-            return True
-        return request.user.has_perm(f"{app_lebel}.{action}_{model_name}", obj)
-
-    # Change get_queryset it will show objects according to type of user
-    def get_queryset(self, request):
+    def get_queryset(self, request, ):
         if request.user.is_superuser:
             return super().get_queryset(request)
-        return User.objects.filter(username='jera').first()
-
-    def has_module_permission(self, request):
-        if super().has_module_permission(request):
-            return True
+        data = self.model_objects_for_user(
+            request, actions=["view", "add", "change", "delete"])
+        return data
 
     def has_view_permission(self, request, obj=None):
-        return self.has_permission(request, obj, 'view')
+        return self.model_objects_for_user(request, actions=[
+            "view", "change", "add", "delete"]
+        ).exists()
 
     def has_add_permission(self, request):
-        return super().has_add_permission(request)
+        return self.has_permission(request, action="add")
 
     def has_change_permission(self, request, obj=None):
-        return super().has_change_permission(request, obj)
+        return self.has_permission(request, obj, "change")
 
     def has_delete_permission(self, request, obj=None):
-        return super().has_delete_permission(request, obj)
+        return self.has_permission(request, obj, "delete")
 
 
 admin.site.register(CustomerProfile)
