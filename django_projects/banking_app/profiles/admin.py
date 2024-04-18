@@ -1,4 +1,4 @@
-from typing import Any
+from django.shortcuts import redirect
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import CustomerProfile
@@ -28,6 +28,11 @@ class UserAdmin(GuardedModelAdmin,  BaseUserAdmin):
         }),
     )
 
+    def obj_perms_manage_user_view(self, request, object_pk, user_id):
+        if not request.user.has_perm('guardian.change_userobjectpermission'):
+            return redirect('admin/')
+        return super().obj_perms_manage_user_view(request, object_pk, user_id)
+
     def has_module_permission(self, request):
         if super().has_module_permission(request):
             return True
@@ -51,14 +56,13 @@ class UserAdmin(GuardedModelAdmin,  BaseUserAdmin):
             return request.user.has_perm(f"{app_lebel}.{action}_{model_name}", obj)
         return request.user.has_perm(f"{app_lebel}.{action}_{model_name}")
 
-    def get_form(self, request: Any, obj: Any | None = ..., **kwargs: Any) -> Any:
+    def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
-        if self.has_permission(request, obj=obj, action="change"):
-            if not request.user.is_superuser:
-                form.base_fields["is_superuser"].disabled = True
-                form.base_fields["is_staff"].disabled = True
-                form.base_fields["groups"].disabled = True
-                form.base_fields["user_permissions"].disabled = True
+        if self.has_permission(request, action="change") and not request.user.is_superuser:
+            form.base_fields["is_superuser"].disabled = True
+            form.base_fields["is_staff"].disabled = True
+            form.base_fields["groups"].disabled = True
+            form.base_fields["user_permissions"].disabled = True
         return form
 
     def get_queryset(self, request, ):
@@ -77,10 +81,13 @@ class UserAdmin(GuardedModelAdmin,  BaseUserAdmin):
         return self.has_permission(request, action="add")
 
     def has_change_permission(self, request, obj=None):
+        if request.user.is_staff:
+            return True
         return self.has_permission(request, obj, "change")
 
     def has_delete_permission(self, request, obj=None):
-        print("From ->", self.has_permission(request, obj, "delete"))
+        if request.user.is_staff:
+            return True
         return self.has_permission(request, obj, "delete")
 
 
