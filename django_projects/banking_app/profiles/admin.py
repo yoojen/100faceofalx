@@ -1,9 +1,11 @@
+from typing import Any
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import CustomerProfile
 from .models import User
 from guardian.admin import GuardedModelAdmin
 from guardian.shortcuts import get_objects_for_user
+from .forms import CustomUserChangeForm
 
 
 class CustomerProfileInline(admin.StackedInline):
@@ -15,12 +17,13 @@ class CustomerProfileInline(admin.StackedInline):
 @admin.register(User)
 class UserAdmin(GuardedModelAdmin,  BaseUserAdmin):
     model = User
+    form = CustomUserChangeForm
     add_fieldsets = (
         (None, {
             "classes": ("wide"),
             "fields": (
                 "username", "email", "password1", "password2", "first_name", "last_name",
-                "is_staff",  "is_active", "groups", "user_permissions"
+                "is_staff",  "is_active", "is_superuser", "groups", "user_permissions"
             )
         }),
     )
@@ -48,6 +51,16 @@ class UserAdmin(GuardedModelAdmin,  BaseUserAdmin):
             return request.user.has_perm(f"{app_lebel}.{action}_{model_name}", obj)
         return request.user.has_perm(f"{app_lebel}.{action}_{model_name}")
 
+    def get_form(self, request: Any, obj: Any | None = ..., **kwargs: Any) -> Any:
+        form = super().get_form(request, obj, **kwargs)
+        if self.has_permission(request, obj=obj, action="change"):
+            if not request.user.is_superuser:
+                form.base_fields["is_superuser"].disabled = True
+                form.base_fields["is_staff"].disabled = True
+                form.base_fields["groups"].disabled = True
+                form.base_fields["user_permissions"].disabled = True
+        return form
+
     def get_queryset(self, request, ):
         if request.user.is_superuser:
             return super().get_queryset(request)
@@ -67,6 +80,7 @@ class UserAdmin(GuardedModelAdmin,  BaseUserAdmin):
         return self.has_permission(request, obj, "change")
 
     def has_delete_permission(self, request, obj=None):
+        print("From ->", self.has_permission(request, obj, "delete"))
         return self.has_permission(request, obj, "delete")
 
 
