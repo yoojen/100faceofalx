@@ -1,0 +1,38 @@
+{% extends "profiles/base.html" %}
+{% load crispy_forms_tags %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    </head>
+  <body>
+    {% block content %}
+    <div class="contents">
+      <div class="btn-navigation">
+        <a href=""><button>DEPOSIT</button></a>
+        <a href=""><button>WITHDRAW</button></a>
+      </div>
+      <div class="trans-forms">
+        <form action="{% url 'find_account' %}" method="GET">
+            <label for="account_num">Search Account Number</label>
+            <input type="number" name="account_num" id="">
+            <button type="submit">Search</button>
+
+        </form>
+        {% if messages %}
+            {% for msg in messages %}
+                <p style="color: rgb(0, 132, 255);">{{msg}}</p>
+                <h1 style="color: rgb(0, 132, 255);">{{msg.tags}}</h1>
+            {% endfor %}
+        {% endif %}
+        <form action="" method="POST">
+          {% csrf_token%}
+          {{form|crispy}}
+          <button type="submit">Record Transaction</button>
+        </form>
+      </div>
+    </div>
+    <h1>DEPOSIT</h1>
+    {% endblock %}
+
+  </body>
+</html>
