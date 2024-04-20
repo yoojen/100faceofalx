@@ -1,5 +1,5 @@
 from django.db import models
-# from django.contrib.auth.models import User
+from django.urls import reverse
 from profiles.models import User
 from datetime import date, timedelta
 
@@ -17,14 +17,23 @@ class Account(models.Model):
 
 
 class Transactions(models.Model):
+    BOOLEAN_CHOICES = (
+        ("Deposit", 'Deposit'),
+        ("Withdraw", 'Withdraw'),
+    )
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     date_done = models.DateField(auto_now=True)
     description = models.CharField(max_length=250, null=True)
+    type = models.CharField(choices=BOOLEAN_CHOICES, max_length=250)
 
     def __str__(self) -> str:
         return f"{self.account.account_num} for {self.account.customer.email}"
 
+        
+    def get_absolute_url(self):
+        return reverse("deposit")
+    
 
 class Card(models.Model):
     customer = models.OneToOneField(User, on_delete=models.CASCADE)
