@@ -8,14 +8,16 @@ from profiles.admin import CustomObjectAccessMixin
 
 
 class AccountAdmin(CustomObjectAccessMixin, admin.ModelAdmin):
+    model = Account
     search_fields = ["account_num__exact"]
     list_per_page = 10
     list_display = ["account_num", "customer", "balance", "date_opened"]
 
 
 class TransactionsAdmin(admin.ModelAdmin):
+    model = Transactions
     search_fields = ["account__exact"]
-    list_display = ["account", "amount", "date_done", "description"]
+    list_display = ["account", "amount", "date_done", "description", "type"]
     list_per_page = 10
 
 
