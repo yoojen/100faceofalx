@@ -2,6 +2,7 @@
   padding: 0;
   margin: 0;
   box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
 }
 header {
   background-color: #0aa9cc;
@@ -11,7 +12,6 @@ nav {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  font-family: 'Poppins', sans-serif;
   font-weight: 400;
   font-style: normal;
   font-size: 13px;
@@ -30,4 +30,20 @@ nav {
 .right ul li a {
   color: white;
   text-decoration: none;
+}
+
+
+footer{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 70px;
+  width: 100%;
+  background-color: rgb(210, 215, 210);
+  text-align: center;
+  color: rgb(67, 67, 68);
+  padding: 10px 0;
+}
+footer small{
+  color: #939696;
 }
