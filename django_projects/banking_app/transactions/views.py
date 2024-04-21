@@ -17,7 +17,6 @@ class TransactionPostView(CreateView):
             account_num=form.cleaned_data["account_num"]).first()
         amount = form.cleaned_data["amount"]
         type = form.cleaned_data["type"]
-
         if not account:
             messages.error(self.request, "No account found")
             return super().form_invalid(form)
@@ -28,17 +27,15 @@ class TransactionPostView(CreateView):
             else:
                 if account.balance < amount:
                     raise ValueError("Low balance")
-                account.balance -= float(amount)
+                else:
+                    account.balance = account.balance - amount
+                    account.save()
             messages.success(self.request, self.success_message)
             return super().form_valid(form)
         except Exception as e:
             messages.error(self.request, "Can't process the request")
             return super().form_invalid(form)
         
-
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        print(super().get_context_data(**kwargs))
-        return super().get_context_data(**kwargs)
 
 
 def find_account(request):
