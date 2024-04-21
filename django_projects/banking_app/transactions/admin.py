@@ -4,10 +4,10 @@ from .models import (Account,
                      Card,
                      BillInfo
                      )
-from profiles.admin import CustomerProfileInline
+from profiles.admin import CustomObjectAccessMixin
 
 
-class AccountAdmin(admin.ModelAdmin):
+class AccountAdmin(CustomObjectAccessMixin, admin.ModelAdmin):
     search_fields = ["account_num__exact"]
     list_per_page = 10
     list_display = ["account_num", "customer", "balance", "date_opened"]
