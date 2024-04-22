@@ -22,6 +22,7 @@ class Transactions(models.Model):
         ("Withdraw", 'Withdraw'),
     )
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    account_num = models.PositiveIntegerField(null=True, blank=False)
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     date_done = models.DateField(auto_now=True)
     description = models.CharField(max_length=250, null=True)
@@ -32,6 +33,7 @@ class Transactions(models.Model):
 
     def get_absolute_url(self):
         return reverse("transactions:deposit")
+
 
 
 class Card(models.Model):
