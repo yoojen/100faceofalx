@@ -16,6 +16,9 @@
       type="text/css"
       href="{% static 'profiles/style/common.css' %}"
     />
+    <style>
+
+    </style>
     {% block navigation %}
     
     {% endblock %}
@@ -33,7 +36,15 @@
         <div class="right">
           <ul>
             <li><a href="">TRANSACT</a></li>
-            <li><a href="">ACCOUNT MANAGEMENT</a></li>
+            <div class="dropdown">
+              <li><a href="" >ACCOUNT</a></li>
+                <div class="dropdown-content">
+                  <ul>
+                    <li><a href="">ACCOUNT MANAGEMENT</a></li>
+                    <li><a href="">ACCOUNT INSEPECTION</a></li>
+                  </ul>
+                </div>
+            </div>
             <li><a href="">PROFILE</a></li>
             <li><a href="">LOGOUT</a></li>
           </ul>
