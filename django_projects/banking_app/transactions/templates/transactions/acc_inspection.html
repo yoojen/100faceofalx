@@ -1,0 +1,23 @@
+{% extends "profiles/base.html" %}
+
+{% block content %}
+<h1>ACCOUNT INSEPCTION</h1>
+<table>
+    <tr>
+        <th>Customer</th>
+        <th>Account Number</th>
+        <th>Date Opened</th>
+        <th>Balance</th>
+    </tr>
+    {% for account in accounts %}            
+        <tr>
+            <a href=""></a>
+            <td><a href="{% url 'transactions:single_acc_insept' account.id %}">{{account.customer}}</a></td>
+            <td>{{account.account_num}}</td>
+            <td>{{account.date_opened}}</td>
+            <td>{{account.balance}}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}
