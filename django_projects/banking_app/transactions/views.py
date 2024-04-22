@@ -7,14 +7,15 @@ from banking_app.serializer import Serializer
 
 class TransactionPostView(CreateView):
     model = Transactions
-    fields = ["account_num",  "amount", "description", "type"]
+    fields = ["account",  "amount", "description", "type"]
     template_name = "transactions/deposit.html"
     context_object_name = "account"
     success_message = 'Transaction Recorded Created Successfully'
 
     def form_valid(self, form):
+        print(self.object)
         account = Account.objects.filter(
-            account_num=form.cleaned_data["account_num"]).first()
+            account_num=form.cleaned_data["account"]).first()
         amount = form.cleaned_data["amount"]
         type = form.cleaned_data["type"]
         if not account:
@@ -42,7 +43,6 @@ def find_account(request):
     account = Account.objects.filter(
         account_num=request.GET.get("account_num")).first()
     if account:
-        acc_info = Serializer.dumps(account)
         messages.success(request, "Account number found", Serializer.dumps(account))
         return redirect("transactions:deposit")
     messages.error(request, "Nothing found")
