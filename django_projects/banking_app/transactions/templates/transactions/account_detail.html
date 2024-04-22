@@ -1,0 +1,54 @@
+{% extends "profiles/base.html" %}
+
+{% block content %}
+<small>{{user}}</small>
+<table>
+    <tr>
+        <th>Customer</th>
+        <th>Account Number</th>
+        <th>Date Opened</th>
+        <th>Balance</th>
+    </tr>
+    <tr>
+        <td>{{detail_object.customer}}</td>
+        <td>{{detail_object.account_num}}</td>
+        <td>{{detail_object.date_opened}}</td>
+        <td>{{detail_object.balance}}</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <th>account</th>
+        <th>amount</th>
+        <th>date_done</th>
+        <th>description</th>
+        <th>type</th>
+    </tr>
+    {% for transac in list_data %}
+        <tr>
+            <td>
+                {{transac.account}}
+            </td>
+            <td>
+                {{transac.amount}}
+            </td>
+            <td>
+                {{transac.date_done}}
+            </td>
+            <td>
+                {{transac.type}}
+            </td>
+        </tr>
+    {% endfor %}
+
+
+    </tr>
+</table>
+
+<a href="{% url 'transactions:acc_inspect' %}">Back</a>
+{% if user == account.customer %}
+    <button>Delete</button>
+{% else %}
+{% endif %}
+{% endblock %}
