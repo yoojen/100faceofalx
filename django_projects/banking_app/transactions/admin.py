@@ -1,3 +1,4 @@
+from typing import Any
 from django.contrib import admin
 from .models import (Account,
                      Transactions,
@@ -19,6 +20,18 @@ class TransactionsAdmin(admin.ModelAdmin):
     search_fields = ["account__exact"]
     list_display = ["account", "amount", "date_done", "description", "type"]
     list_per_page = 10
+
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        account = obj.account
+        if obj.type == 'Deposit':
+            account.balance += obj.amount
+        else:
+            if account.balance < obj.amount:
+                raise ValueError('Insufficient funds')
+            account.balance -= obj.amount
+        account.save()
 
 
 class CardAdmin(admin.ModelAdmin):
