@@ -31,12 +31,11 @@ class TransactionPostView(CreateView):
                 account.save()
             else:
                 if account.balance < amount:
-                    raise ValueError("Low balance")
+                    raise ValueError("Insufficient funds")
                 else:
                     account.balance = account.balance - amount
                     account.save()
             messages.success(self.request, self.success_message)
-            print(self.object)
             return super().form_valid(form)
         except Exception as e:
             messages.error(self.request, "Can't process the request")
@@ -82,7 +81,6 @@ class AccountDetailView(DetailView):
 
 
 class CustomerTransactionListView(ListView):
-    print("called")
     model = Transactions
     template_name = "transactions/account_detail.html"
 
