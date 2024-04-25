@@ -37,22 +37,21 @@ input,
 select {
   outline: none;
   border: none;
-  padding: 10px;
+  padding: 5px 10px;
   border-radius: 5px;
   color: rgb(81, 81, 81);
   width: 90%;
 }
 
 .messages, form {
+  margin-top: 20px;
   width: 450px;
   background-color: #f9f9f9;
   padding: 20px;
   border-radius: 5px;
   box-shadow: 0 0 2px 0px black;
 }
-form{
-  margin-top: 7vh;
-}
+
 .messages {
   margin-top: 3vh;
   font-size: 15px;
@@ -67,7 +66,7 @@ input::-webkit-inner-spin-button {
 
 #post-form button {
   margin-top: 10px;
-  /* font-size: 18px; */
+  font-size: 18px;
   padding: 10px 20px;
   font-weight: 600;
   margin-left: 50%;
