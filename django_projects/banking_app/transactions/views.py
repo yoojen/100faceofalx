@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from typing import Any
 from django.db.models  import Q
 from django.db.models.query import QuerySet
 from django.shortcuts import render, redirect
@@ -48,9 +47,9 @@ def find_account(request):
         account_num=request.GET.get("account_num")).first()
     if account:
         messages.success(request, "Account number found", Serializer.dumps(account))
-        return redirect("transactions:deposit")
+        return redirect("transactions:transact")
     messages.error(request, "Nothing found")
-    return redirect("transactions:deposit")
+    return redirect("transactions:transact")
 
 
 
@@ -59,7 +58,7 @@ class AccountListView(ListView):
     template_name = "transactions/acc_inspection.html"
     context_object_name = "accounts"
 
-    def get_queryset(self) -> QuerySet[Any]:
+    def get_queryset(self):
         # Get search term from query string
         search_term = self.request.GET.get('q', '')
         # Replace with your search fields
@@ -97,17 +96,6 @@ def my_combined_view(request, pk=None):
     return render(request, 'transactions/account_detail.html', context)
 
 def django_admin_like_search(model, search_term, search_fields):
-    """
-    Performs a search on the specified model based on search_term and search_fields.
-
-    Args:
-    model: The Django model class to search against.
-    search_term: The search term entered by the user.
-    search_fields: A list of field names to search on.
-
-    Returns:
-    A QuerySet containing the filtered results.
-    """
     all_queries = None
 
     # Split the search term into keywords for individual filtering
@@ -133,3 +121,8 @@ def django_admin_like_search(model, search_term, search_fields):
 
     # Apply the combined filters to the model queryset
     return model.objects.filter(all_queries).distinct()
+
+
+class CreateAccountView(CreateView):
+    model=Account
+    fields = "__all__"
