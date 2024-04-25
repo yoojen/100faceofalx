@@ -1,3 +1,4 @@
+from django.shortcuts import redirect, reverse
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 # from django.contrib.auth.models import User
@@ -34,3 +35,6 @@ class CustomerProfile(models.Model):
 
     def __str__(self) -> str:
         return f"{self.customer.email}"
+
+    def get_absolute_url(self):
+        return redirect(reverse("profiles:create_user"))
