@@ -16,12 +16,9 @@
       type="text/css"
       href="{% static 'profiles/style/common.css' %}"
     />
-    <style>
-
-    </style>
-    {% block navigation %}
-    
-    {% endblock %}
+      {% block navigation %}
+      
+      {% endblock %}
     <title>Document</title>
   </head>
   <body>
@@ -35,13 +32,30 @@
         </div>
         <div class="right">
           <ul>
-            <li><a href="">TRANSACT</a></li>
             <div class="dropdown">
-              <li><a href="" >ACCOUNT</a></li>
+              <li><a href="" >TRANSACT</a></li>
                 <div class="dropdown-content">
                   <ul>
-                    <li><a href="">ACCOUNT MANAGEMENT</a></li>
-                    <li><a href="">ACCOUNT INSEPECTION</a></li>
+                    <li><a href="{% url 'transactions:transact' %}">TELLER BOARD</a></li>
+                    <li><a href="{% url 'transactions:acc_inspect' %}">TRANSACTION INSPECTION</a></li>
+                  </ul>
+                </div>
+            </div>
+            <div class="dropdown">
+              <li><a href="{% url 'transactions:acc_inspect' %}" >ACCOUNT</a></li>
+                <div class="dropdown-content">
+                  <ul>
+                    <li><a href="{% url 'transactions:create_account' %}">CREATE ACCOUNT</a></li>
+                    <li><a href="{% url 'transactions:acc_inspect' %}">ACCOUNT INSEPECTION</a></li>
+                  </ul>
+                </div>
+            </div>
+            <div class="dropdown">
+              <li><a href="" >CUSTOMER</a></li>
+                <div class="dropdown-content">
+                  <ul>
+                    <li><a href="{% url 'profiles:create_user' %}">CUSTOMER MANAGEMENT</a></li>
+                    <li><a href="">CUSTOMER INSPECTION</a></li>
                   </ul>
                 </div>
             </div>
