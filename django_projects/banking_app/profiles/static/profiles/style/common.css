@@ -59,8 +59,11 @@ nav {
 .dropdown-content a:hover{
   color: #0aa9cc;
 }
+form small{
+  display: none;
+}
 footer{
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   height: 70px;
