@@ -15,6 +15,9 @@ class Account(models.Model):
 
     def __str__(self) -> str:
         return f"{self.account_num}"
+    
+    class Meta:
+        ordering=["customer"]
 
 
 class Transactions(models.Model):
@@ -34,6 +37,9 @@ class Transactions(models.Model):
 
     def get_absolute_url(self):
         return reverse("transactions:deposit")
+    
+    class Meta:
+        ordering=['-date_done']
 
 
 
