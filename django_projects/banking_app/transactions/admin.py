@@ -12,7 +12,7 @@ class AccountAdmin(CustomObjectAccessMixin, admin.ModelAdmin):
     model = Account
     search_fields = ["account_num__exact"]
     list_per_page = 10
-    list_display = ["account_num", "customer", "balance", "date_opened"]
+    list_display = ["account_num", "balance", "date_opened"]
 
 
 class TransactionsAdmin(admin.ModelAdmin):
