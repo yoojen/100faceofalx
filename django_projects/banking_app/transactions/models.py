@@ -1,4 +1,3 @@
-from typing import Iterable
 from django.db import models
 from django.urls import reverse
 from profiles.models import User
@@ -8,7 +7,6 @@ from datetime import date, timedelta
 class Account(models.Model):
     account_num = models.CharField(
         max_length=13, unique=True, blank=False, null=False)
-    customer = models.OneToOneField(User, on_delete=models.CASCADE)
     balance = models.DecimalField(
         default=0.00, decimal_places=2, max_digits=10)
     date_opened = models.DateField(auto_now=True)
@@ -17,7 +15,7 @@ class Account(models.Model):
         return f"{self.account_num}"
     
     class Meta:
-        ordering=["customer"]
+        ordering=["-date_opened"]
 
 
 class Transactions(models.Model):
