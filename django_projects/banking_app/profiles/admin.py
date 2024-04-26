@@ -5,7 +5,7 @@ from .models import CustomerProfile
 from .models import User
 from guardian.admin import GuardedModelAdmin
 from guardian.shortcuts import get_objects_for_user
-from .forms import CustomUserChangeForm
+from .forms import CustomUserChangeForm, CustomUserCreationForm
 
 
 class CustomObjectAccessMixin(GuardedModelAdmin):
@@ -67,12 +67,32 @@ class CustomerProfileInline(admin.StackedInline):
 @admin.register(User)
 class UserAdmin(CustomObjectAccessMixin,  BaseUserAdmin):
     model = User
+    add_form=CustomUserCreationForm
     form = CustomUserChangeForm
+    list_display = ["email", "date_joined"]
+    ordering=["email"]
+    fieldsets=(
+        (None, {"fields": ("email", "password")}),
+        (("Personal info"), {"fields": ("first_name", "last_name")}),
+        (
+            ("Permissions"),
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                ),
+            },
+        ),
+        (("Important dates"), {"fields": ("last_login", "date_joined")}),
+    )
     add_fieldsets = (
         (None, {
             "classes": ("wide"),
             "fields": (
-                "username", "email", "password1", "password2", "first_name", "last_name",
+                "email", "password1", "password2", "first_name", "last_name",
                 "is_staff",  "is_active", "is_superuser", "groups", "user_permissions"
             )
         }),
@@ -95,4 +115,6 @@ class UserAdmin(CustomObjectAccessMixin,  BaseUserAdmin):
         return form
 
 
+
+# admin.site.register(User)
 admin.site.register(CustomerProfile)
