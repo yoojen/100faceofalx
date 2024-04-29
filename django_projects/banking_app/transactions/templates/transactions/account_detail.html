@@ -1,7 +1,8 @@
 {% extends "profiles/base.html" %}
-
+{% block navigation %}
+    <title>Account Details</title>
+{% endblock %}
 {% block content %}
-<small>{{user}}</small>
 <table>
     <tr>
         <th>Customer</th>
@@ -45,8 +46,6 @@
         </tr>
     {% endfor %}
 
-
-    </tr>
 </table>
 
 <a href="{% url 'transactions:acc_inspect' %}">Back</a>
