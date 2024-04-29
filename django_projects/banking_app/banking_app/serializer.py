@@ -1,5 +1,6 @@
 
 class Serializer:
+    """Create dictionary representation of a class object/instance"""
     @staticmethod
     def dumps(model):
         dumped_model = dict(model.__dict__)
