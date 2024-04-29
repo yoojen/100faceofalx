@@ -11,10 +11,11 @@
         padding: 10px;
       }
     </style>
+    <title>Create User</title>
   {% endblock %}
   <body>
     {% block content %}
-    <h1 style="text-align: center; margin-top: 3vh;">CREATE ACCOUNT FOR CUSTOMER</h1>
+    <h1 style="text-align: center; margin-top: 3vh;">CREATE CUSTOMER</h1>
     <div class="contents">
         {% if messages %}
           <div class="messages">
@@ -27,7 +28,8 @@
     
       <div class="trans-forms">
         <form action="" method="POST" id="post-form">
-          {% csrf_token%} {{form|crispy}}
+          {% csrf_token%} 
+          {{form|crispy}}
           <button type="submit">Register User</button>
         </form>
       </div>

@@ -19,7 +19,6 @@
       {% block navigation %}
       
       {% endblock %}
-    <title>Document</title>
   </head>
   <body>
     <header>
@@ -37,7 +36,7 @@
                 <div class="dropdown-content">
                   <ul>
                     <li><a href="{% url 'transactions:transact' %}">TELLER BOARD</a></li>
-                    <li><a href="{% url 'transactions:acc_inspect' %}">TRANSACTION INSPECTION</a></li>
+                    <li><a href="">TRANSACTION INSPECTION</a></li>
                   </ul>
                 </div>
             </div>
@@ -59,7 +58,7 @@
                   </ul>
                 </div>
             </div>
-            <li><a href="">PROFILE</a></li>
+            <li><a href="{% url 'profiles:create_user_profile' %}">PROFILE</a></li>
             <li><a href="">LOGOUT</a></li>
           </ul>
         </div>
