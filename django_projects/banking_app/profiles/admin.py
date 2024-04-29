@@ -105,7 +105,7 @@ class UserAdmin(CustomObjectAccessMixin,  BaseUserAdmin):
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
-        if self.has_permission(request, obj, action="change") and\
+        if self.has_permission(request, obj, action="change") or self.has_permission(request, action="change") and\
                 not request.user.is_superuser:
             form.base_fields["is_superuser"].disabled = True
             form.base_fields["is_staff"].disabled = True
