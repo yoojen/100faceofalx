@@ -5,6 +5,9 @@ from datetime import date, timedelta
 
 
 class Account(models.Model):
+    customer = models.OneToOneField(User, on_delete=models.CASCADE)
+    customer_phone_number = models.CharField(
+        max_length=13, blank=False, unique=True)
     account_num = models.CharField(
         max_length=13, unique=True, blank=False, null=False)
     balance = models.DecimalField(
@@ -14,6 +17,10 @@ class Account(models.Model):
     def __str__(self) -> str:
         return f"{self.account_num}"
     
+    def get_absolute_url(self):
+        return reverse("transactions:single_acc_inspect", kwargs={"pk": self.id})
+    
+
     class Meta:
         ordering=["-date_opened"]
 
@@ -34,7 +41,7 @@ class Transactions(models.Model):
         return f"{self.account.account_num} for {self.account.customer.email}"
 
     def get_absolute_url(self):
-        return reverse("transactions:deposit")
+        return reverse("transactions:transact")
     
     class Meta:
         ordering=['-date_done']
