@@ -1,11 +1,11 @@
 from django.shortcuts import render
 from django.db.models  import Q
-from django.db.models.query import QuerySet
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import Transactions, Account
 from django.views.generic import ListView, CreateView, DetailView
 from banking_app.serializer import Serializer
+from profiles.models import CustomerProfile
 
 class TransactionPostView(CreateView):
     model = Transactions
@@ -28,16 +28,18 @@ class TransactionPostView(CreateView):
             if type == "Deposit":
                 account.balance += amount
                 account.save()
+                messages.success(
+                    self.request, self.success_message,  f"Balance: {self.object.account.balance}")
             else:
                 if account.balance < amount:
                     raise ValueError("Insufficient funds")
                 else:
                     account.balance = account.balance - amount
                     account.save()
-            messages.success(self.request, self.success_message)
+                    messages.success(self.request, self.success_message, f"Balance: {self.object.account.balance}")
             return super().form_valid(form)
         except Exception as e:
-            messages.error(self.request, "Can't process the request")
+            messages.error(self.request, "Can't process the request", str(e))
             return super().form_invalid(form)
         
 
@@ -85,13 +87,14 @@ class CustomerTransactionListView(ListView):
 
 
 def my_combined_view(request, pk=None):
+    list_data = []
     detail_object = Account.objects.filter(id=pk).first()
-
-    list_data = Transactions.objects.filter(account_num=detail_object.account_num).all()
+    if detail_object:
+        list_data = Transactions.objects.filter(account_num=detail_object.account_num).all()
 
     context = {
-        'detail_object': detail_object,  # For DetailView
-        'list_data': list_data,          # For ListView
+        'detail_object': detail_object if detail_object else None,  # For DetailView
+        'list_data': list_data if list_data else None,          # For ListView
     }
     return render(request, 'transactions/account_detail.html', context)
 
@@ -122,7 +125,34 @@ def django_admin_like_search(model, search_term, search_fields):
     # Apply the combined filters to the model queryset
     return model.objects.filter(all_queries).distinct()
 
+def generate_account_number(request):
+    from datetime import datetime
+    today = str(datetime.now()).replace(":", "")
+    today = today.replace("-", "")
+    today = today.replace(".", "")
+    today = today.replace(" ", "")
+    today = today[:13]
+    messages.success(request, "Account number generated", today)
+    return redirect("transactions:create_account")
+
 
 class CreateAccountView(CreateView):
     model=Account
-    fields = "__all__"
+    fields = ["customer_phone_number", "account_num", "balance"]
+
+    def form_valid(self, form):
+        customer = CustomerProfile.objects.filter(tel=form.cleaned_data["customer_phone_number"]).first()
+        if customer:
+            customer = customer.customer
+        try:
+            self.object = form.save(commit=False)
+            self.object.customer_id = Serializer.dumps(customer)["id"]
+            messages.success(self.request,
+                            "Account created successfully", 
+                            f"Account created with this account number: {form.cleaned_data['account_num'] }")
+            return super().form_valid(form)
+        except Exception as e:
+            messages.error(self.request,
+                                    "Account Not Created", 
+                                    f"No user found with this Phone Number: {form.cleaned_data['customer_phone_number'] }")
+            return super().form_invalid(form)
