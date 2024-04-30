@@ -1,14 +1,15 @@
 from django.urls import path
 from .views import (TransactionPostView,
                     AccountListView, 
-                    CustomerTransactionListView,
                     CreateAccountView,
+                    TransactionListView,
                     find_account,
                     my_combined_view,
                     generate_account_number)
 
 urlpatterns = [
     path('transact/', TransactionPostView.as_view(), name="transact"),
+    path('transact/history', TransactionListView.as_view(), name="transact_history"),
     path('acc-inspect/', AccountListView.as_view(), name="acc_inspect"),
     path('acc-inspect/<int:pk>', my_combined_view,
          name="single_acc_inspect"),

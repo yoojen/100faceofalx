@@ -38,7 +38,7 @@ class Transactions(models.Model):
     type = models.CharField(choices=BOOLEAN_CHOICES, max_length=250)
 
     def __str__(self) -> str:
-        return f"{self.account.account_num} for {self.account.customer.email}"
+        return f"{self.account.account_num}"
 
     def get_absolute_url(self):
         return reverse("transactions:transact")
@@ -57,7 +57,7 @@ class Card(models.Model):
     issue_date = models.DateField(auto_now=True)
 
     def __str__(self) -> str:
-        return f"{self.customer.email}"
+        return f"{self.customer.first_name}"
 
 
 class BillInfo(models.Model):
