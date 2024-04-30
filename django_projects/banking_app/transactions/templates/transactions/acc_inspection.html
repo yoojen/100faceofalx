@@ -5,6 +5,22 @@
 
 {% block content %}
 <h1>ACCOUNT INSEPCTION</h1>
+
+<div class="btn-navigation">
+    <form action="{% url 'transactions:acc_inspect' %}" method="GET">
+        <label for="account_num">Filter By Account Number</label>
+        <input type="text" name="account_num" id="">
+        <button type="submit">Search</button>
+    </form>
+    {% if messages %}
+        <div class="messages">
+            {% for msg in messages %}
+                <p style="color: rgb(0, 132, 255)">{{msg}}</p>
+                <small style="color: rgb(0, 132, 255)">{{msg.tags}}</small>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
 <table>
     <tr>
         <th>Customer</th>
