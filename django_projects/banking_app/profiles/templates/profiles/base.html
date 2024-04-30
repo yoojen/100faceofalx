@@ -16,6 +16,7 @@
       type="text/css"
       href="{% static 'profiles/style/common.css' %}"
     />
+    <link rel="icon" href="/media/logo.png">
       {% block navigation %}
       
       {% endblock %}
@@ -24,10 +25,10 @@
     <header>
       <nav>
         <div class="left">
-          <a href=""
-            ><div class="logo">LOGO</div>
-            <small>LA BANK</small></a
-          >
+          <a href="{% url 'transactions:transact' %}">
+            <img src="/media/logo.png" alt="LOGO" width="40px" height="40px">
+            <h1>LA BANK</h1>
+          </a>
         </div>
         <div class="right">
           <ul>
@@ -54,7 +55,7 @@
                 <div class="dropdown-content">
                   <ul>
                     <li><a href="{% url 'profiles:create_user' %}">CUSTOMER MANAGEMENT</a></li>
-                    <li><a href="">CUSTOMER INSPECTION</a></li>
+                    <li><a href="{% url 'profiles:customers' %}">CUSTOMER INSPECTION</a></li>
                   </ul>
                 </div>
             </div>
