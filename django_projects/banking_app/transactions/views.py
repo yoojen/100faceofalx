@@ -1,3 +1,5 @@
+from typing import Any
+from django.db.models.query import QuerySet
 from django.shortcuts import render
 from django.db.models  import Q
 from django.shortcuts import render, redirect
@@ -60,30 +62,12 @@ class AccountListView(ListView):
     template_name = "transactions/acc_inspection.html"
     context_object_name = "accounts"
 
-    def get_queryset(self):
-        # Get search term from query string
-        search_term = self.request.GET.get('q', '')
-        # Replace with your search fields
-        search_fields = ['name', 'description']
-
-        if search_term:
-            queryset = django_admin_like_search(
-                self.model, search_term, search_fields)
-        else:
-            queryset = super().get_queryset()  # Use default queryset if no search term
-
+    def get_queryset(self) -> QuerySet[Any]:
+        queryset = super().get_queryset()
+        search_account = self.request.GET.get('account_num')
+        if search_account:
+            return queryset.filter(account_num=search_account).all()
         return queryset
-
-
-class AccountDetailView(DetailView):
-    model = Account
-    context_object_name = "account"
-    template_name = "transactions/account_detail.html"
-
-
-class CustomerTransactionListView(ListView):
-    model = Transactions
-    template_name = "transactions/account_detail.html"
 
 
 def my_combined_view(request, pk=None):
@@ -156,3 +140,16 @@ class CreateAccountView(CreateView):
                                     "Account Not Created", 
                                     f"No user found with this Phone Number: {form.cleaned_data['customer_phone_number'] }")
             return super().form_invalid(form)
+
+
+
+class TransactionListView(ListView):
+    model = Transactions
+    context_object_name = "object"
+
+    def get_queryset(self) -> QuerySet[Any]:
+        queryset = super().get_queryset()
+        search_account = self.request.GET.get('account_num')
+        if search_account:
+            return queryset.filter(account_num=search_account).all()
+        return queryset
