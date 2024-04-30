@@ -20,17 +20,39 @@ class TransactionsAdmin(admin.ModelAdmin):
     search_fields = ["account__exact"]
     list_display = ["account", "amount", "date_done", "description", "type"]
     list_per_page = 10
+    CURRENT_OBJ_AMOUNT = 0.0
+    CURRENT_OBJ_TYPE = ""
 
+    def get_form(self, request: Any, obj: Any | None = ..., change: bool = ..., **kwargs: Any) -> Any:
+        self.CURRENT_OBJ_AMOUNT = obj.amount
+        self.CURRENT_OBJ_TYPE = obj.type
+        return super().get_form(request, obj, change, **kwargs)
+    
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         account = obj.account
-        if obj.type == 'Deposit':
-            account.balance += obj.amount
+        if change:
+            if self.CURRENT_OBJ_TYPE == "Deposit" and obj.type == "Deposit":
+                account.balance -= self.CURRENT_OBJ_AMOUNT
+                account.balance += obj.amount
+            elif self.CURRENT_OBJ_TYPE == "Deposit" and obj.type == "Withdraw":
+                account.balance -= self.CURRENT_OBJ_AMOUNT
+                account.balance -= obj.amount
+            elif self.CURRENT_OBJ_TYPE == "Withdraw" and obj.type == "Deposit":
+                account.balance += self.CURRENT_OBJ_AMOUNT
+                account.balance += obj.amount
+            else:
+                account.balance += self.CURRENT_OBJ_AMOUNT
+                account.balance -= obj.amount
         else:
-            if account.balance < obj.amount:
-                raise ValueError('Insufficient funds')
-            account.balance -= obj.amount
+            if obj.type == 'Deposit':
+                account.balance += obj.amount
+                print("reached here", obj.amount)
+            else:
+                if account.balance < obj.amount:
+                    raise ValueError('Insufficient funds')
+                account.balance -= obj.amount
         account.save()
 
 
