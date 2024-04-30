@@ -1,56 +1,61 @@
 {% extends "profiles/base.html" %}
+{% load static %}
 {% block navigation %}
     <title>Account Details</title>
+    <link rel="stylesheet" href="{% static 'transactions/inspect.css' %}">
 {% endblock %}
 {% block content %}
-<table>
-    <tr>
-        <th>Customer</th>
-        <th>Account Number</th>
-        <th>Date Opened</th>
-        <th>Balance</th>
-    </tr>
-    <tr>
-        <td>{{detail_object.customer}}</td>
-        <td>{{detail_object.account_num}}</td>
-        <td>{{detail_object.date_opened}}</td>
-        <td>{{detail_object.balance}}</td>
-    </tr>
-</table>
-
-<table>
-    <tr>
-        <th>account</th>
-        <th>amount</th>
-        <th>date_done</th>
-        <th>description</th>
-        <th>type</th>
-    </tr>
-    {% for transac in list_data %}
+<div class="container">
+    <h2>ACCOUNT SUMMARY</h2>
+    <table>
         <tr>
-            <td>
-                {{transac.account}}
-            </td>
-            <td>
-                {{transac.amount}}
-            </td>
-            <td>
-                {{transac.date_done}}
-            </td>
-            <td>
-                {{transac.description}}
-            </td>
-            <td>
-                {{transac.type}}
-            </td>
+            <th>Customer</th>
+            <th>Account Number</th>
+            <th>Date Opened</th>
+            <th>Balance</th>
         </tr>
-    {% endfor %}
+        <tr>
+            <td>{{detail_object.customer}}</td>
+            <td>{{detail_object.account_num}}</td>
+            <td>{{detail_object.date_opened}}</td>
+            <td>{{detail_object.balance}}</td>
+        </tr>
+    </table>
+    <h2>ACCOUNT TRANSACTION SUMMARY</h2>
+    <table>
+        <tr>
+            <th>account</th>
+            <th>amount</th>
+            <th>date_done</th>
+            <th>description</th>
+            <th>type</th>
+        </tr>
+        {% for transac in list_data %}
+            <tr>
+                <td>
+                    {{transac.account}}
+                </td>
+                <td>
+                    {{transac.amount}}
+                </td>
+                <td>
+                    {{transac.date_done}}
+                </td>
+                <td>
+                    {{transac.description}}
+                </td>
+                <td>
+                    {{transac.type}}
+                </td>
+            </tr>
+        {% endfor %}
+    
+    </table>
+    <a href="{% url 'transactions:acc_inspect' %}">Back</a>
+    {% if user == account.customer %}
+        <button>Delete</button>
+    {% endif %}
+</div>
 
-</table>
 
-<a href="{% url 'transactions:acc_inspect' %}">Back</a>
-{% if user == account.customer %}
-    <button>Delete</button>
-{% else %}
-{% endif %}
 {% endblock %}
