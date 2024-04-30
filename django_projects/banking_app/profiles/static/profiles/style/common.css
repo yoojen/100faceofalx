@@ -17,11 +17,15 @@ nav {
   font-size: 13px;
 }
 
-
-.left a {
+.left a{
+  display: flex;
+  justify-content: center;
+  align-items: center;
   color: white;
   text-decoration: none;
 }
+
+
 .right ul {
   list-style: none;
   display: flex;
