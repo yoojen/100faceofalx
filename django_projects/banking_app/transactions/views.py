@@ -141,7 +141,7 @@ class CreateAccountView(CreateView):
     fields = ["customer_phone_number", "account_num", "balance"]
 
     def form_valid(self, form):
-        customer = CustomerProfile.objects.filter(tel=form.cleaned_data["customer_phone_number"]).first()
+        customer = CustomerProfile.objects.filter(telephone=form.cleaned_data["customer_phone_number"]).first()
         if customer:
             customer = customer.customer
         try:
@@ -151,7 +151,7 @@ class CreateAccountView(CreateView):
                             "Account created successfully", 
                             f"Account created with this account number: {form.cleaned_data['account_num'] }")
             return super().form_valid(form)
-        except Exception as e:
+        except Exception :
             messages.error(self.request,
                                     "Account Not Created", 
                                     f"No user found with this Phone Number: {form.cleaned_data['customer_phone_number'] }")
