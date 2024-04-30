@@ -1,0 +1,84 @@
+{% extends "profiles/base.html" %}
+{% load static %}
+{% block navigation %}
+    <title>Account Inspection</title>
+    <link rel="stylesheet" href="{% static 'transactions/inspect.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container" style="height: auto; overflow: hidden; border:none">
+    <h1>CUSTOMER INSEPCTION</h1>
+    <table>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Telephone</th>
+            <th>Email</th>
+            <th>Date Joined</th>
+        </tr>
+        {% if customer.telephone != "AnonymousUser" %}
+            <tr>
+                <td>{{customer.first_name}}</td>
+                <td>{{customer.last_name}}</td>
+                <td>{{customer.telephone}}</td>
+                <td>{{customer.email}}</td>
+                <td>{{customer.date_joined}}</td>
+            </tr>
+        {% endif %}
+    </table>
+    
+</div>
+
+<div class="container" style="height: auto; overflow: hidden; border:none">
+    <h1>ACCOUNT OWNED</h1>    
+    <table>
+        <tr>
+            <th>Customer</th>
+            <th>Account Number</th>
+            <th>Date Opened</th>
+            <th>Balance</th>
+        </tr>
+        <tr>
+            <td>{{account.customer}}</td>
+            <td>{{account.account_num}}</td>
+            <td>{{account.date_opened}}</td>
+            <td>{{account.balance}}</td>
+        </tr>
+    </table>
+</div>
+<div class="container" style="height: 300px;margin-bottom: 100px;">
+    <h1>TRANSACTION SUMMARY</h1>
+
+    <table>
+        <tr>
+            <th>account</th>
+            <th>amount</th>
+            <th>date_done</th>
+            <th>description</th>
+            <th>type</th>
+        </tr>
+        {% for transac in list_data %}
+            <tr>
+                <td>
+                    {{transac.account}}
+                </td>
+                <td>
+                    {{transac.amount}}
+                </td>
+                <td>
+                    {{transac.date_done}}
+                </td>
+                <td>
+                    {{transac.description}}
+                </td>
+                <td>
+                    {{transac.type}}
+                </td>
+            </tr>
+        {% endfor %}
+    
+    </table>
+</div>
+
+{% endblock %}
