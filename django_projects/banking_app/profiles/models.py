@@ -6,26 +6,30 @@ from .managers import CustomUserManager
 class User(AbstractUser):
     """Custom user """
     username = None
-    email = models.EmailField(unique=True)
     type = models.CharField(max_length=250, default="CUSTOMER")
+    telephone = models.CharField(max_length=13, verbose_name="Customer Phone Number", unique=True, blank=False)
     
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = 'telephone'
     REQUIRED_FIELDS = []
 
     objects = CustomUserManager()
 
+    def __str__(self) -> str:
+        return self.first_name + " " + self.last_name
+    
     class Meta:
         permissions = [
             ("can_control_manager", "Can add, change or delete manager"),
             ("can_control_cashier", "Can add, change or delete"),
         ]
+
     
 
 
 class CustomerProfile(models.Model):
     customer = models.OneToOneField(User, on_delete=models.CASCADE)
+    telephone = models.CharField(max_length=13, verbose_name="Customer phone number", unique=True, blank=False)
     dob = models.DateField(null=False)
-    tel = models.CharField(max_length=250, null=False, unique=True)
     province = models.CharField(max_length=250, null=False)
     district = models.CharField(max_length=250, null=False)
     sector = models.CharField(max_length=250, null=False)

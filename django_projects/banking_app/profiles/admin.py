@@ -69,10 +69,10 @@ class UserAdmin(CustomObjectAccessMixin,  BaseUserAdmin):
     model = User
     add_form=CustomUserCreationForm
     form = CustomUserChangeForm
-    list_display = ["email", "date_joined"]
-    ordering=["email"]
+    list_display = ["telephone", "first_name", "last_name", "date_joined"]
+    ordering=["first_name"]
     fieldsets=(
-        (None, {"fields": ("email", "password")}),
+        (None, {"fields": ("telephone", "password")}),
         (("Personal info"), {"fields": ("first_name", "last_name")}),
         (
             ("Permissions"),
@@ -92,7 +92,7 @@ class UserAdmin(CustomObjectAccessMixin,  BaseUserAdmin):
         (None, {
             "classes": ("wide"),
             "fields": (
-                "email", "password1", "password2", "first_name", "last_name",
+                "telephone", "password1", "password2", "first_name", "last_name",
                 "is_staff",  "is_active", "is_superuser", "groups", "user_permissions"
             )
         }),
@@ -115,6 +115,6 @@ class UserAdmin(CustomObjectAccessMixin,  BaseUserAdmin):
         return form
 
 
-
-# admin.site.register(User)
-admin.site.register(CustomerProfile)
+@admin.register(CustomerProfile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ["telephone", "dob", "province", "district"]
