@@ -16,6 +16,7 @@
             <th>Telephone</th>
             <th>Email</th>
             <th>Date Joined</th>
+            <th>Type</th>
         </tr>
         {% if customer.telephone != "AnonymousUser" %}
             <tr>
@@ -24,6 +25,7 @@
                 <td>{{customer.telephone}}</td>
                 <td>{{customer.email}}</td>
                 <td>{{customer.date_joined}}</td>
+                <td>{{customer.type}}</td>
             </tr>
         {% endif %}
     </table>
@@ -47,7 +49,7 @@
         </tr>
     </table>
 </div>
-<div class="container" style="height: 300px;margin-bottom: 100px;">
+<div class="container" style="height: 300px;margin-bottom: 100px; border: none;">
     <h1>TRANSACTION SUMMARY</h1>
 
     <table>

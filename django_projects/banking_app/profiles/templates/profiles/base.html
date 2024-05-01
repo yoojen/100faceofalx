@@ -17,9 +17,9 @@
       href="{% static 'profiles/style/common.css' %}"
     />
     <link rel="icon" href="/media/logo.png">
-      {% block navigation %}
-      
-      {% endblock %}
+    {% block navigation %}
+    
+    {% endblock %}
   </head>
   <body>
     <header>
@@ -31,37 +31,48 @@
           </a>
         </div>
         <div class="right">
-          <ul>
-            <div class="dropdown">
-              <li><a href="" >TRANSACT</a></li>
-                <div class="dropdown-content">
-                  <ul>
-                    <li><a href="{% url 'transactions:transact' %}">TELLER BOARD</a></li>
-                    <li><a href="{% url 'transactions:transact_history' %}">TRANSACTION INSPECTION</a></li>
-                  </ul>
-                </div>
-            </div>
-            <div class="dropdown">
-              <li><a href="{% url 'transactions:acc_inspect' %}" >ACCOUNT</a></li>
-                <div class="dropdown-content">
-                  <ul>
-                    <li><a href="{% url 'transactions:create_account' %}">CREATE ACCOUNT</a></li>
-                    <li><a href="{% url 'transactions:acc_inspect' %}">ACCOUNT INSEPECTION</a></li>
-                  </ul>
-                </div>
-            </div>
-            <div class="dropdown">
-              <li><a href="" >CUSTOMER</a></li>
-                <div class="dropdown-content">
-                  <ul>
-                    <li><a href="{% url 'profiles:create_user' %}">CUSTOMER MANAGEMENT</a></li>
-                    <li><a href="{% url 'profiles:customers' %}">CUSTOMER INSPECTION</a></li>
-                  </ul>
-                </div>
-            </div>
-            <li><a href="{% url 'profiles:create_user_profile' %}">PROFILE</a></li>
-            <li><a href="">LOGOUT</a></li>
-          </ul>
+            {% if user.is_authenticated %}
+            <ul>
+              <small>Welcome, {{user.first_name}}.</small>
+              <div class="dropdown">
+                <li><a href="" >TRANSACT</a></li>
+                  <div class="dropdown-content">
+                    <ul>
+                      <li><a href="{% url 'transactions:transact' %}">TELLER BOARD</a></li>
+                      <li><a href="{% url 'transactions:transact_history' %}">TRANSACTION INSPECTION</a></li>
+                    </ul>
+                  </div>
+              </div>
+              <div class="dropdown">
+                <li><a href="{% url 'transactions:acc_inspect' %}" >ACCOUNT</a></li>
+                  <div class="dropdown-content">
+                    <ul>
+                      <li><a href="{% url 'transactions:create_account' %}">CREATE ACCOUNT</a></li>
+                      <li><a href="{% url 'transactions:acc_inspect' %}">ACCOUNT INSEPECTION</a></li>
+                    </ul>
+                  </div>
+              </div>
+              <div class="dropdown">
+                <li><a href="" >CUSTOMER</a></li>
+                  <div class="dropdown-content">
+                    <ul>
+                      <li><a href="{% url 'profiles:create_user' %}">CUSTOMER MANAGEMENT</a></li>
+                      <li><a href="{% url 'profiles:customers' %}">CUSTOMER INSPECTION</a></li>
+                    </ul>
+                  </div>
+              </div>
+              <li><a href="{% url 'profiles:create_user_profile' %}">PROFILE</a></li>
+              <form action="{% url 'profiles:logout' %}" method="POST" style="background-color: transparent; 
+                                                                        border:none; box-shadow: none; width: auto; 
+                                                                        height: auto; margin-top:0; padding:0 0 0 20px;"
+                                                                        >
+                {% csrf_token %}
+                <button type="submit" style="padding: 0; margin: 0; font-weight: 400">LOGOUT</button>
+              </form>
+              {% else %}
+                <li><a href="{% url 'profiles:login' %}" style="text-decoration: none; color: white">Login</a></li>
+              {% endif %}
+            </ul>
         </div>
       </nav>
     </header>

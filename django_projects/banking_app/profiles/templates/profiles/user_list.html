@@ -1,7 +1,7 @@
 {% extends "profiles/base.html" %}
 {% load static %}
 {% block navigation %}
-    <title>Account Inspection</title>
+    <title>Customer Inspection</title>
     <link rel="stylesheet" href="{% static 'transactions/inspect.css' %}">
 {% endblock %}
 
@@ -16,15 +16,17 @@
             <th>Telephone</th>
             <th>Email</th>
             <th>Date Joined</th>
+            <th>Type</th>
         </tr>
         {% for customer in customers %}            
-            {% if customer.telephone != "AnonymousUser" %}
+            {% if customer.type != "ADMIN" and customer.telephone != "AnonymousUser" %}
                 <tr>
                     <td>{{customer.first_name}}</td>
                     <td>{{customer.last_name}}</td>
                     <td><a href="{% url 'profiles:customer' customer.id %}">{{customer.telephone}}</a></td>
                     <td>{{customer.email}}</td>
                     <td>{{customer.date_joined}}</td>
+                    <td>{{customer.type}}</td>
                 </tr>
             {% endif %}
         {% endfor %}

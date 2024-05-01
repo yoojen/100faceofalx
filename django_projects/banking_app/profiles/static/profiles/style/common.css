@@ -80,3 +80,8 @@ footer{
 footer small{
   color: #939696;
 }
+
+
+li{
+  list-style: none;
+}
