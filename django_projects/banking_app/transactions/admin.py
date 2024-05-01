@@ -1,4 +1,3 @@
-from typing import Any
 from django.contrib import admin
 from .models import (Account,
                      Transactions,
@@ -23,10 +22,10 @@ class TransactionsAdmin(admin.ModelAdmin):
     CURRENT_OBJ_AMOUNT = 0.0
     CURRENT_OBJ_TYPE = ""
 
-    def get_form(self, request: Any, obj: Any | None = ..., change: bool = ..., **kwargs: Any) -> Any:
+    def get_form(self, request, obj, **kwargs):
         self.CURRENT_OBJ_AMOUNT = obj.amount
         self.CURRENT_OBJ_TYPE = obj.type
-        return super().get_form(request, obj, change, **kwargs)
+        return super().get_form(request, obj, **kwargs)
     
 
     def save_model(self, request, obj, form, change):
@@ -48,7 +47,6 @@ class TransactionsAdmin(admin.ModelAdmin):
         else:
             if obj.type == 'Deposit':
                 account.balance += obj.amount
-                print("reached here", obj.amount)
             else:
                 if account.balance < obj.amount:
                     raise ValueError('Insufficient funds')

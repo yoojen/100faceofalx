@@ -1,11 +1,8 @@
-from typing import Any
-from django.db.models.query import QuerySet
-from django.shortcuts import render
 from django.db.models  import Q
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import Transactions, Account
-from django.views.generic import ListView, CreateView, DetailView
+from django.views.generic import ListView, CreateView
 from banking_app.serializer import Serializer
 from profiles.models import CustomerProfile
 
@@ -62,7 +59,7 @@ class AccountListView(ListView):
     template_name = "transactions/acc_inspection.html"
     context_object_name = "accounts"
 
-    def get_queryset(self) -> QuerySet[Any]:
+    def get_queryset(self):
         queryset = super().get_queryset()
         search_account = self.request.GET.get('account_num')
         if search_account:
@@ -75,6 +72,7 @@ def my_combined_view(request, pk=None):
     detail_object = Account.objects.filter(id=pk).first()
     if detail_object:
         list_data = Transactions.objects.filter(account_num=detail_object.account_num).all()
+        print(list_data)
 
     context = {
         'detail_object': detail_object if detail_object else None,  # For DetailView
@@ -126,6 +124,7 @@ class CreateAccountView(CreateView):
 
     def form_valid(self, form):
         customer = CustomerProfile.objects.filter(telephone=form.cleaned_data["customer_phone_number"]).first()
+        print(form.cleaned_data['customer_phone_number'], customer)
         if customer:
             customer = customer.customer
         try:
@@ -135,7 +134,7 @@ class CreateAccountView(CreateView):
                             "Account created successfully", 
                             f"Account created with this account number: {form.cleaned_data['account_num'] }")
             return super().form_valid(form)
-        except Exception :
+        except Exception as e:
             messages.error(self.request,
                                     "Account Not Created", 
                                     f"No user found with this Phone Number: {form.cleaned_data['customer_phone_number'] }")
@@ -147,7 +146,7 @@ class TransactionListView(ListView):
     model = Transactions
     context_object_name = "object"
 
-    def get_queryset(self) -> QuerySet[Any]:
+    def get_queryset(self):
         queryset = super().get_queryset()
         search_account = self.request.GET.get('account_num')
         if search_account:
