@@ -60,6 +60,10 @@ table {
     width: 100%;
 }
 
+table td a{
+    text-decoration: none;
+}
+
 th, td {
     text-align: left;
     padding: 8px;
