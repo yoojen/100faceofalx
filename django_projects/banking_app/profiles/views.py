@@ -1,28 +1,27 @@
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.views import LoginView
+from django.utils.translation import gettext_lazy as _
 from django.contrib import messages
 from django.shortcuts import render, redirect
-
 from banking_app.serializer import Serializer
 from transactions.models import Account, Transactions
 from .models import User, CustomerProfile
 from django.views.generic import CreateView, ListView, DetailView
-from .forms import CustomUserCreationForm
+from .forms import UserCreationModelForm
 
 
-class CreateUserView(CreateView):
-    model = User
-    form_class = CustomUserCreationForm
-    success_url = "create_user"
-    
-    def form_valid(self, form):
-
+def register(request):
+    if request.method == 'POST':
+        form = UserCreationModelForm(request.POST)
         if form.is_valid():
-            messages.success(self.request, "Customer created successfully",
-                             f"User created for this phone number: {form.cleaned_data['telephone']}")
-            super().form_valid(form)   
-            return redirect("profiles:create_user")
-        else:
-            messages.error(request=self.request, message="Customer is not created")
-            return super().form_invalid(form)
+            user = form.save(commit=False)
+        #   user.password = make_password(request.POST['password'])
+            user.save()
+            return redirect('profiles:customers')
+    else:
+        form = UserCreationModelForm()
+    return render(request, 'profiles/user_form.html', {'form': form})
         
 
 class CreateUserProfileView(CreateView):
@@ -79,3 +78,16 @@ def my_combined_view(request, pk=None):
     }
     return render(request, 'profiles/user_detail.html', context)
 
+from django.contrib.auth.forms import AuthenticationForm
+
+class UserAuthenticationForm(AuthenticationForm):
+    error_messages={
+        "invalid_login": _("Incorrect username or password"),
+        "inactive": _("This account is inactive")
+    }
+
+class UserLoginView(LoginView):
+    form_class = UserAuthenticationForm
+    redirect_authenticated_user = True
+    template_name = "profiles/login.html"
+ 

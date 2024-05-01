@@ -8,6 +8,7 @@ class User(AbstractUser):
     username = None
     type = models.CharField(max_length=250, default="CUSTOMER")
     telephone = models.CharField(max_length=13, verbose_name="Customer Phone Number", unique=True, blank=False)
+    password = models.CharField(max_length=18, null=True)
     
     USERNAME_FIELD = 'telephone'
     REQUIRED_FIELDS = []
