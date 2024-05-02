@@ -7,8 +7,8 @@ class User(AbstractUser):
     """Custom user """
     username = None
     type = models.CharField(max_length=250, default="CUSTOMER")
-    telephone = models.CharField(max_length=13, verbose_name="Customer Phone Number", unique=True, blank=False)
-    password = models.CharField(max_length=18, null=True)
+    telephone = models.CharField(max_length=13, verbose_name="Phone Number", unique=True, blank=False)
+    password = models.CharField(max_length=250, null=True)
     
     USERNAME_FIELD = 'telephone'
     REQUIRED_FIELDS = []
@@ -29,7 +29,7 @@ class User(AbstractUser):
 
 class CustomerProfile(models.Model):
     customer = models.OneToOneField(User, on_delete=models.CASCADE)
-    telephone = models.CharField(max_length=13, verbose_name="Customer phone number", unique=True, blank=False)
+    telephone = models.CharField(max_length=13, verbose_name="Phone Number", unique=True, blank=False)
     dob = models.DateField(null=False)
     province = models.CharField(max_length=250, null=False)
     district = models.CharField(max_length=250, null=False)
