@@ -24,12 +24,10 @@
   {% endblock %}
   <body>
     {% block content %}
-    <h1 style="text-align: center; margin-top: 3vh;">Login To System</h1>
-    <div class="contents">    
-      {% if messages %}
-      hello
-      
-      {% endif %}
+    <h1 style="text-align: center; margin-top: 3vh;">
+      Login To The System
+    </h1>
+    <div class="contents">
       <div class="trans-forms">
         <form action="" method="POST" id="post-form">
           {% csrf_token%} 

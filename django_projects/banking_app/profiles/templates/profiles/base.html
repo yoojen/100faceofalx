@@ -64,10 +64,12 @@
               <li><a href="{% url 'profiles:create_user_profile' %}">PROFILE</a></li>
               <form action="{% url 'profiles:logout' %}" method="POST" style="background-color: transparent; 
                                                                         border:none; box-shadow: none; width: auto; 
-                                                                        height: auto; margin-top:0; padding:0 0 0 20px;"
+                                                                        height: auto; margin-top:0; padding:0 0 0 20px; overflow-y:hidden"
                                                                         >
                 {% csrf_token %}
-                <button type="submit" style="padding: 0; margin: 0; font-weight: 400">LOGOUT</button>
+                <button type="submit" style="padding: 0; margin: 0; font-weight: 400;
+                  background-color: transparent; color: white; border: none;">LOGOUT
+                </button>
               </form>
               {% else %}
                 <li><a href="{% url 'profiles:login' %}" style="text-decoration: none; color: white">Login</a></li>
