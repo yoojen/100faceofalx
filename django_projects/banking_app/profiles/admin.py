@@ -29,10 +29,10 @@ class CustomObjectAccessMixin(GuardedModelAdmin):
     def has_permission(self, request, obj=None, action=None):
         opts = self.opts
         model_name = opts.model_name
-        app_lebel = opts.app_label
+        app_label = opts.app_label
         if obj:
-            return request.user.has_perm(f"{app_lebel}.{action}_{model_name}", obj)
-        return request.user.has_perm(f"{app_lebel}.{action}_{model_name}")
+            return request.user.has_perm(f"{app_label}.{action}_{model_name}", obj)
+        return request.user.has_perm(f"{app_label}.{action}_{model_name}")
 
     def get_queryset(self, request, ):
         if request.user.is_superuser:
@@ -51,7 +51,7 @@ class CustomObjectAccessMixin(GuardedModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         if request.user.is_staff and obj != request.user:
-            return self.has_permission(request, action="change")
+            return request.user.has_perm(f"{self.opts.app_label}.change_{self.opts.model_name}")
         return self.has_permission(request, obj, action="change")
 
     def has_delete_permission(self, request, obj=None):
@@ -105,8 +105,8 @@ class UserAdmin(CustomObjectAccessMixin,  BaseUserAdmin):
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
-        if self.has_permission(request, obj, action="change") or self.has_permission(request, action="change") and\
-                not request.user.is_superuser:
+        if (self.has_permission(request, obj, action="change") and not request.user.is_superuser) or (self.has_permission(request, action="change") and\
+                not request.user.is_superuser):
             form.base_fields["is_superuser"].disabled = True
             form.base_fields["is_staff"].disabled = True
             form.base_fields["groups"].disabled = True
