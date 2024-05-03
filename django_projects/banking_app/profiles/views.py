@@ -1,4 +1,4 @@
-from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.views import LoginView
 from django.utils.translation import gettext_lazy as _
@@ -77,8 +77,6 @@ def my_combined_view(request, pk=None):
         'list_data': list_data if list_data else None,          # For ListView
     }
     return render(request, 'profiles/user_detail.html', context)
-
-from django.contrib.auth.forms import AuthenticationForm
 
 class UserAuthenticationForm(AuthenticationForm):
     error_messages={
