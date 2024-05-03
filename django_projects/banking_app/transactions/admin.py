@@ -11,7 +11,7 @@ class AccountAdmin(CustomObjectAccessMixin, admin.ModelAdmin):
     model = Account
     search_fields = ["account_num__exact"]
     list_per_page = 10
-    list_display = ["account_num", "balance", "date_opened"]
+    list_display = ["customer", "account_num", "balance", "date_opened"]
 
 
 class TransactionsAdmin(admin.ModelAdmin):
@@ -23,8 +23,8 @@ class TransactionsAdmin(admin.ModelAdmin):
     CURRENT_OBJ_TYPE = ""
 
     def get_form(self, request, obj, **kwargs):
-        self.CURRENT_OBJ_AMOUNT = obj.amount
-        self.CURRENT_OBJ_TYPE = obj.type
+        self.CURRENT_OBJ_AMOUNT = obj.amount if obj else None
+        self.CURRENT_OBJ_TYPE = obj.type if obj else None
         return super().get_form(request, obj, **kwargs)
     
 
