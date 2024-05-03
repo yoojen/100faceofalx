@@ -1,0 +1,36 @@
+
+{% extends "profiles/base.html" %}
+{% load  static %}
+{% block navigation %}
+    <title>Account Info</title>
+    <link rel="stylesheet" href="{% static 'transactions/inspect.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="contents">
+        <h2>ACCOUNT INFORMATION</h2>
+        <div class="splitter">
+            <legend>OWNER</legend>
+            <p>{{object.customer}}</p>
+        </div>
+        <div class="splitter">
+            <legend>TELEPHONE</legend>
+            <p>{{object.customer_phone_number}}</p>
+        </div>
+        
+        <div class="splitter">
+            <legend>ACCOUNT NUMBER</legend>
+            <p>{{object.account_num}}</p>
+        </div>
+        
+        <div class="splitter">
+            <legend>ACCOUNT BALANCE</legend>
+            <p>{{object.balance}}</p>
+        </div>
+        
+        <div class="splitter">
+            <legend>DATE OPENED</legend>
+            <p>{{object.date_opened}}</p>
+        </div>
+    </div>
+{% endblock %}
