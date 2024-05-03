@@ -1,8 +1,9 @@
 from django.urls import path
 from .views import (TransactionPostView,
-                    AccountListView, 
+                    AccountListView,
                     CreateAccountView,
                     TransactionListView,
+                    BillCreateView,
                     find_account,
                     my_combined_view,
                     generate_account_number)
@@ -14,6 +15,7 @@ urlpatterns = [
     path('acc-inspect/<int:pk>', my_combined_view,
          name="single_acc_inspect"),
     path('create-account/', CreateAccountView.as_view(), name="create_account"),
+    path("pay-bills/", BillCreateView.as_view(), name="pay_bills"),
     path('find-account/', find_account, name="find_account"),
     path('gen-acc/', generate_account_number, name="gen_acc"),
 ]
