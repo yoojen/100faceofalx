@@ -1,10 +1,12 @@
+from typing import Any
 from django.db.models import Q
+from django.db.models.query import QuerySet
 from .forms import BillForm
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.urls import resolve
 from .models import Transactions, Account, BillInfo
-from django.views.generic import ListView, CreateView
+from django.views.generic import ListView, CreateView, DetailView
 from banking_app.serializer import Serializer
 from profiles.models import CustomerProfile
 
@@ -76,7 +78,6 @@ def my_combined_view(request, pk=None):
     if detail_object:
         list_data = Transactions.objects.filter(
             account_num=detail_object.account_num).all()
-        print(list_data)
 
     context = {
         'detail_object': detail_object if detail_object else None,  # For DetailView
@@ -131,7 +132,6 @@ class CreateAccountView(CreateView):
     def form_valid(self, form):
         customer = CustomerProfile.objects.filter(
             telephone=form.cleaned_data["customer_phone_number"]).first()
-        print(form.cleaned_data['customer_phone_number'], customer)
         if customer:
             customer = customer.customer
         try:
@@ -176,14 +176,14 @@ class BillCreateView(CreateView):
                 "account": payer,
                 "account_num":payer.account_num,
                 "amount": form.cleaned_data["amount"],
-                "description": "Paid Bill",
+                "description": f"Paid Bill to {payee.customer}",
                 "type": "Withdraw",
             },
             {
                 "account": payee,
                 "account_num": payee.account_num,
                 "amount": form.cleaned_data["amount"],
-                "description": "Received Bill Payment",
+                "description": f"Received Payment from {payer.customer}",
                 "type": "Deposit",
             }
         ]
@@ -204,9 +204,23 @@ class BillCreateView(CreateView):
                 return super().form_valid(form)
             messages.error(
                 self.request, "Not enough balance to make transactions", f"You've {payer.balance} on your account.")
-            print("Not enough balance to make transactions")
             return super().form_invalid(form)
         else:
             return super().form_invalid(form)
 
 
+class UserTransactionsListView(ListView):
+    model = Transactions
+    template_name = "transactions/user_transactions.html"
+    context_object_name = "objects"
+    ordering = "-date_done"
+
+    def get_queryset(self):
+        queryset = super().get_queryset().filter(
+            account_id=self.request.user.account.id)
+        return queryset
+
+
+class UserAccountDetailView(DetailView):
+    model = Account
+    template_name = "transactions/user_account_info.html"
