@@ -1,5 +1,5 @@
 from django.db import models
-from django.urls import reverse
+from django.urls import resolve, reverse
 from profiles.models import User
 from datetime import date, timedelta
 
@@ -16,13 +16,12 @@ class Account(models.Model):
 
     def __str__(self) -> str:
         return f"{self.account_num}"
-    
+
     def get_absolute_url(self):
         return reverse("transactions:single_acc_inspect", kwargs={"pk": self.id})
-    
 
     class Meta:
-        ordering=["-date_opened"]
+        ordering = ["-date_opened"]
 
 
 class Transactions(models.Model):
@@ -42,10 +41,9 @@ class Transactions(models.Model):
 
     def get_absolute_url(self):
         return reverse("transactions:transact")
-    
-    class Meta:
-        ordering=['-date_done']
 
+    class Meta:
+        ordering = ['-date_done']
 
 
 class Card(models.Model):
@@ -65,7 +63,11 @@ class BillInfo(models.Model):
     payee_name = models.CharField(max_length=250)
     payee_account = models.ForeignKey(
         Account, on_delete=models.SET_NULL, null=True)
+    amount=models.PositiveIntegerField()
     payment_date = models.DateField(auto_now=True)
 
     def __str__(self) -> str:
         return f"{self.customer.email}"
+
+    def get_absolute_url(self):
+        return reverse("transactions:pay_bills")

@@ -2,6 +2,8 @@ from django.shortcuts import redirect, reverse
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from .managers import CustomUserManager
+from PIL import Image
+
 
 class User(AbstractUser):
     """Custom user """
@@ -43,3 +45,11 @@ class CustomerProfile(models.Model):
 
     def get_absolute_url(self):
         return redirect(reverse("profiles:create_user"))
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        img = Image.open(self.image.path)
+        size = 500, 500
+        if img.width > 500:
+            img.thumbnail(size)
+            img.save(self.image.path)
