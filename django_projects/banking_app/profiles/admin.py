@@ -1,7 +1,7 @@
 from django.shortcuts import redirect
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import CustomerProfile
+from .models import Profile
 from .models import User
 from guardian.admin import GuardedModelAdmin
 from guardian.shortcuts import get_objects_for_user
@@ -58,8 +58,8 @@ class CustomObjectAccessMixin(GuardedModelAdmin):
         return self.has_permission(request, obj, action="delete")
 
 
-class CustomerProfileInline(admin.StackedInline):
-    model = CustomerProfile
+class ProfileInline(admin.StackedInline):
+    model = Profile
     can_delete = True
     verbose_name_plural = "customer profile"
 
@@ -115,6 +115,6 @@ class UserAdmin(CustomObjectAccessMixin,  BaseUserAdmin):
         return form
 
 
-@admin.register(CustomerProfile)
+@admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ["telephone", "dob", "province", "district"]
