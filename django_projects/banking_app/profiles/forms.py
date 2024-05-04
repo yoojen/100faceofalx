@@ -1,6 +1,6 @@
 from typing import Any
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from profiles.models import User
+from profiles.models import Profile, User
 from django import forms
 
 
@@ -11,8 +11,9 @@ class CustomUserChangeForm(UserChangeForm):
 
 
 class UserCreationModelForm(forms.ModelForm):
-    first_name = forms.CharField(required=True)
-    last_name = forms.CharField(required=True)
+    first_name = forms.CharField(required=True, disabled=True)
+    last_name = forms.CharField(required=True, disabled=True)
+    telephone = forms.CharField(max_length=13, disabled=True)
     class Meta:
         model = User
         fields = ("telephone", "first_name", "last_name")
@@ -29,3 +30,9 @@ class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ("telephone", "first_name", "last_name", "password1", "password2")
+
+
+class CustomUserUpdateForm(UserChangeForm):
+    class Meta:
+        model = Profile
+        fields = ("image",)
