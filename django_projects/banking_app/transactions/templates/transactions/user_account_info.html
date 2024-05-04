@@ -1,9 +1,32 @@
 
-{% extends "profiles/base.html" %}
+{% extends "profiles/user_base.html" %}
 {% load  static %}
 {% block navigation %}
     <title>Account Info</title>
     <link rel="stylesheet" href="{% static 'transactions/inspect.css' %}">
+
+    <style>
+        .contents{
+            margin-top: 30px;
+            margin-left: 50%;
+            transform: translateX(-50%);
+            background-color: rgb(247, 247, 247);
+            box-shadow: 0 0 2px black;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .splitter{
+            background-color: #0aa9cc;
+            margin-top: 5px;
+            color: white;
+            border-radius: 5px;
+            padding: 0 20px;
+        }
+
+        .splitter h2{
+            color: rgb(247, 247, 209);
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -11,26 +34,26 @@
         <h2>ACCOUNT INFORMATION</h2>
         <div class="splitter">
             <legend>OWNER</legend>
-            <p>{{object.customer}}</p>
+            <h2>{{object.customer}}</h2>
         </div>
         <div class="splitter">
             <legend>TELEPHONE</legend>
-            <p>{{object.customer_phone_number}}</p>
+            <h2>{{object.customer_phone_number}}</h2>
         </div>
         
         <div class="splitter">
             <legend>ACCOUNT NUMBER</legend>
-            <p>{{object.account_num}}</p>
+            <h2>{{object.account_num}}</h2>
         </div>
         
         <div class="splitter">
             <legend>ACCOUNT BALANCE</legend>
-            <p>{{object.balance}}</p>
+            <h2>{{object.balance}}</h2>
         </div>
         
         <div class="splitter">
             <legend>DATE OPENED</legend>
-            <p>{{object.date_opened}}</p>
+            <h2>{{object.date_opened}}</h2>
         </div>
     </div>
 {% endblock %}
