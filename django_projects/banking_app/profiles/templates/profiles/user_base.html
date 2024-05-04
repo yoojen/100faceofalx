@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'profiles/style/common.css' %}"
+    />
+    <link rel="icon" href="/media/logo.png">
+    {% block navigation %}
+    
+    {% endblock %}
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="left">
+          <a href="{% url 'transactions:pay_bills' %}">
+            <img src="/media/logo.png" alt="LOGO" width="40px" height="40px">
+            <h1>LA BANK</h1>
+          </a>
+        </div>
+        <div class="right">
+            {% if user.is_authenticated %}
+            <ul>
+              <small>Welcome, {{user.first_name}}.</small>
+              <li><a href="{%url 'transactions:pay_bills' %}">TRANSACT</a></li>
+              <li><a href="{% url 'profiles:user_account' user.account.id %}">ACCOUNT INFO</a></li>
+              <li><a href="{% url 'transactions:user_transactions' %}">HISTORY</a></li>
+              <li><a href="{% url 'profiles:user_profile' user.id %}">PROFILE</a></li>
+              <form action="{% url 'profiles:logout' %}" method="POST" style="background-color: transparent; 
+                                                                        border:none; box-shadow: none; width: auto; 
+                                                                        height: auto; margin-top:0; padding:0 0 0 20px; overflow-y:hidden"
+                                                                        >
+                {% csrf_token %}
+                <button type="submit" style="padding: 0; margin: 0; font-weight: 400;
+                  background-color: transparent; color: white; border: none;">LOGOUT
+                </button>
+              </form>
+              {% else %}
+                <li><a href="{% url 'profiles:login' %}" style="text-decoration: none; color: white">Login</a></li>
+              {% endif %}
+            </ul>
+        </div>
+      </nav>
+    </header>
+    {% block content %} {% endblock %}
+
+    <footer>
+      <h3 style="margin-bottom: -10px;margin-top: 5px">DJANGO BANKING  WEB APP</h3>
+      <small>&copy;eugeneemma7@gmail.com</small>
+    </footer>
+  </body>
+</html>
