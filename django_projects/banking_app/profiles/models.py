@@ -29,7 +29,7 @@ class User(AbstractUser):
     
 
 
-class CustomerProfile(models.Model):
+class Profile(models.Model):
     customer = models.OneToOneField(User, on_delete=models.CASCADE)
     telephone = models.CharField(max_length=13, verbose_name="Phone Number", unique=True, blank=False)
     dob = models.DateField(null=False)
@@ -41,7 +41,7 @@ class CustomerProfile(models.Model):
                               upload_to='profile_pictures')
 
     def __str__(self) -> str:
-        return f"{self.customer.email}"
+        return f"{self.customer}"
 
     def get_absolute_url(self):
         return redirect(reverse("profiles:create_user"))
@@ -49,7 +49,7 @@ class CustomerProfile(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         img = Image.open(self.image.path)
-        size = 500, 500
-        if img.width > 500:
+        size = 300, 500
+        if img.width > 300:
             img.thumbnail(size)
             img.save(self.image.path)
