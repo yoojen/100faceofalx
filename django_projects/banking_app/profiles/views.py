@@ -1,14 +1,14 @@
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.views import LoginView
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from banking_app.serializer import Serializer
-from transactions.models import Account, Transactions
-from .models import User, CustomerProfile
+from .models import User, Profile
 from django.views.generic import CreateView, ListView, DetailView
-from .forms import UserCreationModelForm
+from .forms import CustomUserUpdateForm, UserCreationModelForm
 
 
 def register(request):
@@ -25,7 +25,7 @@ def register(request):
         
 
 class CreateUserProfileView(CreateView):
-    model = CustomerProfile
+    model = Profile
     fields = ["telephone","dob","province", "district", "sector","cell","image"]
     success_url = "create_user_profile"
     
@@ -49,34 +49,25 @@ class CustomerListView(ListView):
     context_object_name = "customers"
 
 
+def customer_profile_view(request, pk):
+    profile_form = CustomUserUpdateForm
+    user_info = UserCreationModelForm
+
+    if request.method == 'POST':
+        profile_form = CustomUserUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+        if profile_form.is_valid():
+            profile_form.save()
+            return redirect(reverse("profiles:user_profile", kwargs={'pk': request.user.id}))
+    else:
+        user_info = UserCreationModelForm(instance=request.user)
+        profile_form = CustomUserUpdateForm(instance=request.user.profile)
+    return render(request, 'profiles/user_detail.html', {'user_form': user_info,
+                                                         "profile_form":  profile_form})
+
+
 class CustomerDetailView(DetailView):
     model = User
 
-
-class AccountDetailView(DetailView):
-    model = Account
-    template_name = "profiles/user_detail.html"
-
-
-class CustomerTransactionListView(ListView):
-    model = Transactions
-    template_name = "profiles/user_detail.html"
-
-
-def my_combined_view(request, pk=None):
-    list_data = []
-    customer = User.objects.filter(pk=pk).first()
-    account = Account.objects.filter(customer_phone_number=customer.telephone).first()
-    if account:
-        list_data = Transactions.objects.filter(
-            account_num=account.account_num).all()
-
-    context = {
-        "customer": customer,
-        'account': account if account else None,  # For DetailView
-        'list_data': list_data if list_data else None,          # For ListView
-    }
-    return render(request, 'profiles/user_detail.html', context)
 
 class UserAuthenticationForm(AuthenticationForm):
     error_messages={
