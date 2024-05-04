@@ -1,6 +1,8 @@
 from typing import Any
 from django.db.models import Q
 from django.db.models.query import QuerySet
+from django.http import HttpRequest
+from django.http.response import HttpResponse as HttpResponse
 from .forms import BillForm
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -8,7 +10,7 @@ from django.urls import resolve
 from .models import Transactions, Account, BillInfo
 from django.views.generic import ListView, CreateView, DetailView
 from banking_app.serializer import Serializer
-from profiles.models import CustomerProfile
+from profiles.models import Profile, User
 
 
 class TransactionPostView(CreateView):
@@ -130,7 +132,7 @@ class CreateAccountView(CreateView):
     fields = ["customer_phone_number", "account_num", "balance"]
 
     def form_valid(self, form):
-        customer = CustomerProfile.objects.filter(
+        customer = Profile.objects.filter(
             telephone=form.cleaned_data["customer_phone_number"]).first()
         if customer:
             customer = customer.customer
@@ -224,3 +226,36 @@ class UserTransactionsListView(ListView):
 class UserAccountDetailView(DetailView):
     model = Account
     template_name = "transactions/user_account_info.html"
+
+
+
+class AccountDetailView(DetailView):
+    model = Account
+    template_name = "profiles/user_detail.html"
+
+
+class CustomerTransactionListView(ListView):
+    model = Transactions
+    template_name = "profiles/user_detail.html"
+
+
+def my_combined_view(request, pk=None):
+    list_data = []
+    customer = User.objects.filter(pk=pk).first()
+    if customer:
+        account = Account.objects.filter(
+            customer_phone_number=customer.telephone).first()
+    else:
+        return render(request, 'profiles/user_detail.html', {})
+    if account:
+        list_data = Transactions.objects.filter(
+            account_num=account.account_num).all()
+    else:
+        return render(request, 'profiles/user_detail.html', {})
+
+    context = {
+        "customer": customer,
+        'account': account if account else None,  # For DetailView
+        'list_data': list_data if list_data else None,          # For ListView
+    }
+    return render(request, 'profiles/user_detail.html', context)
