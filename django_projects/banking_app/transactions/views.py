@@ -2,17 +2,26 @@ from typing import Any
 from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.http import HttpRequest
-from django.http.response import HttpResponse as HttpResponse
+from django.http.response import HttpResponse as HttpResponse, HttpResponseRedirect
 from .forms import BillForm
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.urls import resolve
 from .models import Transactions, Account, BillInfo
 from django.views.generic import ListView, CreateView, DetailView
 from banking_app.serializer import Serializer
 from profiles.models import Profile, User
+from django.contrib.auth.mixins import UserPassesTestMixin
 
+# Mixin for restricting access
+class UserAccessMixin(UserPassesTestMixin):
+    """Check user and make redirection accordingly"""
+    def test_func(self):
+        return not self.request.user.groups.filter(name='teller').exists()
+    
+    def handle_no_permission(self):
+       pass
 
+    
 class TransactionPostView(CreateView):
     model = Transactions
     fields = ["account_num", "amount", "description", "type"]
