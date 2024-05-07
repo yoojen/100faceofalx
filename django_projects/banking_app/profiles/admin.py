@@ -22,6 +22,8 @@ class CustomObjectAccessMixin(GuardedModelAdmin):
             f"{self.opts.app_label}.{perm}_{self.opts.model_name}" for perm in actions]
         data = get_objects_for_user(
             user=request.user, perms=perms, klass=klass, any_perm=True)
+        # Removing current user from queryset
+        data = data.exclude(id=request.user.id)
         if klass is User and not request.user.is_superuser:
             return data.exclude(is_superuser=True)
         return data
@@ -34,7 +36,7 @@ class CustomObjectAccessMixin(GuardedModelAdmin):
             return request.user.has_perm(f"{app_label}.{action}_{model_name}", obj)
         return request.user.has_perm(f"{app_label}.{action}_{model_name}")
 
-    def get_queryset(self, request, ):
+    def get_queryset(self, request):
         if request.user.is_superuser:
             return super().get_queryset(request)
         data = self.model_objects_for_user(
