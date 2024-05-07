@@ -72,7 +72,7 @@ class UserAdmin(CustomObjectAccessMixin,  BaseUserAdmin):
     list_display = ["telephone", "first_name", "last_name", "date_joined"]
     ordering=["first_name"]
     fieldsets=(
-        (None, {"fields": ("telephone", "password")}),
+        (None, {"fields": ("telephone", "password", "type")}),
         (("Personal info"), {"fields": ("first_name", "last_name")}),
         (
             ("Permissions"),
