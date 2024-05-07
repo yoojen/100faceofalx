@@ -13,13 +13,11 @@ from profiles.models import Profile, User
 from django.contrib.auth.mixins import UserPassesTestMixin
 
 # Mixin for restricting access
+
+
 class UserAccessMixin(UserPassesTestMixin):
     """Check user and make redirection accordingly"""
-    def test_func(self):
-        return not self.request.user.groups.filter(name='teller').exists()
-    
-    def handle_no_permission(self):
-       pass
+    pass
 
     
 class TransactionPostView(CreateView):
@@ -170,8 +168,16 @@ class TransactionListView(ListView):
             return queryset.filter(account_num=search_account).all()
         return queryset
 
-
-class BillCreateView(CreateView):
+class TestCustomerViewsMixin(UserPassesTestMixin):
+    def test_func(self) -> bool | None:
+        from django.utils.functional import SimpleLazyObject
+        if type(self.request.user) == SimpleLazyObject:
+            return False
+        if self.request.user.type == "CUSTOMER":
+            return True
+        return False
+    
+class BillCreateView(TestCustomerViewsMixin, CreateView):
     model = BillInfo
     form_class = BillForm
 
