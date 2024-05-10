@@ -27,7 +27,7 @@
         {% for account in accounts %}            
             <tr>
                 <a href=""></a>
-                <td><a href="{% url 'transactions:single_acc_inspect' account.id %}">{{account.customer}}</a></td>
+                <td><a href="{% url 'transactions:single_acc_inspect' account.customer.id %}">{{account.customer}}</a></td>
                 <td>{{account.account_num}}</td>
                 <td>{{account.date_opened}}</td>
                 <td>{{account.balance}}</td>
