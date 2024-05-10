@@ -2,6 +2,8 @@ from typing import Any
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from profiles.models import Profile, User
 from django import forms
+from django.contrib.auth.forms import AuthenticationForm
+from django.utils.translation import gettext_lazy as _
 
 
 class CustomUserChangeForm(UserChangeForm):
@@ -11,9 +13,9 @@ class CustomUserChangeForm(UserChangeForm):
 
 
 class UserCreationModelForm(forms.ModelForm):
-    first_name = forms.CharField(required=True, disabled=True)
-    last_name = forms.CharField(required=True, disabled=True)
-    telephone = forms.CharField(max_length=13, disabled=True)
+    first_name = forms.CharField(required=True)
+    last_name = forms.CharField(required=True)
+    telephone = forms.CharField(max_length=13)
     class Meta:
         model = User
         fields = ("telephone", "first_name", "last_name")
@@ -36,3 +38,10 @@ class CustomUserUpdateForm(UserChangeForm):
     class Meta:
         model = Profile
         fields = ("image",)
+
+
+class UserAuthenticationForm(AuthenticationForm):
+    error_messages = {
+        "invalid_login": _("Incorrect username or password"),
+        "inactive": _("This account is inactive")
+    }
