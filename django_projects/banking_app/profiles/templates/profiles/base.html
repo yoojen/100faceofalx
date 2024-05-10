@@ -61,7 +61,7 @@
                     </ul>
                   </div>
               </div>
-              <li><a href="{% url 'profiles:create_user_profile' %}">PROFILE</a></li>
+              <li><a href="{% url 'transactions:user_profile' user.id%}">PROFILE</a></li>
               <form action="{% url 'profiles:logout' %}" method="POST" style="background-color: transparent; 
                                                                         border:none; box-shadow: none; width: auto; 
                                                                         height: auto; margin-top:0; padding:0 0 0 20px; overflow-y:hidden"
