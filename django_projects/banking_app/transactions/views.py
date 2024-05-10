@@ -3,6 +3,9 @@ from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.http import HttpRequest
 from django.http.response import HttpResponse as HttpResponse, HttpResponseRedirect
+from django.urls import reverse
+
+from profiles.forms import CustomUserUpdateForm, UserCreationModelForm
 from .forms import BillForm
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -10,14 +13,32 @@ from .models import Transactions, Account, BillInfo
 from django.views.generic import ListView, CreateView, DetailView
 from banking_app.serializer import Serializer
 from profiles.models import Profile, User
-from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import UserPassesTestMixin, PermissionRequiredMixin
+from django.contrib.auth.views import redirect_to_login
 
 # Mixin for restricting access
-
-
-class UserAccessMixin(UserPassesTestMixin):
+class TestCustomerViewsMixin(UserPassesTestMixin):
+    def check_user(self):
+        if self.request.user.type == "CUSTOMER":
+            return True
+        elif self.request.user.type == "MANAGER":
+            return True
+        else:
+            return False
+        
+    def get_test_func(self):
+        return self.check_user
+    
+class UserAccessMixin(PermissionRequiredMixin):
     """Check user and make redirection accordingly"""
-    pass
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        print(request.user.get_user_permissions())
+        if not request.user.is_authenticated:
+            return redirect_to_login(next=request.get_full_path(), 
+                                     login_url=self.get_login_url(),
+                                     redirect_field_name=self.get_redirect_field_name())
+        
+        return super(UserAccessMixin, self).dispatch(request, *args, **kwargs)
 
     
 class TransactionPostView(CreateView):
@@ -168,18 +189,11 @@ class TransactionListView(ListView):
             return queryset.filter(account_num=search_account).all()
         return queryset
 
-class TestCustomerViewsMixin(UserPassesTestMixin):
-    def test_func(self) -> bool | None:
-        from django.utils.functional import SimpleLazyObject
-        if type(self.request.user) == SimpleLazyObject:
-            return False
-        if self.request.user.type == "CUSTOMER":
-            return True
-        return False
     
-class BillCreateView(TestCustomerViewsMixin, CreateView):
+class BillCreateView(CreateView):
     model = BillInfo
     form_class = BillForm
+    permission_required = ["transactions.add_billinfo"]
 
     def form_valid(self, form):
         payer = Account.objects.filter(
@@ -241,6 +255,7 @@ class UserTransactionsListView(ListView):
 class UserAccountDetailView(DetailView):
     model = Account
     template_name = "transactions/user_account_info.html"
+    context_object_name = "object"
 
 
 
@@ -261,16 +276,34 @@ def my_combined_view(request, pk=None):
         account = Account.objects.filter(
             customer_phone_number=customer.telephone).first()
     else:
-        return render(request, 'profiles/user_detail.html', {})
+        return render(request, 'transactions/account_detail.html', {})
     if account:
         list_data = Transactions.objects.filter(
             account_num=account.account_num).all()
     else:
-        return render(request, 'profiles/user_detail.html', {})
+        return render(request, 'transactions/account_detail.html', {})
 
     context = {
         "customer": customer,
         'account': account if account else None,  # For DetailView
         'list_data': list_data if list_data else None,          # For ListView
     }
-    return render(request, 'profiles/user_detail.html', context)
+    return render(request, 'transactions/account_detail.html', context)
+
+
+def customer_profile_view(request, pk):
+    profile_form = CustomUserUpdateForm
+    user_info = UserCreationModelForm
+    for field in user_info.base_fields:
+        user_info.base_fields[field].disabled = True
+    if request.method == 'POST':
+        profile_form = CustomUserUpdateForm(
+            request.POST, request.FILES, instance=request.user.profile)
+        if profile_form.is_valid():
+            profile_form.save()
+            return redirect(reverse("transactions:user_profile", kwargs={'pk': request.user.id}))
+    else:
+        user_info = UserCreationModelForm(instance=request.user)
+        profile_form = CustomUserUpdateForm(instance=request.user.profile)
+    return render(request, 'transactions/user_detail.html', {'user_form': user_info,
+                                                             "profile_form":  profile_form})

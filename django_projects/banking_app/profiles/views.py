@@ -1,17 +1,13 @@
-from typing import Any
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.views import LoginView
-from django.http import HttpRequest, HttpResponse
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from banking_app.serializer import Serializer
-from transactions.views import UserAccessMixin
 from .models import User, Profile
 from django.views.generic import CreateView, ListView, DetailView
-from .forms import CustomUserUpdateForm, UserCreationModelForm
+from .forms import CustomUserUpdateForm, UserCreationModelForm, UserAuthenticationForm
 
 
 def register(request):
@@ -52,19 +48,18 @@ class CustomerListView(ListView):
     context_object_name = "customers"
 
 
-def customer_profile_view(request, pk):
+def customer_profile_view(request):
     profile_form = CustomUserUpdateForm
     user_info = UserCreationModelForm
-
     if request.method == 'POST':
         profile_form = CustomUserUpdateForm(request.POST, request.FILES, instance=request.user.profile)
         if profile_form.is_valid():
             profile_form.save()
-            return redirect(reverse("profiles:user_profile", kwargs={'pk': request.user.id}))
+            return redirect(reverse("transactions:user_profile", kwargs={'pk': request.user.id}))
     else:
         user_info = UserCreationModelForm(instance=request.user)
         profile_form = CustomUserUpdateForm(instance=request.user.profile)
-    return render(request, 'profiles/user_detail.html', {'user_form': user_info,
+    return render(request, 'transactions/user_detail.html', {'user_form': user_info,
                                                          "profile_form":  profile_form})
 
 
@@ -72,19 +67,15 @@ class CustomerDetailView(DetailView):
     model = User
 
 
-class UserAuthenticationForm(AuthenticationForm):
-    error_messages={
-        "invalid_login": _("Incorrect username or password"),
-        "inactive": _("This account is inactive")
-    }
+
 
 class UserLoginView(LoginView):
     form_class = UserAuthenticationForm
     redirect_authenticated_user = True
     template_name = "profiles/login.html"
-    def form_valid(self, form: AuthenticationForm) -> HttpResponse:
+
+    def form_valid(self, form):
         super().form_valid(form)
-        # user = User.objects.get(telephone=form.cleaned_data["username"])
         
         if self.request.user.type == "ADMIN":
             return redirect("admin:index")
