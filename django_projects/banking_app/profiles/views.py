@@ -5,6 +5,8 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from banking_app.serializer import Serializer
+from transactions.models import Account
+from transactions.views import UserAccessMixin
 from .models import User, Profile
 from django.views.generic import CreateView, ListView, DetailView
 from .forms import CustomUserUpdateForm, UserCreationModelForm, UserAuthenticationForm
@@ -19,6 +21,7 @@ def register(request):
             user.save()
             return redirect('profiles:customers')
     else:
+        print("called")
         form = UserCreationModelForm()
     return render(request, 'profiles/user_form.html', {'form': form})
         
@@ -48,18 +51,18 @@ class CustomerListView(ListView):
     context_object_name = "customers"
 
 
-def customer_profile_view(request):
+def customer_profile_view(request, pk):
     profile_form = CustomUserUpdateForm
     user_info = UserCreationModelForm
     if request.method == 'POST':
         profile_form = CustomUserUpdateForm(request.POST, request.FILES, instance=request.user.profile)
         if profile_form.is_valid():
             profile_form.save()
-            return redirect(reverse("transactions:user_profile", kwargs={'pk': request.user.id}))
+            return redirect(reverse("profiles:user_profile", kwargs={"pk": request.user.id}))
     else:
         user_info = UserCreationModelForm(instance=request.user)
         profile_form = CustomUserUpdateForm(instance=request.user.profile)
-    return render(request, 'transactions/user_detail.html', {'user_form': user_info,
+        return render(request, 'transactions/user_detail.html', {'user_form': user_info,
                                                          "profile_form":  profile_form})
 
 
@@ -67,6 +70,11 @@ class CustomerDetailView(DetailView):
     model = User
 
 
+class UserAccountDetailView(UserAccessMixin, DetailView):
+    model = Account
+    permission_required = ["transactions.view_account"]
+    template_name = "transactions/user_account_info.html"
+    context_object_name = "object"
 
 
 class UserLoginView(LoginView):
