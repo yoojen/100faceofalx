@@ -25,7 +25,7 @@
                     <td>{{customer.last_name}}</td>
                     <td><a href="{% url 'transactions:single_acc_inspect' customer.id %}">{{customer.telephone}}</a></td>
                     <td>{{customer.email}}</td>
-                    <td>{{customer.date_joined}}</td>
+                    <td>{{customer.date_joined|date:"F d, Y"}}</td>
                     <td>{{customer.type}}</td>
                 </tr>
             {% endif %}
