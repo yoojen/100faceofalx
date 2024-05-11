@@ -1,4 +1,4 @@
-{% extends "profiles/base.html" %}
+{% extends "profiles/user_base.html" %}
 {% load  static %}
 {% block navigation %}
     <title>Account Information</title>
@@ -48,6 +48,10 @@
         button:hover{
             background-color: #4CAF50;
         }
+        p{
+            background-color: #0aa9cc;
+            color: white;
+        }
     </style>
 {% endblock %}
 
@@ -61,23 +65,23 @@
                 <h2>USER INFO</h2>
                 <div class="splitter">
                     <legend>FIRST NAME</legend>
-                    <p>{{user_form.first_name}}</p>
+                    <p>{{user.first_name}}</p>
                 </div>
                 <div class="splitter">
                     <legend>LAST NAME</legend>
-                    <p>{{user_form.last_name}}</p>
+                    <p>{{user.last_name}}</p>
                 </div>
                 <div class="splitter">
                     <legend>EMAIL</legend>
-                    {% if user_form.email %}
-                        <p>{{user_form.email}}</p>
+                    {% if user.email %}
+                        <p>{{user.email}}</p>
                     {% else %}
                         <i><small style="background-color: lightgrey;">No Email</small></i>
                     {% endif %}
                 </div>
                 <div class="splitter">
                     <legend>TELEPHONE</legend>
-                    <p>{{user_form.telephone}}</p>
+                    <p>{{user.telephone}}</p>
                 </div>
             </div>
             <form method="POST" enctype="multipart/form-data">
