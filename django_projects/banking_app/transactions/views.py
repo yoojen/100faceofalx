@@ -1,11 +1,10 @@
+from django.contrib.auth.decorators import user_passes_test
 from typing import Any
 from django.db.models import Q
-from django.db.models.query import QuerySet
 from django.http import HttpRequest
-from django.http.response import HttpResponse as HttpResponse, HttpResponseRedirect
+from django.http.response import HttpResponse as HttpResponse
 from django.urls import reverse
-
-from profiles.forms import CustomUserUpdateForm, UserCreationModelForm
+from profiles.forms import CustomUserUpdateForm
 from .forms import BillForm
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -15,6 +14,8 @@ from banking_app.serializer import Serializer
 from profiles.models import Profile, User
 from django.contrib.auth.mixins import UserPassesTestMixin, PermissionRequiredMixin
 from django.contrib.auth.views import redirect_to_login
+from django.contrib.auth.decorators import login_required, permission_required
+
 
 # Mixin for restricting access
 class TestCustomerViewsMixin(UserPassesTestMixin):
@@ -32,17 +33,22 @@ class TestCustomerViewsMixin(UserPassesTestMixin):
 class UserAccessMixin(PermissionRequiredMixin):
     """Check user and make redirection accordingly"""
     def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        print(request.user.get_user_permissions())
         if not request.user.is_authenticated:
             return redirect_to_login(next=request.get_full_path(), 
                                      login_url=self.get_login_url(),
                                      redirect_field_name=self.get_redirect_field_name())
+        if not self.has_permission():
+            if request.user.type == "TELLER":
+                return render(request, "transactions/404_error_teller.html")
+            if request.user.type == "CUSTOMER":
+                return render(request, "transactions/404_error_customer.html")
         
         return super(UserAccessMixin, self).dispatch(request, *args, **kwargs)
 
     
-class TransactionPostView(CreateView):
+class TransactionPostView(UserAccessMixin, CreateView):
     model = Transactions
+    permission_required = ["transactions.view_transactions", "transactions.add_transactions"]
     fields = ["account_num", "amount", "description", "type"]
     template_name = "transactions/deposit.html"
     context_object_name = "account"
@@ -77,7 +83,7 @@ class TransactionPostView(CreateView):
             messages.error(self.request, "Can't process the request", str(e))
             return super().form_invalid(form)
 
-
+@login_required
 def find_account(request):
     account = Account.objects.filter(
         account_num=request.GET.get("account_num")).first()
@@ -89,8 +95,9 @@ def find_account(request):
     return redirect("transactions:transact")
 
 
-class AccountListView(ListView):
+class AccountListView(UserAccessMixin, ListView):
     model = Account
+    permission_required = ["transactions.add_account"]
     template_name = "transactions/acc_inspection.html"
     context_object_name = "accounts"
 
@@ -100,20 +107,6 @@ class AccountListView(ListView):
         if search_account:
             return queryset.filter(account_num=search_account).all()
         return queryset
-
-
-def my_combined_view(request, pk=None):
-    list_data = []
-    detail_object = Account.objects.filter(id=pk).first()
-    if detail_object:
-        list_data = Transactions.objects.filter(
-            account_num=detail_object.account_num).all()
-
-    context = {
-        'detail_object': detail_object if detail_object else None,  # For DetailView
-        'list_data': list_data if list_data else None,          # For ListView
-    }
-    return render(request, 'transactions/account_detail.html', context)
 
 
 def django_admin_like_search(model, search_term, search_fields):
@@ -155,8 +148,9 @@ def generate_account_number(request):
     return redirect("transactions:create_account")
 
 
-class CreateAccountView(CreateView):
+class CreateAccountView(UserAccessMixin, CreateView):
     model = Account
+    permission_required = ["transactions.add_account", "transactions.view_account"]
     fields = ["customer_phone_number", "account_num", "balance"]
 
     def form_valid(self, form):
@@ -178,8 +172,9 @@ class CreateAccountView(CreateView):
             return super().form_invalid(form)
 
 
-class TransactionListView(ListView):
+class TransactionListView(UserAccessMixin, ListView):
     model = Transactions
+    permission_required = ["transactions.view_transactions"]
     context_object_name = "object"
 
     def get_queryset(self):
@@ -190,10 +185,10 @@ class TransactionListView(ListView):
         return queryset
 
     
-class BillCreateView(CreateView):
+class BillCreateView(UserAccessMixin, CreateView):
     model = BillInfo
     form_class = BillForm
-    permission_required = ["transactions.add_billinfo"]
+    permission_required = ["transactions.add_billinfo", "transactions.view_billinfo"]
 
     def form_valid(self, form):
         payer = Account.objects.filter(
@@ -240,8 +235,9 @@ class BillCreateView(CreateView):
             return super().form_invalid(form)
 
 
-class UserTransactionsListView(ListView):
+class UserTransactionsListView(UserAccessMixin, ListView):
     model = Transactions
+    permission_required = ["transaction.view_transactions"]
     template_name = "transactions/user_transactions.html"
     context_object_name = "objects"
     ordering = "-date_done"
@@ -252,15 +248,10 @@ class UserTransactionsListView(ListView):
         return queryset
 
 
-class UserAccountDetailView(DetailView):
+
+class AccountDetailView(UserAccessMixin, DetailView):
     model = Account
-    template_name = "transactions/user_account_info.html"
-    context_object_name = "object"
-
-
-
-class AccountDetailView(DetailView):
-    model = Account
+    permission_required = ["transactions.view_transactions"]
     template_name = "profiles/user_detail.html"
 
 
@@ -269,6 +260,8 @@ class CustomerTransactionListView(ListView):
     template_name = "profiles/user_detail.html"
 
 
+@permission_required(["transactions.view_acount"])
+@login_required
 def my_combined_view(request, pk=None):
     list_data = []
     customer = User.objects.filter(pk=pk).first()
@@ -291,19 +284,18 @@ def my_combined_view(request, pk=None):
     return render(request, 'transactions/account_detail.html', context)
 
 
+@login_required
 def customer_profile_view(request, pk):
     profile_form = CustomUserUpdateForm
-    user_info = UserCreationModelForm
-    for field in user_info.base_fields:
-        user_info.base_fields[field].disabled = True
     if request.method == 'POST':
         profile_form = CustomUserUpdateForm(
             request.POST, request.FILES, instance=request.user.profile)
         if profile_form.is_valid():
             profile_form.save()
-            return redirect(reverse("transactions:user_profile", kwargs={'pk': request.user.id}))
+            return redirect(reverse("transactions:user_profile", kwargs={"pk": request.user.id}))
     else:
-        user_info = UserCreationModelForm(instance=request.user)
         profile_form = CustomUserUpdateForm(instance=request.user.profile)
-    return render(request, 'transactions/user_detail.html', {'user_form': user_info,
-                                                             "profile_form":  profile_form})
+        return render(request, 'transactions/teller_details.html', {"profile_form":  profile_form})
+
+
+
