@@ -1,5 +1,6 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.views import LoginView
+from django.contrib.auth.decorators import permission_required
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.contrib import messages
@@ -9,9 +10,28 @@ from transactions.models import Account
 from transactions.views import UserAccessMixin
 from .models import User, Profile
 from django.views.generic import CreateView, ListView, DetailView
-from .forms import CustomUserUpdateForm, UserCreationModelForm, UserAuthenticationForm
+from .forms import (CustomUserUpdateForm,
+                    UserCreationModelForm, 
+                    UserAuthenticationForm)
 
 
+def check_permission(perms: list):
+    """Decorator to check against argument user passed permissions"""
+    def decorater(view_func):
+        def func(request, *args, **kwargs):
+            res = [request.user.has_perm(perm) for perm in perms]            
+            if all(element == res[0] for element in res):
+                return view_func(request, *args, **kwargs)
+            else:
+                if request.user.type == "TELLER":
+                    return render(request, "transactions/404_error_teller.html")
+                if request.user.type == "CUSTOMER":
+                    return render(request, "transactions/404_error_customer.html")
+        return func
+    return decorater
+
+
+@check_permission(perms=["profiles.add_user", "profiles.view_user"])
 def register(request):
     if request.method == 'POST':
         form = UserCreationModelForm(request.POST)
@@ -21,7 +41,6 @@ def register(request):
             user.save()
             return redirect('profiles:customers')
     else:
-        print("called")
         form = UserCreationModelForm()
     return render(request, 'profiles/user_form.html', {'form': form})
         
@@ -46,7 +65,7 @@ class CreateUserProfileView(CreateView):
             return super().form_invalid(form)
 
 
-class CustomerListView(ListView):
+class CustomerListView(UserAccessMixin, ListView):
     model = User
     context_object_name = "customers"
 
