@@ -32,7 +32,7 @@ class TestCustomerViewsMixin(UserPassesTestMixin):
     
 class UserAccessMixin(PermissionRequiredMixin):
     """Check user and make redirection accordingly"""
-    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+    def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect_to_login(next=request.get_full_path(), 
                                      login_url=self.get_login_url(),
@@ -97,7 +97,7 @@ def find_account(request):
 
 class AccountListView(UserAccessMixin, ListView):
     model = Account
-    permission_required = ["transactions.add_account"]
+    permission_required = ["transactions.view_account"]
     template_name = "transactions/acc_inspection.html"
     context_object_name = "accounts"
 
