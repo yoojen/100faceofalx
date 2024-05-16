@@ -18,7 +18,7 @@ class Account(models.Model):
         return f"{self.account_num}"
 
     def get_absolute_url(self):
-        return reverse("transactions:single_acc_inspect", kwargs={"pk": self.id})
+        return reverse("transactions:single_acc_inspect", kwargs={"pk": self.customer.id})
 
     class Meta:
         ordering = ["-date_opened"]
