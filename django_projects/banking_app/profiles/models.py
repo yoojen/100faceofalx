@@ -18,7 +18,7 @@ class User(AbstractUser):
     objects = CustomUserManager()
 
     def __str__(self) -> str:
-        return self.first_name + " " + self.last_name
+        return self.telephone + " " + self.last_name
     
     class Meta:
         permissions = [
@@ -49,7 +49,7 @@ class Profile(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         img = Image.open(self.image.path)
-        size = 300, 500
+        size = 300, 300
         if img.width > 300:
             img.thumbnail(size)
             img.save(self.image.path)
