@@ -35,7 +35,9 @@
             <ul>
               <small>Welcome, {{user.first_name}}.</small>
               <li><a href="{%url 'transactions:pay_bills' %}">TRANSACT</a></li>
-              <li><a href="{% url 'profiles:user_account' user.account.id %}">ACCOUNT INFO</a></li>
+              {% if user.account %}
+                <li><a href="{% url 'profiles:user_account' user.account.id %}">ACCOUNT INFO</a></li>  
+              {% endif %}
               <li><a href="{% url 'transactions:user_transactions' %}">HISTORY</a></li>
               <li><a href="{% url 'profiles:user_profile' user.id %}">PROFILE</a></li>
               <form action="{% url 'profiles:logout' %}" method="POST" style="background-color: transparent; 
