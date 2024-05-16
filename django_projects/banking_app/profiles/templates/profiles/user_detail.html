@@ -1,13 +1,13 @@
 {% extends "profiles/user_base.html" %}
 {% load  static %}
 {% block navigation %}
-    <title>Account Information</title>
+    <title>Profile</title>
     <link rel="stylesheet" href="{% static 'transactions/inspect.css' %}">
 
     <style>
         .profile-picture{
-            width: 130px;
-            height: 130px;
+            width: 150px;
+            height: 100px;
             overflow: hidden;
             border-radius: 50%;
             display: flex;
@@ -17,7 +17,7 @@
         .profile-picture img{
             box-shadow: 0 0 10px black;
             width: 100%;
-            height: 200px;
+            height: 70%;
         }
         .contents{
             display: flex;
@@ -58,7 +58,7 @@
         </div>
         <div class="profile-content">
             <div class="user-info">
-                <h2>USER INFO</h2>
+                <h2>USER INFOf</h2>
                 <div class="splitter">
                     <legend>FIRST NAME</legend>
                     <p>{{user_form.first_name}}</p>
