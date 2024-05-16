@@ -1,7 +1,4 @@
-from django.contrib.auth.decorators import user_passes_test
-from typing import Any
 from django.db.models import Q
-from django.http import HttpRequest
 from django.http.response import HttpResponse as HttpResponse
 from django.urls import reverse
 from profiles.forms import CustomUserUpdateForm
@@ -12,24 +9,11 @@ from .models import Transactions, Account, BillInfo
 from django.views.generic import ListView, CreateView, DetailView
 from banking_app.serializer import Serializer
 from profiles.models import Profile, User
-from django.contrib.auth.mixins import UserPassesTestMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.views import redirect_to_login
 from django.contrib.auth.decorators import login_required, permission_required
+from profiles.helpers import check_permission, TestUserMixin
 
-
-# Mixin for restricting access
-class TestCustomerViewsMixin(UserPassesTestMixin):
-    def check_user(self):
-        if self.request.user.type == "CUSTOMER":
-            return True
-        elif self.request.user.type == "MANAGER":
-            return True
-        else:
-            return False
-        
-    def get_test_func(self):
-        return self.check_user
-    
 class UserAccessMixin(PermissionRequiredMixin):
     """Check user and make redirection accordingly"""
     def dispatch(self, request, *args, **kwargs):
@@ -48,7 +32,7 @@ class UserAccessMixin(PermissionRequiredMixin):
     
 class TransactionPostView(UserAccessMixin, CreateView):
     model = Transactions
-    permission_required = ["transactions.view_transactions", "transactions.add_transactions"]
+    permission_required = ["transactions.add_transactions"]
     fields = ["account_num", "amount", "description", "type"]
     template_name = "transactions/deposit.html"
     context_object_name = "account"
@@ -188,7 +172,7 @@ class TransactionListView(UserAccessMixin, ListView):
 class BillCreateView(UserAccessMixin, CreateView):
     model = BillInfo
     form_class = BillForm
-    permission_required = ["transactions.add_billinfo", "transactions.view_billinfo"]
+    permission_required = ["transactions.add_billinfo"]
 
     def form_valid(self, form):
         payer = Account.objects.filter(
@@ -235,16 +219,19 @@ class BillCreateView(UserAccessMixin, CreateView):
             return super().form_invalid(form)
 
 
-class UserTransactionsListView(UserAccessMixin, ListView):
+class UserTransactionsListView(TestUserMixin, ListView):
     model = Transactions
-    permission_required = ["transaction.view_transactions"]
     template_name = "transactions/user_transactions.html"
     context_object_name = "objects"
     ordering = "-date_done"
 
     def get_queryset(self):
-        queryset = super().get_queryset().filter(
-            account_id=self.request.user.account.id)
+        # account yet to be created
+        try:
+            queryset = super().get_queryset().filter(
+                account_id=self.request.user.account.id)
+        except Exception as e:
+            return []
         return queryset
 
 
@@ -260,7 +247,7 @@ class CustomerTransactionListView(ListView):
     template_name = "profiles/user_detail.html"
 
 
-@permission_required(["transactions.view_acount"])
+@check_permission(["transactions.view_account"])
 @login_required
 def my_combined_view(request, pk=None):
     list_data = []
