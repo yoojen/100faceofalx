@@ -1,6 +1,9 @@
+from typing import Any
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import permission_required
+from django.http import HttpRequest
+from django.http.response import HttpResponse as HttpResponse
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.contrib import messages
@@ -91,11 +94,12 @@ class UserLoginView(LoginView):
     redirect_authenticated_user = True
     template_name = "profiles/login.html"
 
+
     def form_valid(self, form):
         super().form_valid(form)
         
         if self.request.user.type == "ADMIN":
-            return redirect("admin:index")
+            return form, redirect("admin:index")
         elif self.request.user.type == "CUSTOMER":
             return redirect("transactions:pay_bills")
         else:
