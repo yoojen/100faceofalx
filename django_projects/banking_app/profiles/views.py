@@ -13,22 +13,7 @@ from django.views.generic import CreateView, ListView, DetailView
 from .forms import (CustomUserUpdateForm,
                     UserCreationModelForm, 
                     UserAuthenticationForm)
-
-
-def check_permission(perms: list):
-    """Decorator to check against argument user passed permissions"""
-    def decorater(view_func):
-        def func(request, *args, **kwargs):
-            res = [request.user.has_perm(perm) for perm in perms]            
-            if all(element == res[0] for element in res):
-                return view_func(request, *args, **kwargs)
-            else:
-                if request.user.type == "TELLER":
-                    return render(request, "transactions/404_error_teller.html")
-                if request.user.type == "CUSTOMER":
-                    return render(request, "transactions/404_error_customer.html")
-        return func
-    return decorater
+from .helpers import TestUserMixin, check_permission
 
 
 @check_permission(perms=["profiles.add_user", "profiles.view_user"])
@@ -45,8 +30,9 @@ def register(request):
     return render(request, 'profiles/user_form.html', {'form': form})
         
 
-class CreateUserProfileView(CreateView):
+class CreateUserProfileView(UserAccessMixin, CreateView):
     model = Profile
+    permission_required = ["profile.add_user"]
     fields = ["telephone","dob","province", "district", "sector","cell","image"]
     success_url = "create_user_profile"
     
@@ -68,30 +54,34 @@ class CreateUserProfileView(CreateView):
 class CustomerListView(UserAccessMixin, ListView):
     model = User
     context_object_name = "customers"
+    permission_required = ["profiles.view_user"]
 
 
 def customer_profile_view(request, pk):
     profile_form = CustomUserUpdateForm
     user_info = UserCreationModelForm
-    if request.method == 'POST':
-        profile_form = CustomUserUpdateForm(request.POST, request.FILES, instance=request.user.profile)
-        if profile_form.is_valid():
-            profile_form.save()
-            return redirect(reverse("profiles:user_profile", kwargs={"pk": request.user.id}))
-    else:
-        user_info = UserCreationModelForm(instance=request.user)
-        profile_form = CustomUserUpdateForm(instance=request.user.profile)
-        return render(request, 'transactions/user_detail.html', {'user_form': user_info,
-                                                         "profile_form":  profile_form})
 
+    try:
+        if request.method == 'POST':
+            profile_form = CustomUserUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+            if profile_form.is_valid():
+                profile_form.save()
+                return redirect(reverse("profiles:user_profile", kwargs={"pk": request.user.id}))
+        else:
+            user_info = UserCreationModelForm(instance=request.user)
+            profile_form = CustomUserUpdateForm(instance=request.user.profile)
+            return render(request, 'transactions/user_detail.html', {'user_form': user_info,
+                                                            "profile_form":  profile_form})
+    except Exception as e:
+        print(e)
+        return render(request, "transactions/404_error_customer.html")
 
 class CustomerDetailView(DetailView):
     model = User
 
 
-class UserAccountDetailView(UserAccessMixin, DetailView):
+class UserAccountDetailView(TestUserMixin, DetailView):
     model = Account
-    permission_required = ["transactions.view_account"]
     template_name = "transactions/user_account_info.html"
     context_object_name = "object"
 
