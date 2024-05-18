@@ -25,7 +25,7 @@
   <body>
     {% block content %}
     <h1 style="text-align: center; margin-top: 3vh;">
-      Login To The System
+      Login To System
     </h1>
     <div class="contents">
       <div class="trans-forms">
@@ -34,6 +34,7 @@
           {{form|crispy}}
           <button type="submit">Login</button>
         </form>
+        <small><i>New To System? <a href="{% url 'profiles:create_password' %}">Create password Here</a></i></small>
       </div>
     </div>
     {% endblock %}
