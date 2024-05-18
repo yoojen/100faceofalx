@@ -29,6 +29,15 @@
     </h1>
     <div class="contents">
       <div class="trans-forms">
+        {% if messages %}
+          {% for msg in messages %}
+            {% if msg.tags == "error" %}
+              <p style="background-color: brown; padding-left: 40px;">{{msg}}</p> 
+            {% else %}
+              <p style="background-color: #0cc; padding-left: 40px; color: white;">{{msg}}</p>
+            {% endif %} 
+          {% endfor %}      
+        {% endif %}
         <form action="" method="POST" id="post-form">
           {% csrf_token%} 
           {{form|crispy}}
