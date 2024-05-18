@@ -70,11 +70,11 @@ class ProfileInline(admin.StackedInline):
 class UserAdmin(CustomObjectAccessMixin,  BaseUserAdmin):
     model = User
     add_form=CustomUserCreationForm
-    form = CustomUserChangeForm
+    # form = CustomUserChangeForm
     list_display = ["telephone", "first_name", "last_name", "date_joined"]
     ordering=["first_name"]
     fieldsets=(
-        (None, {"fields": ("telephone", "password", "type")}),
+        (None, {"fields": ("telephone","password", "type")}),
         (("Personal info"), {"fields": ("first_name", "last_name")}),
         (
             ("Permissions"),
@@ -94,7 +94,7 @@ class UserAdmin(CustomObjectAccessMixin,  BaseUserAdmin):
         (None, {
             "classes": ("wide"),
             "fields": (
-                "telephone", "password1", "password2", "first_name", "last_name",
+                "telephone", "password1", "password2", "first_name", "last_name","type",
                 "is_staff",  "is_active", "is_superuser", "groups", "user_permissions"
             )
         }),
