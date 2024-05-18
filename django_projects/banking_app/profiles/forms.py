@@ -48,7 +48,7 @@ class PasswordCreationForm(UserCreationForm):
     
     class Meta:
         model = User
-        fields = ("telephone","password1", "password2")
+        fields = ("password1", "password2")
 
 
 class UserAuthenticationForm(AuthenticationForm):
