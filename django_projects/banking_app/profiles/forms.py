@@ -1,4 +1,3 @@
-from typing import Any
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from profiles.models import Profile, User
 from django import forms
@@ -26,9 +25,11 @@ class UserCreationModelForm(forms.ModelForm):
             user.save()
         return user
     
+
 class CustomUserCreationForm(UserCreationForm):    
     first_name = forms.CharField(required=True)
     last_name = forms.CharField(required=True)
+    
     class Meta:
         model = User
         fields = ("telephone", "first_name", "last_name", "password1", "password2")
@@ -38,6 +39,16 @@ class CustomUserUpdateForm(UserChangeForm):
     class Meta:
         model = Profile
         fields = ("image",)
+
+
+class PasswordCreationForm(UserCreationForm):
+    password1 = forms.PasswordInput()
+    password2 = forms.PasswordInput()
+    telephone = forms.CharField(max_length=13, label="Phone Number", required=True)
+    
+    class Meta:
+        model = User
+        fields = ("telephone","password1", "password2")
 
 
 class UserAuthenticationForm(AuthenticationForm):
