@@ -15,7 +15,8 @@ from .models import User, Profile
 from django.views.generic import CreateView, ListView, DetailView
 from .forms import (CustomUserUpdateForm,
                     UserCreationModelForm, 
-                    UserAuthenticationForm)
+                    UserAuthenticationForm,
+                    PasswordCreationForm)
 from .helpers import TestUserMixin, check_permission
 
 
@@ -32,6 +33,25 @@ def register(request):
         form = UserCreationModelForm()
     return render(request, 'profiles/user_form.html', {'form': form})
         
+def create_password(request):
+    form = PasswordCreationForm
+
+    if request.user.is_authenticated:
+        if request.user.type == "CUSTOMER":
+            return redirect("transactions:pay_bills")
+        elif request.user.type == "TELLER":
+            return redirect("transactions:transact")
+        else:
+            return redirect("admin:index")
+    
+    if request.method == 'POST':
+        form = PasswordCreationForm(request.POST)
+        if form.is_valid():
+            print(form.cleaned_data)
+            messages.success(request, "Password successfully created")
+            return redirect("profiles:login")
+    return render(request, 'profiles/create_password.html', {'form': form})
+
 
 class CreateUserProfileView(UserAccessMixin, CreateView):
     model = Profile
@@ -99,7 +119,7 @@ class UserLoginView(LoginView):
         super().form_valid(form)
         
         if self.request.user.type == "ADMIN":
-            return form, redirect("admin:index")
+            return redirect("admin:index")
         elif self.request.user.type == "CUSTOMER":
             return redirect("transactions:pay_bills")
         else:
