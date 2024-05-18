@@ -26,7 +26,6 @@ def register(request):
         form = UserCreationModelForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-        #   user.password = make_password(request.POST['password'])
             user.save()
             return redirect('profiles:customers')
     else:
@@ -47,9 +46,19 @@ def create_password(request):
     if request.method == 'POST':
         form = PasswordCreationForm(request.POST)
         if form.is_valid():
-            print(form.cleaned_data)
-            messages.success(request, "Password successfully created")
-            return redirect("profiles:login")
+            _ = form.save(commit=False)
+            tel = form.cleaned_data.get("telephone")
+            _user = User.objects.filter(telephone=tel).first()
+            if _user:
+                if _user.password:
+                    messages.info(request, "Passwrd Already Set!")
+                    return redirect("profiles:login")
+                _user.password = make_password(request.POST['password1'])
+                _user.save()
+                messages.success(request, "Password Successfully Created")
+                return redirect("profiles:login")
+            messages.error(request, "No User Found")
+            return redirect("profiles:create_password")
     return render(request, 'profiles/create_password.html', {'form': form})
 
 
