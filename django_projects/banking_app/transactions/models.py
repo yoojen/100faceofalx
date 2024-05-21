@@ -29,7 +29,7 @@ class Transactions(models.Model):
         ("Deposit", 'Deposit'),
         ("Withdraw", 'Withdraw'),
     )
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, related_name='transactions', on_delete=models.CASCADE)
     account_num = models.CharField(max_length=13, null=False, blank=False)
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     date_done = models.DateField(auto_now=True)
