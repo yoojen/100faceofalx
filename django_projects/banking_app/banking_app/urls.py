@@ -18,10 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls import static
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('profiles/', include(('profiles.urls', 'profiles'), namespace='profiles')),
-    path('transactions/', include(('transactions.urls', 'transactions'), namespace='transactions'))
+    path('transactions/', include(('transactions.urls', 'transactions'), namespace='transactions')),
+    path('api/v1/', include('api.urls'))
 ]
 
 if settings.DEBUG:
