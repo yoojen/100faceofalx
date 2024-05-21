@@ -32,7 +32,9 @@ def register(request):
         form = UserCreationModelForm()
     return render(request, 'profiles/user_form.html', {'form': form})
         
+
 def create_password(request):
+    """Allow customer to create password"""
     form = PasswordCreationForm
 
     if request.user.is_authenticated:
