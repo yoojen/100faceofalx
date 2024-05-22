@@ -20,7 +20,23 @@ class AccountSerializer(serializers.ModelSerializer):
     Transactions = TransactionsSerializer(read_only=True)
     class Meta:
         model = Account
-        fields = ["transactions"]
+        fields = "__all__"
+
+class CreateUserLeavePasswordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["telephone", "email", "first_name", "last_name"]
 
 
+class PhoneNumberSerializer(serializers.Serializer):
+    telephone = serializers.CharField(max_length=13)
+    class Meta:
+        model = User
+        fields = ["telephone"]
 
+
+class PasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(max_length=18)
+    class Meta:
+        model = User
+        fields = ["password"]
