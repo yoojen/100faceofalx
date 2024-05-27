@@ -7,3 +7,4 @@ class TransactionSerializer(serializers.ModelSerializer):
         model = Transactions
         fields = "__all__"
 
+    
