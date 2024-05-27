@@ -8,4 +8,4 @@ from django.dispatch import receiver
 def create_transaction(sender, instance, created, **kwargs):
     if created:
         Transactions.objects.create(account=instance, account_num=instance.account_num,
-                                    amount=instance.balance, type="Deposit")
+                                    description="Opening amount", amount=instance.balance, type="Deposit")
