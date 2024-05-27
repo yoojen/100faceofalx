@@ -37,7 +37,7 @@ class Transactions(models.Model):
     type = models.CharField(choices=BOOLEAN_CHOICES, max_length=250)
 
     def __str__(self) -> str:
-        return f"{self.account.account_num}"
+        return f"{self.id}"
 
     def get_absolute_url(self):
         return reverse("transactions:transact")
