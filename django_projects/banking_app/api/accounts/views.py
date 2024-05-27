@@ -99,7 +99,8 @@ class AccountViewSet(ViewSet):
             serializer = AccountSerializer(res, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"errors": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"errors": str(e), "message": "Something went wrong, try again!"},
+                            status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=False, methods=["POST"], url_path='s-acc-ctm', url_name='s_acc_ctm')
     def account_by_customer(self, request):
@@ -111,11 +112,11 @@ class AccountViewSet(ViewSet):
                 return Response(serializer.data)
             return Response({"message": "Enter correct Phone number"})
         except Exception as e:
-            return Response({"errors": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"errors": str(e), "message": "Something went wrong, try again!"},
+                            status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=False, methods=["POST"], url_path='acc-btn', url_name='acc_btn')
     def opened_btn_date(self, request):
-        res = {}
         try:
             data = request.data
             if not data.get('from_date') and data.get('to_date'):
@@ -132,4 +133,5 @@ class AccountViewSet(ViewSet):
             serializer = AccountSerializer(res, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"errors": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"errors": str(e), "message": "Something went wrong, try again!"}, 
+                            status=status.HTTP_400_BAD_REQUEST)
