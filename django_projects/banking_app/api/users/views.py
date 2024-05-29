@@ -42,7 +42,9 @@ class UserViewSet(ViewSet):
 
             if serializer.is_valid():
                 serializer.save()
-                return Response({"message": "Updated successfully", "updated_fields": serializer.validated_data}, status=status.HTTP_201_CREATED)
+                return Response({"message": "Updated successfully", 
+                                 "updated_fields": serializer.validated_data}, 
+                                 status=status.HTTP_201_CREATED)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
@@ -68,7 +70,8 @@ class UserViewSet(ViewSet):
         except User.DoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=["GET"], url_path='user-acc-trans', url_name='user_account_transactions')
+    @action(detail=True, methods=["GET"], url_path='user-acc-trans', 
+            url_name='user_account_transactions')
     def user_account_transactions(self, request, pk=None):
         try:
             user = self.queryset.get(pk=pk)
@@ -78,7 +81,8 @@ class UserViewSet(ViewSet):
                 serializer = TransactionSerializer(queryset, many=True)
                 return Response({"status": "OK", "data": serializer.data})
             else:
-                return Response({"message": f"There is no any transaction for {user.first_name}'s account."})
+                return Response({"message": f"There is no any transaction \
+                                 for {user.first_name}'s account."})
         except User.account.RelatedObjectDoesNotExist:
             return Response({"message": "User has no account"})
 
@@ -92,7 +96,8 @@ class UserViewSet(ViewSet):
         user = User.objects.filter(
             telephone=serializer.validated_data["telephone"]).first()
         if user:
-            return Response({"user_id": user.id, "message": "User found"}, status=status.HTTP_200_OK)
+            return Response({"user_id": user.id, "message": "User found"},
+                             status=status.HTTP_200_OK)
         return Response({"message": "No uer found"}, status=status.HTTP_404_NOT_FOUND)
 
     @action(detail=False, methods=["POST"], url_path='set-password', url_name='set_password')
@@ -100,13 +105,16 @@ class UserViewSet(ViewSet):
         try:
             serializer = PasswordSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            user = User.objects.filter(telephone=serializer.validated_data['telephone']).first()
+            user = User.objects.filter(
+                telephone=serializer.validated_data['telephone']).first()
             if user:
                 if user.password:
-                    return Response({"message": "Password already set"}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"message": "Password already set"},
+                                     status=status.HTTP_400_BAD_REQUEST)
                 user.set_password(serializer.validated_data["password1"])
                 user.save()
-                return Response({"message": "Password has been set"}, status=status.HTTP_202_ACCEPTED)
+                return Response({"message": "Password has been set"},
+                                 status=status.HTTP_202_ACCEPTED)
             return Response({"errors": "Provide correct telephone"})
         except Exception as e:
             return Response({"errors": str(e), "message": serializer.errors}, 
