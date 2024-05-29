@@ -1,7 +1,13 @@
 from django.db import models
-from django.urls import resolve, reverse
+from django.urls import reverse
 from profiles.models import User
 from datetime import date, timedelta
+
+
+# validators
+def validate_amount(value):
+    if value < 100:
+        raise ValueError("To low to process the transaction")
 
 
 class Account(models.Model):
@@ -31,7 +37,8 @@ class Transactions(models.Model):
     )
     account = models.ForeignKey(Account, related_name='transactions', on_delete=models.CASCADE)
     account_num = models.CharField(max_length=13, null=False, blank=False)
-    amount = models.DecimalField(decimal_places=2, max_digits=10)
+    amount = models.DecimalField(
+        decimal_places=2, max_digits=10, validators=[validate_amount])
     date_done = models.DateField(auto_now=True)
     description = models.CharField(max_length=250, null=True)
     type = models.CharField(choices=BOOLEAN_CHOICES, max_length=250)
@@ -71,3 +78,4 @@ class BillInfo(models.Model):
 
     def get_absolute_url(self):
         return reverse("transactions:pay_bills")
+    
