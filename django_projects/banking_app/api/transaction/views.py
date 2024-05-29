@@ -131,8 +131,9 @@ class TransactionsViewSet(ViewSet):
         """Returns transaction based on amount query param"""
         try:
             data = request.query_params
-            if data.keys not in ['from_amt', 'to_amt']:
-                return Response({"errors": "Please provide correct query params"},
+            for k in data.keys():
+                if k not in ['from_amt', 'to_amt']:
+                    return Response({"errors": "Please provide correct query params"},
                                 status=status.HTTP_400_BAD_REQUEST)
             if not data.get('from_amt') and data.get('to_amt'):
                 res = self.queryset.filter(
@@ -151,11 +152,6 @@ class TransactionsViewSet(ViewSet):
         except Exception as e:
             return Response({"errors": str(e), "message": "Something went wrong, try again!"},
                             status=status.HTTP_400_BAD_REQUEST)
-
-    @action(detail=False, methods=["POST"], url_path='pay-bills', url_name='pay_bills')
-    def transaction_paybills(self, request):
-        """Allow customer to pay bills"""
-        pass
 
     @action(detail=False, methods=["GET"], url_path="recent-trans", url_name="recent_transactions")
     def transaction_recent_paid(self, request):
@@ -183,10 +179,3 @@ class TransactionsViewSet(ViewSet):
                 self.queryset.filter(type=data.get('type')).all(), many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
-
-    @action(detail=False, methods=["GET"], url_path="trans-type-amt", url_name="trans_type_amt")
-    def transactions_by_type_and_amount(self, request):
-        """Returnt transactions based on type and amount"""
-        pass
-
-    
