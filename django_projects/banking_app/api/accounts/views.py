@@ -80,11 +80,15 @@ class AccountViewSet(ViewSet):
         serializer = TransactionSerializer(trans)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    @action(detail=False, methods=["POST"], url_path='acc-amt-range', url_name='acc_amt_range')
+    
+    @action(detail=False, methods=["GET"], url_path='acc-amt-range', url_name='acc_amt_range')
     def account_amount_range(self, request):
         res = {}
         try:
             data = request.data
+            if data.keys not in ['from_bal', 'to_bal']:
+                return Response({"errors": "Please provide correct query params"},
+                                status=status.HTTP_400_BAD_REQUEST)
             if not data.get('from_bal') and data.get('to_bal'):
                 res = self.queryset.filter(balance__lte=data.get('to_bal')).all()
                 serializer = AccountSerializer(res, many=True)
@@ -119,6 +123,9 @@ class AccountViewSet(ViewSet):
     def opened_btn_date(self, request):
         try:
             data = request.data
+            if data.keys not in ['from_date', 'to_date']:
+                return Response({"errors": "Please provide correct query params"},
+                            status=status.HTTP_400_BAD_REQUEST)
             if not data.get('from_date') and data.get('to_date'):
                 res = self.queryset.filter(date_opened__lte=data.get('to_date')).all()
                 serializer = AccountSerializer(res, many=True)
