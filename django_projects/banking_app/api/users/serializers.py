@@ -56,8 +56,10 @@ class PasswordSerializer(serializers.Serializer):
 
     def validate_telephone(self, value):
         if len(value) != 13:
-            raise serializers.ValidationError("Phone number must be equal to 13")
+            raise serializers.ValidationError(
+                "Phone number must be equal to 13")
         if not value.startswith("+250"):
-            raise serializers.ValidationError("Phone number must starts with +250")
+            raise serializers.ValidationError(
+                "Phone number must starts with +250")
         return value
 
