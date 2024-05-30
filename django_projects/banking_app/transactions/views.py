@@ -179,24 +179,13 @@ class BillCreateView(UserAccessMixin, CreateView):
             customer_phone_number=self.request.user.telephone).first()
         payee = Account.objects.filter(
             account_num=form.cleaned_data["payee_acc"]).first()
-        if not payer or not payee:
+        
+        if payer == payee:
+            messages.error(self.request, "You can't send to same account")
             return super().form_invalid(form)
-        data = [
-            {
-                "account": payer,
-                "account_num":payer.account_num,
-                "amount": form.cleaned_data["amount"],
-                "description": f"Paid Bill to {payee.customer}",
-                "type": "Withdraw",
-            },
-            {
-                "account": payee,
-                "account_num": payee.account_num,
-                "amount": form.cleaned_data["amount"],
-                "description": f"Received Payment from {payer.customer}",
-                "type": "Deposit",
-            }
-        ]
+        if not payer or not payee:
+            messages.error(self.request, "Please provide correct information")
+            return super().form_invalid(form)
 
         if form.is_valid():
             self.object = form.save(commit=False)
@@ -208,9 +197,7 @@ class BillCreateView(UserAccessMixin, CreateView):
                 payee.balance += form.cleaned_data["amount"]
                 payee.save()
                 payer.save()
-                for d in data:
-                    Transactions.objects.create(**d)
-
+                messages.success(self.request, "Thanks for working with us!")
                 return super().form_valid(form)
             messages.error(
                 self.request, "Not enough balance to make transactions", f"You've {payer.balance} on your account.")
