@@ -162,7 +162,6 @@ class TransactionsViewSet(ViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
         
-
     @action(detail=False, methods=["GET"], url_path='trans-type', url_name='transaction_by_type')
     def transactions_by_type(self, request):
         """Return transactions based on type: Deposit | Withdraw """
