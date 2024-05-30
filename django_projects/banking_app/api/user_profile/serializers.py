@@ -6,14 +6,24 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = "__all__"
 
-    @staticmethod
-    def check_phone_number(telephone):
-        user = User.objects.filter(telephone=telephone)
-        if user:
-            return user
-        raise ValueError("No user found")
 
-    def already_exists(self, value):
-        user = Profile.objects.filter(customer=value).first()
-        if user:
-            raise ValueError("Profile already exists")
+
+    def validate_telephone(self, value):
+        if not value.startswith("+250"):
+            raise serializers.ValidationError(
+                "Phone number must starts with +250")
+        if len(value) != 13:
+            raise serializers.ValidationError(
+                "Phone number must be equal to 13")
+        return value
+    
+    def validate(self, data):
+        telephone = data['telephone']
+        customer = data['customer']
+        if not customer:
+            raise serializers.ValidationError("No user found")
+        user_profile = Profile.objects.filter(telephone=telephone).first()
+        if user_profile:
+            raise serializers.ValidationError("Profile already exists")
+        return data
+
