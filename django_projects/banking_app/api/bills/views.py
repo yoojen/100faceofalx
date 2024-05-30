@@ -5,7 +5,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from profiles.models import User
 from transactions.models import Account, BillInfo
-from .seriazilers import BillsSerializer
+from .serializers import BillsSerializer
 
 class BillViewSet(ViewSet):
 
