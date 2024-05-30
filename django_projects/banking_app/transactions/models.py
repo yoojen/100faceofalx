@@ -79,3 +79,5 @@ class BillInfo(models.Model):
     def get_absolute_url(self):
         return reverse("transactions:pay_bills")
     
+    class Meta:
+        ordering = ['-payment_date']
