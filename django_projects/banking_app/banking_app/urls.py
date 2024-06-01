@@ -23,7 +23,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('profiles/', include(('profiles.urls', 'profiles'), namespace='profiles')),
     path('transactions/', include(('transactions.urls', 'transactions'), namespace='transactions')),
-    path('api/v1/', include('api.urls'))
+    path('api/v1/', include('api.urls')),
+    path('api-auth/', include('rest_framework.urls'))
 ]
 
 if settings.DEBUG:
