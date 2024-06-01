@@ -1,31 +1,44 @@
-from django.shortcuts import get_object_or_404
 from api.transaction.serializers import TransactionSerializer
 from profiles.models import User
 from transactions.models import Account, Transactions
-from rest_framework.viewsets import ViewSet
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from .serializers import AccountSerializer
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAdminUser
+from .helpers import IsManagerOrTeller, IsOwner
 
-class AccountViewSet(ViewSet):
+
+    
+class AccountViewSet(ModelViewSet):
     queryset = Account.objects.all()
+    serializer_class = AccountSerializer
 
-
-    def get_object(self, pk):
-        return get_object_or_404(self.queryset, pk=pk)
+    def get_permissions(self):
+        if self.action in ['retrieve']:
+            self.permission_classes = [IsOwner | IsManagerOrTeller | IsAdminUser]
+        elif self.action in ['update', 'destory', 'patch']:
+            self.permission_classes = [IsAdminUser]
+        else:
+            self.permission_classes = [IsManagerOrTeller | IsAdminUser]
+        return [permission() for permission in self.permission_classes]
+        
+    def get_object(self):
+        obj = super().get_object()
+        self.check_object_permissions(self.request, obj)
+        return obj
     
     def list(self, request):
         serializer = AccountSerializer(self.queryset, many=True)
         return Response(serializer.data,  status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk=None):
-        account = get_object_or_404(self.queryset, pk=pk)
+        account = self.get_object()
         serialzer = AccountSerializer(account)
         return Response(serialzer.data, status=status.HTTP_200_OK)
         
-    
-    def create(self, request):
+    def perform_create(self, request):
         serializer = AccountSerializer(data=request.data)
         if serializer.is_valid():
             # creation of transaction
@@ -67,7 +80,7 @@ class AccountViewSet(ViewSet):
     @action(detail=True, methods=["GET"], url_path='acc-transactions',
             url_name='acc_transactions')
     def account_transactions(self, request, pk=None):
-        account = self.get_object(pk=pk)
+        account = self.get_object()
         trans = account.transactions.all()
         serializer = TransactionSerializer(trans, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -75,7 +88,7 @@ class AccountViewSet(ViewSet):
     @action(detail=True, methods=["GET"], url_path='acc-transactions-one/(?P<trans_id>\d+)',
             url_name="single_account_trans")
     def account_transactions_single(self, request, pk=None, trans_id=None):
-        account = self.get_object(pk=pk)
+        account = self.get_object()
         trans = account.transactions.filter(pk=trans_id).first()
         serializer = TransactionSerializer(trans)
         return Response(serializer.data, status=status.HTTP_200_OK)
