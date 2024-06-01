@@ -1,27 +1,41 @@
 from rest_framework.response import Response
-from rest_framework.viewsets import ViewSet
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAdminUser
 from rest_framework import status
-from django.shortcuts import get_object_or_404
 from profiles.models import User
 from transactions.models import Account, BillInfo
 from .serializers import BillsSerializer
+from api.accounts.helpers import IsManagerOrTeller, IsOwner
+from rest_framework.serializers import ValidationError
 
-class BillViewSet(ViewSet):
 
+class BillViewSet(ModelViewSet):
     queryset=BillInfo.objects.all()
+    serializer_class = BillsSerializer
 
-    def get_object(self, pk=None):
+    def get_permissions(self):
+        if self.action in ['destroy']:
+            self.permission_classes = [IsAdminUser]
+        if self.action in ['retrieve']:
+            self.permission_classes = [IsAdminUser | IsManagerOrTeller | IsOwner]
+        return [permission() for permission in self.permission_classes]
+    
+    def get_object(self):
         """Return single object from queryset"""
-        return get_object_or_404(self.queryset, pk=pk)
+        obj = super().get_object()
+        self.check_object_permissions(self.request, obj)
+        print(self.check_object_permissions(self.request, obj))
+        return obj
     
     def list(self, request):
+        if request.user.type == 'CUSTOMER':
+            self.queryset = self.queryset.filter(customer=request.user).all()
         serializer = BillsSerializer(self.queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def retrieve(self, request, pk=None):
-
-        bill = self.get_object(self.queryset, pk=pk)
+        bill = self.get_object()
         serializer = BillsSerializer(bill, many=False)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -29,17 +43,23 @@ class BillViewSet(ViewSet):
         data = request.data.copy()
         try:
             customer = request.user.telephone
-            data['customer'] = User.objects.filter(telephone=customer).first().id
+            user = User.objects.filter(telephone=customer).first()
+            data['customer'] = user.id
 
+            payer = Account.objects.filter(
+                customer_phone_number=customer).first()
+            if not payer:
+                return Response({"errors":"User has no account"}, status=status.HTTP_400_BAD_REQUEST)
             payee_account = Account.objects.filter(account_num=data.get('payee_account')).first()
+            if not payee_account:
+                return Response({"errors":"No account found"}, status=status.HTTP_400_BAD_REQUEST)
+
             data['payee_account'] = payee_account.id
 
             serializer = BillsSerializer(data=data)
             serializer.is_valid(raise_exception=True)
 
             # Update on account balances
-            payer = Account.objects.filter(
-                customer_phone_number=request.user.telephone).first()
             if payer.balance >= data.get('amount'):
                 payer.balance = payer.balance - data.get('amount')
                 payee_account.balance = payee_account.balance + data.get('amount')
@@ -48,13 +68,15 @@ class BillViewSet(ViewSet):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response({"errors": "Insuffiecient funds"}, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError:
+            return Response({})
         except Exception as e:
             return Response({"erros": str(e), "message":"Something went wrong"},
                              status=status.HTTP_400_BAD_REQUEST)
         
     def destroy(self, request, pk=None):
         try:
-            bill = self.get_object(self.queryset, pk=pk)
+            bill = self.get_object()
             bill.delete()
 
             return Response({"message": "Deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
