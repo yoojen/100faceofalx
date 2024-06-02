@@ -11,9 +11,16 @@ from rest_framework.serializers import ValidationError
 
 
 class BillViewSet(ModelViewSet):
-    queryset=BillInfo.objects.all()
     serializer_class = BillsSerializer
+    queryset =  None
 
+    def get_queryset(self):
+        queryset = BillInfo.objects.all()
+        if self.request.user.type == 'CUSTOMER':
+            BillViewSet.queryset=queryset.filter(customer=self.request.user).all()
+            queryset = BillViewSet.queryset
+        return queryset
+    
     def get_permissions(self):
         if self.action in ['destroy']:
             self.permission_classes = [IsAdminUser]
@@ -25,12 +32,9 @@ class BillViewSet(ModelViewSet):
         """Return single object from queryset"""
         obj = super().get_object()
         self.check_object_permissions(self.request, obj)
-        print(self.check_object_permissions(self.request, obj))
         return obj
     
     def list(self, request):
-        if request.user.type == 'CUSTOMER':
-            self.queryset = self.queryset.filter(customer=request.user).all()
         serializer = BillsSerializer(self.queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -93,12 +97,12 @@ class BillViewSet(ModelViewSet):
                     return Response({"errors": "Please provide correct query params"},
                                     status=status.HTTP_400_BAD_REQUEST)
             if not data.get('from_amt') and data.get('to_amt'):
-                res = self.queryset.filter(
+                res = self.get_queryset().filter(
                     amount__lte=data.get('to_amt')).all()
                 serializer = BillsSerializer(res, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             if data.get('from_amt') and not data.get('to_amt'):
-                res = self.queryset.filter(
+                res = self.get_queryset().filter(
                     amount__gte=data.get('from_amt')).all()
                 serializer = BillsSerializer(res, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
