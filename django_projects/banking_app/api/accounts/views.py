@@ -98,10 +98,11 @@ class AccountViewSet(ModelViewSet):
     def account_amount_range(self, request):
         res = {}
         try:
-            data = request.data
-            if data.keys not in ['from_bal', 'to_bal']:
-                return Response({"errors": "Please provide correct query params"},
-                                status=status.HTTP_400_BAD_REQUEST)
+            data = request.query_params
+            for k in data.keys():
+                if k not in ['from_bal', 'to_bal']:
+                    return Response({"errors": "Please provide correct query params"},
+                                    status=status.HTTP_400_BAD_REQUEST)
             if not data.get('from_bal') and data.get('to_bal'):
                 res = self.queryset.filter(balance__lte=data.get('to_bal')).all()
                 serializer = AccountSerializer(res, many=True)
@@ -132,13 +133,15 @@ class AccountViewSet(ModelViewSet):
             return Response({"errors": str(e), "message": "Something went wrong, try again!"},
                             status=status.HTTP_400_BAD_REQUEST)
     
-    @action(detail=False, methods=["POST"], url_path='acc-btn', url_name='acc_btn')
+    @action(detail=False, methods=["GET"], url_path='acc-btn', url_name='acc_btn')
     def opened_btn_date(self, request):
+        res = {}
         try:
-            data = request.data
-            if data.keys not in ['from_date', 'to_date']:
-                return Response({"errors": "Please provide correct query params"},
-                            status=status.HTTP_400_BAD_REQUEST)
+            data = request.query_params
+            for k in data.keys():
+                if k not in ['from_date', 'to_date']:
+                    return Response({"errors": "Please provide correct query params"},
+                                    status=status.HTTP_400_BAD_REQUEST)
             if not data.get('from_date') and data.get('to_date'):
                 res = self.queryset.filter(date_opened__lte=data.get('to_date')).all()
                 serializer = AccountSerializer(res, many=True)
