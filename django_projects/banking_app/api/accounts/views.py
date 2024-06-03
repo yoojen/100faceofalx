@@ -12,23 +12,37 @@ from .helpers import IsManagerOrTeller, IsOwner
 
     
 class AccountViewSet(ModelViewSet):
-    queryset = Account.objects.all()
+    queryset = None
     serializer_class = AccountSerializer
 
     def get_permissions(self):
-        if self.action in ['retrieve']:
-            self.permission_classes = [IsOwner | IsManagerOrTeller | IsAdminUser]
+        if self.action in ['retrieve', 'list']:
+            self.permission_classes = [IsManagerOrTeller | IsAdminUser| IsOwner]
         elif self.action in ['update', 'destory', 'patch']:
             self.permission_classes = [IsAdminUser]
         else:
             self.permission_classes = [IsManagerOrTeller | IsAdminUser]
         return [permission() for permission in self.permission_classes]
         
+    def get_queryset(self):
+        queryset = Account.objects.all()
+        try:
+            if self.request.user.type == 'CUSTOMER':
+                AccountViewSet.queryset = queryset.filter(
+                    account_num=self.request.user.account.account_num).all()
+                queryset = AccountViewSet.queryset
+            AccountViewSet.queryset = queryset
+            return queryset
+        except Exception as e:
+            return Response({"errors": str(e), "message": "Something wrong happened"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        
     def get_object(self):
         obj = super().get_object()
         self.check_object_permissions(self.request, obj)
         return obj
     
+
     def list(self, request):
         serializer = AccountSerializer(self.queryset, many=True)
         return Response(serializer.data,  status=status.HTTP_200_OK)
