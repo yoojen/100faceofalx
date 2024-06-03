@@ -16,10 +16,15 @@ class BillViewSet(ModelViewSet):
 
     def get_queryset(self):
         queryset = BillInfo.objects.all()
-        if self.request.user.type == 'CUSTOMER':
-            BillViewSet.queryset=queryset.filter(customer=self.request.user).all()
-            queryset = BillViewSet.queryset
-        return queryset
+        try:
+            if self.request.user.type == 'CUSTOMER':
+                BillViewSet.queryset=queryset.filter(customer=self.request.user).all()
+                queryset = BillViewSet.queryset
+            BillViewSet.queryset = queryset
+            return queryset
+        except Exception as e:
+            return Response({"errors": str(e), "message": "Something wrong happened"},
+                            status=status.HTTP_400_BAD_REQUEST)
     
     def get_permissions(self):
         if self.action in ['destroy']:
