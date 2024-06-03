@@ -11,7 +11,6 @@ class BillsSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data['payee_account'] == Account.objects.filter(customer_id=data['customer']).first():
-            print("reaches here")
             raise serializers.ValidationError("You can't sent to same account")
 
         return data
