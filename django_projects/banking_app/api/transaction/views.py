@@ -1,31 +1,79 @@
 from rest_framework.response import Response
-from rest_framework.viewsets import ViewSet
+from rest_framework.viewsets import ModelViewSet
 from rest_framework import status
 from rest_framework.decorators import action
-from django.shortcuts import get_object_or_404
-
+from rest_framework.permissions import BasePermission, IsAdminUser, IsAuthenticated
 from transactions.models import Account
 from .serializers import TransactionSerializer, Transactions
+from api.accounts.helpers import IsManagerOrTeller
 
-class TransactionsViewSet(ViewSet):
-    queryset=Transactions.objects.all()
 
-    def get_object(self, pk=None):
+class IsOwnerOfTransaction(BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+        return super().has_permission(request, view)
+    
+    def has_object_permission(self, request, view, obj):
+        if not obj.account == request.user.account:
+            return False
+        return True
+
+
+class TransactionsViewSet(ModelViewSet):
+    queryset=None
+    serializer_class = TransactionSerializer
+
+    def get_object(self):
         """Custom get_object method that returns current object"""
-        return get_object_or_404(self.queryset, pk=pk)
+        obj = super().get_object()
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+    def get_queryset(self):
+        queryset = Transactions.objects.all()
+        try:
+            if self.request.user.type == 'CUSTOMER':
+                TransactionsViewSet.queryset = queryset.filter(account=self.request.user.account).all()
+                queryset = TransactionsViewSet.queryset
+            TransactionsViewSet.queryset = queryset
+            return queryset
+        except Exception as e:
+            return Response({"errors": str(e), "message": "Something went wrong"},
+                            status=status.HTTP_400_BAD_REQUEST)
+    
+    def get_permissions(self):
+        if self.action in ['retrieve']:
+            self.permission_classes = [IsAdminUser |
+                                       IsManagerOrTeller | IsOwnerOfTransaction]
+        elif self.action in ['destroy', 'update', 'patch']:
+            self.permission_classes = [IsAdminUser]
+        elif self.action in ['list']:
+            self.permission_classes = [IsAuthenticated]
+        else:
+            self.permission_classes = [IsManagerOrTeller|IsAdminUser]
+        return [permission() for permission in self.permission_classes]
     
     def list(self, request):
-        serializer = TransactionSerializer(self.queryset, many=True)
+        serializer = self.serializer_class(self.queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+        
 
     def retrieve(self, request, pk=None):
-        transaction = self.get_object(pk=pk)
-        serializer = TransactionSerializer(transaction)
+        transaction = self.get_object()
+        serializer = self.serializer_class(transaction)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def create(self, request):
+        return Response({"message": "Please try different endpoints", "endpoints": [
+            "http://localhost:8000/api/v1/transactions/deposit",
+            "http://localhost:8000/api/v1/transactions/withdraw",
+
+            ]})
+    
     def update(self, request, pk=None):
         data = request.data
-        obj = self.get_object(pk=pk)
+        obj = self.get_object()
         serializer = TransactionSerializer(obj, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
         account = Account.objects.filter(pk=obj.account_id).first()
@@ -55,7 +103,7 @@ class TransactionsViewSet(ViewSet):
     
     def destroy(self, request, pk=None):
         try:
-            transaction = self.get_object(pk=pk)
+            transaction = self.get_object()
             transaction.delete()
             return Response({"message": "Deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
@@ -67,10 +115,11 @@ class TransactionsViewSet(ViewSet):
         if request.data.get('type') != "Deposit":
             return Response({"errors": "Please provide correct type"})
         try:
+            account = Account.objects.filter(
+                account_num=request.data.get("account_num")).first()
+            
             serializer = TransactionSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            account = Account.objects.filter(
-                account_num=request.data.get('account_num')).first()
             account.balance = float(account.balance) + \
                 float(request.data.get('amount'))
             account.save()
@@ -109,16 +158,16 @@ class TransactionsViewSet(ViewSet):
                             status=status.HTTP_400_BAD_REQUEST)
         try:
             if not data.get('from_date') and data.get('to_date'):
-                res = self.queryset.filter(date_done__lte=data.get('to_date')).all()
+                res = TransactionsViewSet.queryset.filter(date_done__lte=data.get('to_date')).all()
                 serializer = TransactionSerializer(res, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
 
             if data.get('from_date') and not data.get('to_date'):
-                res = self.queryset.filter(
+                res = TransactionsViewSet.queryset.filter(
                     date_done__gte=data.get('from_date')).all()
                 serializer = TransactionSerializer(res, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            res = self.queryset.filter(date_done__gte=data.get('from_date'),
+            res = TransactionsViewSet.queryset.filter(date_done__gte=data.get('from_date'),
                                     date_done__lte=data.get('to_date')).all()
             serializer = TransactionSerializer(res, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -136,16 +185,16 @@ class TransactionsViewSet(ViewSet):
                     return Response({"errors": "Please provide correct query params"},
                                 status=status.HTTP_400_BAD_REQUEST)
             if not data.get('from_amt') and data.get('to_amt'):
-                res = self.queryset.filter(
+                res = TransactionsViewSet.queryset.filter(
                     amount__lte=data.get('to_amt')).all()
                 serializer = TransactionSerializer(res, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             if data.get('from_amt') and not data.get('to_amt'):
-                res = self.queryset.filter(
+                res = TransactionsViewSet.queryset.filter(
                     amount__gte=data.get('from_amt')).all()
                 serializer = TransactionSerializer(res, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            res = self.queryset.filter(amount__gte=data.get('from_amt'),
+            res = TransactionsViewSet.queryset.filter(amount__gte=data.get('from_amt'),
                                        amount__lte=data.get('to_amt')).all()
             serializer = TransactionSerializer(res, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -158,7 +207,7 @@ class TransactionsViewSet(ViewSet):
         """
         Return recent transactions
         """
-        serializer = TransactionSerializer(self.queryset[:10], many=True)
+        serializer = TransactionSerializer(TransactionsViewSet.queryset[:10], many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
         
@@ -170,11 +219,11 @@ class TransactionsViewSet(ViewSet):
             return Response({"errors": "Please provide correct query params"}, 
                             status=status.HTTP_400_BAD_REQUEST)
         if data.get('type') == "Deposit":
-            serializer = TransactionSerializer(self.queryset.filter(
+            serializer = TransactionSerializer(TransactionsViewSet.queryset.filter(
                 type=data.get('type')).all(), many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         if data.get('type') == "Withdraw":
             serializer = TransactionSerializer(
-                self.queryset.filter(type=data.get('type')).all(), many=True)
+                TransactionsViewSet.queryset.filter(type=data.get('type')).all(), many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
