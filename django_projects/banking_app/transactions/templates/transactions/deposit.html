@@ -19,11 +19,14 @@
         </form>
         {% if messages %}
           <div class="messages">
-              {% for msg in messages %}
-                <p style="color: rgb(0, 132, 255)">{{msg}}</p>
-                <small style="color: rgb(0, 132, 255)">{{msg.tags}}</small>
-              {% endfor %}
-            </div>
+            {% for msg in messages %}
+              {% if msg.tags == 'error' %}
+                <p style="color: rgb(255, 47, 0)">{{msg}}</p>
+              {% else %}
+                <small style="color: rgb(0, 132, 255)">{{msg}}</small>
+              {% endif %}
+            {% endfor %}
+          </div>
         {% endif %}
       </div>
       <div class="trans-forms">

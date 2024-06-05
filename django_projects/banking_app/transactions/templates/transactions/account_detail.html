@@ -7,6 +7,17 @@
 {% block content %}
 <div class="container">
     <h2>ACCOUNT SUMMARY</h2>
+    {% if messages %}
+        <div class="messages">
+        {% for msg in messages %}
+            {% if msg.tags == 'error' %}
+            <p style="color: rgb(255, 47, 0)">{{msg}}</p>
+            {% else %}
+            <small style="color: rgb(0, 132, 255)">{{msg}}</small>
+            {% endif %}
+        {% endfor %}
+        </div>
+    {% endif %}
     <table>
         <tr>
             <th>Customer</th>
@@ -52,9 +63,6 @@
     
     </table>
     <a href="{% url 'transactions:acc_inspect' %}">Back</a>
-    {% if user == account.customer %}
-        <button>Delete</button>
-    {% endif %}
 </div>
 
 
