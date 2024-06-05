@@ -15,8 +15,7 @@ def create_transaction(sender, instance, created, **kwargs):
 def create_transaction_after_bill(sender, instance, created, **kwargs):
     request = get_current_request()
     if created:
-        payer = Account.objects.filter(
-            customer_phone_number=request.user.telephone).first()
+        payer = request.user.account
         payee = Account.objects.filter(
             account_num=instance.payee_account).first()
         if payer and payee:
@@ -36,6 +35,8 @@ def create_transaction_after_bill(sender, instance, created, **kwargs):
                     "type": "Deposit",
                 }
             ]
-            
+            print(data)
             for d in data:
                 obj = Transactions.objects.create(**d)
+        else:
+            raise ValueError("Please enter correct information")
