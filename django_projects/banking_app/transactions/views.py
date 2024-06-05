@@ -1,8 +1,9 @@
 from django.db.models import Q
+from django.forms import BaseModelForm
 from django.http.response import HttpResponse as HttpResponse
 from django.urls import reverse
 from profiles.forms import CustomUserUpdateForm
-from .forms import BillForm
+from .forms import AccountCreationForm, BillForm
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import Transactions, Account, BillInfo
@@ -56,7 +57,7 @@ class TransactionPostView(UserAccessMixin, CreateView):
                     self.request, self.success_message,  f"Balance: {self.object.account.balance}")
             else:
                 if account.balance < amount:
-                    raise ValueError("Insufficient funds")
+                    raise ValueError(f"Insufficient funds {account.balance} only left")
                 else:
                     account.balance = account.balance - amount
                     account.save()
@@ -64,7 +65,7 @@ class TransactionPostView(UserAccessMixin, CreateView):
                         self.request, self.success_message, f"Balance: {self.object.account.balance}")
             return super().form_valid(form)
         except Exception as e:
-            messages.error(self.request, "Can't process the request", str(e))
+            messages.error(self.request, str(e))
             return super().form_invalid(form)
 
 @login_required
@@ -93,34 +94,6 @@ class AccountListView(UserAccessMixin, ListView):
         return queryset
 
 
-def django_admin_like_search(model, search_term, search_fields):
-    all_queries = None
-
-    # Split the search term into keywords for individual filtering
-    for keyword in search_term.split():
-        keyword_query = None
-
-    # Iterate through each search field
-    for field in search_fields:
-        # Construct a Q object for case-insensitive search using icontains
-        each_query = Q(**{field + '__icontains': keyword})
-
-    # Combine queries using OR (any keyword match)
-    if not keyword_query:
-        keyword_query = each_query
-    else:
-        keyword_query |= each_query
-
-    # Combine all keyword queries using AND (all keywords must match)
-    if not all_queries:
-        all_queries = keyword_query
-    else:
-        all_queries &= keyword_query
-
-    # Apply the combined filters to the model queryset
-    return model.objects.filter(all_queries).distinct()
-
-
 def generate_account_number(request):
     from datetime import datetime
     today = str(datetime.now()).replace(":", "")
@@ -134,27 +107,26 @@ def generate_account_number(request):
 
 class CreateAccountView(UserAccessMixin, CreateView):
     model = Account
-    permission_required = ["transactions.add_account", "transactions.view_account"]
-    fields = ["customer_phone_number", "account_num", "balance"]
+    permission_required = [
+        "transactions.add_account", "transactions.view_account"]
+    form_class = AccountCreationForm
 
     def form_valid(self, form):
-        customer = Profile.objects.filter(
-            telephone=form.cleaned_data["customer_phone_number"]).first()
-        if customer:
-            customer = customer.customer
         try:
             self.object = form.save(commit=False)
-            self.object.customer_id = Serializer.dumps(customer)["id"]
-            messages.success(self.request,
-                             "Account created successfully",
-                             f"Account created with this account number: {form.cleaned_data['account_num'] }")
+            customer = User.objects.filter(
+                telephone=form.cleaned_data["phone_number"]).first()
+            if customer is None:
+                raise ValueError(
+                    "Customer with this phone number does not exist.")
+            self.object.customer_id = customer.id
+
+            self.object.save()
             return super().form_valid(form)
         except Exception as e:
-            messages.error(self.request,
-                           "Account Not Created",
-                           f"No user found with this Phone Number: {form.cleaned_data['customer_phone_number'] }")
+            messages.error(self.request, str(e))
             return super().form_invalid(form)
-
+            
 
 class TransactionListView(UserAccessMixin, ListView):
     model = Transactions
@@ -175,8 +147,7 @@ class BillCreateView(UserAccessMixin, CreateView):
     permission_required = ["transactions.add_billinfo"]
 
     def form_valid(self, form):
-        payer = Account.objects.filter(
-            customer_phone_number=self.request.user.telephone).first()
+        payer = self.request.user.account
         payee = Account.objects.filter(
             account_num=form.cleaned_data["payee_acc"]).first()
         
@@ -190,8 +161,11 @@ class BillCreateView(UserAccessMixin, CreateView):
         if form.is_valid():
             self.object = form.save(commit=False)
             self.object.customer_id = self.request.user.id
-            
+            self.object.payee_account_id = payee.id
             # Making Transactions and Account instances
+            if form.cleaned_data['amount'] < 50:
+                messages.error(self.request, "Too few to make pay bill")
+                return super().form_invalid(form)
             if payer.balance >= form.cleaned_data["amount"]:
                 payer.balance -= form.cleaned_data["amount"]
                 payee.balance += form.cleaned_data["amount"]
@@ -200,7 +174,7 @@ class BillCreateView(UserAccessMixin, CreateView):
                 messages.success(self.request, "Thanks for working with us!")
                 return super().form_valid(form)
             messages.error(
-                self.request, "Not enough balance to make transactions", f"You've {payer.balance} on your account.")
+                self.request, f"Not enough You've {payer.balance} on your account.")
             return super().form_invalid(form)
         else:
             return super().form_invalid(form)
@@ -237,30 +211,35 @@ class CustomerTransactionListView(ListView):
 @check_permission(["transactions.view_account"])
 @login_required
 def my_combined_view(request, pk=None):
-    list_data = []
-    customer = User.objects.filter(pk=pk).first()
-    if customer:
-        account = Account.objects.filter(
-            customer_phone_number=customer.telephone).first()
-    else:
-        return render(request, 'transactions/account_detail.html', {})
-    if account:
-        list_data = Transactions.objects.filter(
-            account_num=account.account_num).all()
-    else:
+    try:
+        customer = User.objects.get(pk=pk)
+        account = customer.account
+        if account:
+            context = {
+                "customer": customer,
+                'account': account if account else None,  # For DetailView
+                'list_data': account.transactions.all(),          # For ListView
+            }
+            return render(request, 'transactions/account_detail.html', context)
+        else:
+            messages.error(request, "No account yet created")
+            return render(request, 'transactions/account_detail.html', {})
+    except Exception as e:
+        print(str(e))
+        messages.error(request, str(e))
         return render(request, 'transactions/account_detail.html', {})
 
-    context = {
-        "customer": customer,
-        'account': account if account else None,  # For DetailView
-        'list_data': list_data if list_data else None,          # For ListView
-    }
-    return render(request, 'transactions/account_detail.html', context)
 
 
 @login_required
 def customer_profile_view(request, pk):
     profile_form = CustomUserUpdateForm
+    try:
+        _ = request.user.profile
+    except Exception:
+        messages.error(request, "No profile for this user")
+        return redirect(reverse("profiles:login"))
+    
     if request.method == 'POST':
         profile_form = CustomUserUpdateForm(
             request.POST, request.FILES, instance=request.user.profile)
@@ -269,6 +248,8 @@ def customer_profile_view(request, pk):
             return redirect(reverse("transactions:user_profile", kwargs={"pk": request.user.id}))
     else:
         profile_form = CustomUserUpdateForm(instance=request.user.profile)
+        if request.user.type == 'CUSTOMER':
+            return render(request, 'transactions/user_detail.html', {"profile_form":  profile_form})
         return render(request, 'transactions/teller_details.html', {"profile_form":  profile_form})
 
 

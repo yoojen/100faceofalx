@@ -12,8 +12,6 @@ def validate_amount(value):
 
 class Account(models.Model):
     customer = models.OneToOneField(User, on_delete=models.CASCADE, related_name='account')
-    customer_phone_number = models.CharField(
-        max_length=13, blank=False, unique=True)
     account_num = models.CharField(
         max_length=13, unique=True, blank=False, null=False)
     balance = models.DecimalField(
