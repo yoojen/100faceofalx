@@ -3,7 +3,8 @@ from django.contrib.auth.views import LogoutView
 from .views import (CreateUserProfileView,UserLoginView,
                     CustomerListView, UserAccountDetailView,
                     create_password,
-                    customer_profile_view, register)
+                    register)
+from profiles.views import customer_profile_view
 
 urlpatterns = [
     path('login/', UserLoginView.as_view(), name='login'),
@@ -17,3 +18,4 @@ urlpatterns = [
     path('user/<int:pk>', customer_profile_view, name="user_profile")
 
 ]
+
