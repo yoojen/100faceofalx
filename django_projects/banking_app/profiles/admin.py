@@ -70,7 +70,6 @@ class ProfileInline(admin.StackedInline):
 class UserAdmin(CustomObjectAccessMixin,  BaseUserAdmin):
     model = User
     add_form=CustomUserCreationForm
-    # form = CustomUserChangeForm
     list_display = ["telephone", "first_name", "last_name", "date_joined"]
     ordering=["first_name"]
     fieldsets=(
@@ -119,4 +118,4 @@ class UserAdmin(CustomObjectAccessMixin,  BaseUserAdmin):
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ["telephone", "dob", "province", "district"]
+    list_display = ["customer", "dob", "province", "district"]
