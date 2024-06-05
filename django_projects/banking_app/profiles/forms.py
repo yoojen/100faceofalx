@@ -56,3 +56,10 @@ class UserAuthenticationForm(AuthenticationForm):
         "invalid_login": _("Incorrect username or password"),
         "inactive": _("This account is inactive")
     }
+
+
+class ProfileCrationForm(forms.ModelForm):
+    telephone = forms.CharField(required=True)
+    class Meta:
+        model = Profile
+        fields = ["telephone", "dob","province", "district", "sector","cell","image"]

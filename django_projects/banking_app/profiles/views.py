@@ -13,7 +13,7 @@ from transactions.models import Account
 from transactions.views import UserAccessMixin
 from .models import User, Profile
 from django.views.generic import CreateView, ListView, DetailView
-from .forms import (CustomUserUpdateForm,
+from .forms import (CustomUserUpdateForm, ProfileCrationForm,
                     UserCreationModelForm, 
                     UserAuthenticationForm,
                     PasswordCreationForm)
@@ -22,15 +22,20 @@ from .helpers import TestUserMixin, check_permission
 
 @check_permission(perms=["profiles.add_user", "profiles.view_user"])
 def register(request):
-    if request.method == 'POST':
-        form = UserCreationModelForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.save()
-            return redirect('profiles:customers')
-    else:
-        form = UserCreationModelForm()
-    return render(request, 'profiles/user_form.html', {'form': form})
+    try:
+        if request.method == 'POST':
+            form = UserCreationModelForm(request.POST)
+            if form.is_valid():
+                print(form.cleaned_data)
+                user = form.save(commit=False)
+                user.save()
+                return redirect('profiles:customers')
+        else:
+            form = UserCreationModelForm()
+        return render(request, 'profiles/user_form.html', {'form': form})
+    except Exception as e:
+        messages.error(request, str(e))
+        return redirect("profiles:create_user")
         
 
 def create_password(request):
@@ -66,9 +71,10 @@ def create_password(request):
 
 class CreateUserProfileView(UserAccessMixin, CreateView):
     model = Profile
-    permission_required = ["profile.add_user"]
-    fields = ["telephone","dob","province", "district", "sector","cell","image"]
+    form_class = ProfileCrationForm
+    permission_required = ["profiles.add_user"]
     success_url = "create_user_profile"
+    template_name = 'profiles/customerprofile_form.html'
     
     def form_valid(self, form):
         customer = User.objects.filter(
@@ -80,7 +86,8 @@ class CreateUserProfileView(UserAccessMixin, CreateView):
             messages.success(request=self.request, message="Customer profile created successfully")
             super().form_valid(form)
             return redirect("profiles:create_user_profile")
-        except Exception:
+        except Exception as e:
+            print(str(e))
             messages.error(request=self.request, message="Customer profile is not created")
             return super().form_invalid(form)
 
@@ -92,7 +99,6 @@ class CustomerListView(UserAccessMixin, ListView):
 
 
 def customer_profile_view(request, pk):
-    profile_form = CustomUserUpdateForm
     user_info = UserCreationModelForm
 
     try:
@@ -102,7 +108,6 @@ def customer_profile_view(request, pk):
                 profile_form.save()
                 return redirect(reverse("profiles:user_profile", kwargs={"pk": request.user.id}))
         else:
-            user_info = UserCreationModelForm(instance=request.user)
             profile_form = CustomUserUpdateForm(instance=request.user.profile)
             return render(request, 'transactions/user_detail.html', {'user_form': user_info,
                                                             "profile_form":  profile_form})
@@ -127,12 +132,14 @@ class UserLoginView(LoginView):
 
 
     def form_valid(self, form):
-        super().form_valid(form)
-        
-        if self.request.user.type == "ADMIN":
-            return redirect("admin:index")
-        elif self.request.user.type == "CUSTOMER":
-            return redirect("transactions:pay_bills")
-        else:
-            return redirect("transactions:transact")
-    
+        try:
+            super().form_valid(form)
+            
+            if self.request.user.type == "ADMIN":
+                return redirect("admin:index")
+            elif self.request.user.type == "CUSTOMER":
+                return redirect("transactions:pay_bills")
+            else:
+                return redirect("transactions:transact")
+        except TypeError:
+            return redirect("profiles:login")

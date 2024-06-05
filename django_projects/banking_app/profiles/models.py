@@ -4,12 +4,20 @@ from django.contrib.auth.models import AbstractUser
 from .managers import CustomUserManager
 from PIL import Image
 
+def validate_phone_number(value):
+    if not (value.startswith("+25072") or value.startswith("+25073")\
+             or value.startswith("+25078")):
+        raise ValueError("Phone number should start with +25072 | +25073 | +25078")
+    if len(value) != 13:
+        raise ValueError("Phone number should be equal to 13 digits")
+    return value
 
 class User(AbstractUser):
     """Custom user """
     username = None
     type = models.CharField(max_length=250, default="CUSTOMER")
-    telephone = models.CharField(max_length=13, verbose_name="Phone Number", unique=True, blank=False)
+    telephone = models.CharField(max_length=13, verbose_name="Phone Number", 
+                                 unique=True, blank=False, validators=[validate_phone_number])
     password = models.CharField(max_length=250, null=True)
     
     USERNAME_FIELD = 'telephone'
@@ -31,7 +39,6 @@ class User(AbstractUser):
 
 class Profile(models.Model):
     customer = models.OneToOneField(User, on_delete=models.CASCADE)
-    telephone = models.CharField(max_length=13, verbose_name="Phone Number", unique=True, blank=False)
     dob = models.DateField(null=False)
     province = models.CharField(max_length=250, null=False)
     district = models.CharField(max_length=250, null=False)
