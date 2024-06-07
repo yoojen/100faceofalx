@@ -1,5 +1,5 @@
 from rest_framework import serializers
-
+from django.contrib.auth.hashers import make_password
 from profiles.models import Profile, User
 from transactions.models import Account, Transactions
 
@@ -37,28 +37,43 @@ class PhoneNumberSerializer(serializers.Serializer):
     
 
 class PasswordSerializer(serializers.Serializer):
-    telephone = serializers.CharField(max_length=13)
+    account_num = serializers.CharField(max_length=13, required=False)
+    telephone = serializers.CharField(max_length=13, required=False)
     password1 = serializers.CharField(max_length=18)
     password2 = serializers.CharField(max_length=18)
 
     class Meta:
         model = User
-        fields = ["telephone","password1", "password2"]
+        fields = ["account_num","telephone","password1", "password2"]
 
     def validate(self, data):
+        account_num = data.get('account_num')
+        telephone = data.get('telephone')
+
+        if len(data['telephone']) != 13:
+            raise serializers.ValidationError(
+                "Phone number must be equal to 13")
+        if not data['telephone'].startswith("+250"):
+            raise serializers.ValidationError(
+                "Phone number must starts with +250")
+        
         if (len(data['password1']) or len(data['password2'])) < 8:
             raise serializers.ValidationError("Password should be more than 8 characters")
         
         if data['password1'] != data['password2']:
             raise serializers.ValidationError("Password fields does not match")
+
+        user = User.objects.filter(telephone=telephone).first()
+        if user and user.password:
+            raise serializers.ValidationError("Password already set")
+        
+        account = Account.objects.filter(account_num=account_num).first()
+        if user.account != account:
+            raise serializers.ValidationError("No account associated to this phone number")
         return data
 
-    def validate_telephone(self, value):
-        if len(value) != 13:
-            raise serializers.ValidationError(
-                "Phone number must be equal to 13")
-        if not value.startswith("+250"):
-            raise serializers.ValidationError(
-                "Phone number must starts with +250")
-        return value
-
+    def save(self, **kwargs):
+        password = self.validated_data['password1']
+        self.user.password = make_password(password)
+        self.user.save()
+        return self.user

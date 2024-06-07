@@ -11,11 +11,9 @@ load_dotenv(env_path)
 
 
 class AccountSerializer(serializers.ModelSerializer):
-    customer = serializers.PrimaryKeyRelatedField(read_only=True)
     class Meta:
         model = Account
         fields = "__all__"
-        read_only_fields = ['balance', 'date_opened', 'customer_phone_number','account_num']
 
     def validate_customer_phone_number(self, value):
         if not (os.environ.get('AIRTEL_1') == value[:3] or os.environ.get('AIRTEL_2')==value[:3]\
