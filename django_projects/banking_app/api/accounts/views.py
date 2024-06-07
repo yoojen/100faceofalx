@@ -17,7 +17,7 @@ class AccountViewSet(ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['retrieve', 'list']:
-            self.permission_classes = [IsManagerOrTeller | IsAdminUser| IsOwner]
+            self.permission_classes = [IsAdminUser | IsManagerOrTeller | IsOwner]
         elif self.action in ['update', 'destory', 'patch']:
             self.permission_classes = [IsAdminUser]
         else:
@@ -52,29 +52,27 @@ class AccountViewSet(ModelViewSet):
         serialzer = AccountSerializer(account)
         return Response(serialzer.data, status=status.HTTP_200_OK)
         
-    def perform_create(self, request):
-        serializer = AccountSerializer(data=request.data)
-        if serializer.is_valid():
-            # creation of transaction
-            acc_num, amount = serializer.validated_data["account_num"], \
-                serializer.validated_data["balance"]
-            user = User.objects.filter(
-                telephone=serializer.validated_data["customer_phone_number"]).first()
+    def create(self, request):
+        data= request.data.copy()
+        try:
+            telephone = data.pop('telephone')
+            user = User.objects.filter(telephone=telephone).first()
             if not user:
-                return Response({"message": "Enter correct phone number"},
-                                 status=status.HTTP_400_BAD_REQUEST)
-            account = Account.objects.create(account_num=acc_num, balance=amount, 
-                              customer_phone_number=user.telephone, customer_id=user.id)
-            return Response({"data": account.id, 
-                            "message": f"Account created successfully with {account.balance} balance"},
+                raise ValueError("No user found")
+            data['customer'] = user.id
+            serializer = self.get_serializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response({"data": serializer.data, 
+                             "message": f"Account created successfully with {serializer.data.get('balance')}"},
                             status=status.HTTP_201_CREATED)
-            
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"errors": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
     def destroy(self, request, pk=None):
         try:
-            account = self.queryset.get(pk=pk)
+            account = self.get_object()
             account.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Account.DoesNotExist:
@@ -82,7 +80,7 @@ class AccountViewSet(ModelViewSet):
 
 
     @action(detail=False, methods=["GET"],url_path='gen-acc-num', 
-            url_name='gen_acc_num')
+            url_name='gen_acc_num', permission_classes = [IsAdminUser | IsManagerOrTeller])
     def generate_account_num(self, request):
         from datetime import datetime
         today = str(datetime.now()).replace(
@@ -92,7 +90,7 @@ class AccountViewSet(ModelViewSet):
                          "message": "Account number generated successfully"})
 
     @action(detail=True, methods=["GET"], url_path='acc-transactions',
-            url_name='acc_transactions')
+            url_name='acc_transactions', permission_classes = [IsAdminUser | IsManagerOrTeller |IsOwner])
     def account_transactions(self, request, pk=None):
         account = self.get_object()
         trans = account.transactions.all()
@@ -100,7 +98,7 @@ class AccountViewSet(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["GET"], url_path='acc-transactions-one/(?P<trans_id>\d+)',
-            url_name="single_account_trans")
+            url_name="single_account_trans", permission_classes=[IsAdminUser | IsManagerOrTeller | IsOwner])
     def account_transactions_single(self, request, pk=None, trans_id=None):
         account = self.get_object()
         trans = account.transactions.filter(pk=trans_id).first()
@@ -108,7 +106,8 @@ class AccountViewSet(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     
-    @action(detail=False, methods=["GET"], url_path='acc-amt-range', url_name='acc_amt_range')
+    @action(detail=False, methods=["GET"], url_path='acc-amt-range', url_name='acc_amt_range',
+             permission_classes=[IsAdminUser | IsManagerOrTeller])
     def account_amount_range(self, request):
         res = {}
         try:
@@ -134,7 +133,8 @@ class AccountViewSet(ModelViewSet):
             return Response({"errors": str(e), "message": "Something went wrong, try again!"},
                             status=status.HTTP_400_BAD_REQUEST)
     
-    @action(detail=False, methods=["POST"], url_path='s-acc-ctm', url_name='s_acc_ctm')
+    @action(detail=False, methods=["POST"], url_path='s-acc-ctm', url_name='s_acc_ctm',
+             permission_classes =[IsAdminUser | IsManagerOrTeller])
     def account_by_customer(self, request):
         try:
             data = request.data
@@ -147,7 +147,8 @@ class AccountViewSet(ModelViewSet):
             return Response({"errors": str(e), "message": "Something went wrong, try again!"},
                             status=status.HTTP_400_BAD_REQUEST)
     
-    @action(detail=False, methods=["GET"], url_path='acc-btn', url_name='acc_btn')
+    @action(detail=False, methods=["GET"], url_path='acc-btn', url_name='acc_btn',
+            permission_classes=[IsAdminUser | IsManagerOrTeller | IsOwner])
     def opened_btn_date(self, request):
         res = {}
         try:

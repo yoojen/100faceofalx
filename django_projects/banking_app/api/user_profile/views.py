@@ -23,7 +23,7 @@ class IsOwnerOfProfile(BasePermission):
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
-        return super().has_permission(request, view)
+        return True
 
 class UserProfileViewSet(ModelViewSet):
     queryset = Profile.objects.all()
@@ -41,12 +41,10 @@ class UserProfileViewSet(ModelViewSet):
     
     def get_serializer(self, *args, **kwargs):
         if self.action in ['update']:
-            self.serializer_class = ProfilePartialUpdateSerializer
-        elif self.action in ['update_profile_picture']:
-            self.serializer_class = ProfilePictureSerializer
-        else:
-            self.serializer_class = ProfileSerializer
-        return super().get_serializer(*args, **kwargs)
+           return ProfilePartialUpdateSerializer(*args, **kwargs)
+        if self.action in ['update_profile_picture']:
+            return ProfilePictureSerializer(*args, **kwargs)
+        return ProfileSerializer(*args, **kwargs)
     
     def get_queryset(self):
         if self.request.user.type == 'CUSTOMER':
@@ -89,7 +87,7 @@ class UserProfileViewSet(ModelViewSet):
 
         try:
             profile = self.get_object()
-            serializer = ProfilePartialUpdateSerializer(
+            serializer = self.get_serializer(
                 profile, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
