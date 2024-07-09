@@ -1,0 +1,9 @@
+{% extends "product/base.html" %}
+{% block content %}
+    {% if messages %}
+        {% for msg in messages %}
+            <small>{{msg}}</small>
+        {% endfor %}
+
+    {% endif %}
+{% endblock %}
