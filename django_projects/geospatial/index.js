@@ -16,6 +16,3 @@
      map.setCenter(marker.getPosition());
    });
 }
- 
-// my e=key
-        // <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAqQk0gM45lwU7QXpNBVouiBmBUHSc0PdI&callback=myMap"></script>;
