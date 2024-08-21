@@ -1,13 +1,13 @@
 from django.urls import path
 from django.contrib.auth.views import LogoutView
-from .views import (CreateUserProfileView,UserLoginView,
+from .views import (CreateUserProfileView, login_view,
                     CustomerListView, UserAccountDetailView,
                     create_password,
                     register)
 from profiles.views import customer_profile_view
 
 urlpatterns = [
-    path('login/', UserLoginView.as_view(), name='login'),
+    path('login/', login_view, name='login'),
     path('logout/', LogoutView.as_view(template_name="profiles/logout.html"), name='logout'),
     path('create-password/', create_password, name="create_password"),
     path('customers/', CustomerListView.as_view(), name="customers"),
@@ -18,4 +18,3 @@ urlpatterns = [
     path('user/<int:pk>', customer_profile_view, name="user_profile")
 
 ]
-

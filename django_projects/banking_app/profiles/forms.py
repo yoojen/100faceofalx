@@ -58,6 +58,10 @@ class UserAuthenticationForm(AuthenticationForm):
     }
 
 
+class LoginForm(forms.Form):
+    telephone = forms.CharField(label='Phone Number')
+    password = forms.CharField(label='Password', widget=forms.PasswordInput)
+
 class ProfileCrationForm(forms.ModelForm):
     telephone = forms.CharField(required=True)
     class Meta:

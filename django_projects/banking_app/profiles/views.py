@@ -1,8 +1,6 @@
 from typing import Any
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.views import LoginView
-from django.contrib.auth.decorators import permission_required
-from django.http import HttpRequest
 from django.http.response import HttpResponse as HttpResponse
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -16,7 +14,7 @@ from django.views.generic import CreateView, ListView, DetailView
 from .forms import (CustomUserUpdateForm, ProfileCrationForm,
                     UserCreationModelForm, 
                     UserAuthenticationForm,
-                    PasswordCreationForm)
+                    PasswordCreationForm, LoginForm)
 from .helpers import TestUserMixin, check_permission
 
 
@@ -125,21 +123,29 @@ class UserAccountDetailView(TestUserMixin, DetailView):
     context_object_name = "object"
 
 
-class UserLoginView(LoginView):
-    form_class = UserAuthenticationForm
-    redirect_authenticated_user = True
-    template_name = "profiles/login.html"
+from django.contrib.auth import authenticate, login
 
-
-    def form_valid(self, form):
-        try:
-            super().form_valid(form)
-            
-            if self.request.user.type == "ADMIN":
+def login_view(request):
+    form = LoginForm()
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            telephone = form.cleaned_data["telephone"]
+            password = form.cleaned_data["password"]
+            user_from_db = User.objects.filter(telephone=telephone).first()
+            if not user_from_db.password:
+                messages.info(request, "Please create password first")
+                return redirect("profiles:create_password")
+            user = authenticate(request, username=telephone, password=password)
+            if not user:
+                messages.error(request=request, message="Incorrect credentials, try again! Or set password if you're new o system")
+                return redirect("profiles:login")
+            login(request, user)
+            if request.user.type == "ADMIN":
                 return redirect("admin:index")
-            elif self.request.user.type == "CUSTOMER":
+            elif request.user.type == "CUSTOMER":
                 return redirect("transactions:pay_bills")
             else:
                 return redirect("transactions:transact")
-        except TypeError:
-            return redirect("profiles:login")
+
+    return render(request=request, template_name="profiles/login.html", context={'form': form})

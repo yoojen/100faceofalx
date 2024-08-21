@@ -32,11 +32,13 @@ class AccountViewSet(ModelViewSet):
                     account_num=self.request.user.account.account_num).all()
                 queryset = AccountViewSet.queryset
             AccountViewSet.queryset = queryset
+
             return queryset
         except Exception as e:
             return Response({"errors": str(e), "message": "Something wrong happened"},
                             status=status.HTTP_400_BAD_REQUEST)
-        
+        return queryset
+
     def get_object(self):
         obj = super().get_object()
         self.check_object_permissions(self.request, obj)
@@ -44,7 +46,8 @@ class AccountViewSet(ModelViewSet):
     
 
     def list(self, request):
-        serializer = AccountSerializer(self.queryset, many=True)
+        serializer = AccountSerializer(Account.objects.all(), many=True)
+        print()
         return Response(serializer.data,  status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk=None):
