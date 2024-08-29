@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet Distance Example</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    
+</head>
+<body>
+    <div id="map" style="width: 100%; height: 90vh;"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    <script src="utilities.js"></script>
+    <script src="map-options.js"></script>
+    <script src="MyMap.js"></script>
+    <script src="index.js"></script>
+    <script>
+        /*
+        let userLocation;
+        async function getUserLocation(){
+            if (navigator.geolocation){
+                const data = await new Promise((resolve, reject)=>{
+                    navigator.geolocation.getCurrentPosition((position)=>{
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+                        let userLocation = [latitude, longitude];
+                        resolve(userLocation)
+                    });
+                });
+                console.log("Right here-> ", data)
+                initMap(data)
+            }else{
+                alert("Geolocation is not supported in your browswer")
+            }
+        }
+        getUserLocation()
+
+        function initMap(userLocation){
+            //var marker2_value = [-1.9499, 30.0923]
+            var marker2_value = [-1.3797, 29.7460]
+            var map = L.map('mapid').setView(userLocation, 13);
+
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+            var marker1 = L.marker(userLocation).addTo(map);
+            var marker2 = L.marker(marker2_value).addTo(map);
+            //var marker3 = L.marker(userLocation).addTo(map);
+            //marker3.bindTooltip("User location").openTooltip()
+
+            // Listen for a click event on the map
+            map.on('click', function(e) {
+                // e.latlng contains the latitude and longitude of the click event
+                var lat = e.latlng.lat;
+                var lng = e.latlng.lng;
+
+                // Log the coordinates to the console
+                console.log("You clicked the map at latitude: " + lat + " and longitude: " + lng);
+
+                // Optionally, add a marker at the clicked location
+                L.marker([lat, lng]).addTo(map)
+                    .bindPopup("You clicked at: " + lat.toFixed(4) + ", " + lng.toFixed(4))
+                    .openPopup();
+                var routingControl = L.Routing.control({
+                    waypoints:[
+                        L.latLng([lat, lng]),
+                        L.latLng(marker2_value)
+                    ],
+                    routeWhileDragging: true,
+                    showAlternatives: true,
+                    altLineOptions: {
+                        styles: [
+                            {color: 'black', opacity: 0.15, weight: 9},
+                            {color: 'white', opacity: 0.8, weight: 6},
+                            {color: 'blue', opacity: 0.5, weight: 2}
+                        ]
+                    },
+                    createMarker: function(i, wp, nWps){
+                        return L.marker(wp.latLng)
+                    }
+                })
+            });
+            
+            // Adding routing control
+            var routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(userLocation),
+                    L.latLng(marker2_value)
+                ],
+                routeWhileDragging: true,
+                showAlternatives: true,
+                altLineOptions: {
+                    styles: [
+                        {color: 'black', opacity: 0.15, weight: 9},
+                        {color: 'white', opacity: 0.8, weight: 6},
+                        {color: 'blue', opacity: 0.5, weight: 2}
+                    ]
+                },
+                createMarker: function(i, wp, nWps) {
+                    return L.marker(wp.latLng);
+                }
+            }).addTo(map);
+
+            // Listen for the routesfound event to get the distance
+            let l_distance;
+            routingControl.on('routesfound', function(e) {
+                var routes = e.routes;
+                var summary = routes[0].summary;
+
+                // Distance in kilometers
+                distance = (summary.totalDistance / 1000).toFixed(2);
+                l_distance= distance;
+                marker1.bindTooltip("To your destination " + distance +" km.").openTooltip();
+            });
+            var circle = L.circle(userLocation, {
+                color: 'red',
+                fillColor: '#f03',
+                fillOpacity: 0.3,
+                radius: 200
+            }).addTo(map);
+
+            var tooltip = L.tooltip()
+                .setLatLng(marker2_value)
+                .setContent('Destination')
+                .addTo(map);
+            
+        
+        }*/
+    </script>
+</body>
+</html>
