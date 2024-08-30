@@ -51,13 +51,6 @@
 
             // Listen for a click event on the map
             map.on('click', function(e) {
-                // e.latlng contains the latitude and longitude of the click event
-                var lat = e.latlng.lat;
-                var lng = e.latlng.lng;
-
-                // Log the coordinates to the console
-                console.log("You clicked the map at latitude: " + lat + " and longitude: " + lng);
-
                 // Optionally, add a marker at the clicked location
                 L.marker([lat, lng]).addTo(map)
                     .bindPopup("You clicked at: " + lat.toFixed(4) + ", " + lng.toFixed(4))
