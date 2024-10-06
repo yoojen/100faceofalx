@@ -1,0 +1,16 @@
+import SideNav from '../SideNav';
+import NavBar from '../NavBar';
+
+
+export default function Navigator() {
+    return (
+        <div className='w-full'>
+            <div className='fixed top-0 w-sidebar-width'>
+                <SideNav/>
+            </div>
+            <div className='fixed top-0 z-20 w-full lg:w-navbar-width lg:ml-[18.5%] transition-all duration-300'>
+                <NavBar />
+            </div>
+        </div>
+    )
+}
