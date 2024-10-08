@@ -165,7 +165,6 @@ function Dashboard() {
                                 </div>
                             </div>
                         </div>
-                        <div>FOUR</div>
                     </div>
                 </div>
                 <Footer />

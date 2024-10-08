@@ -26,15 +26,15 @@ function SideNav() {
             </li>
             <li className="flex items-center space-x-3 active:text-sky-500 hover:text-sky-500">
               <MdProductionQuantityLimits className="h-5 w-5"/>
-              <NavLink to='/dashboard'> Stock </NavLink>
+              <NavLink to='/stock'> Stock </NavLink>
             </li>
             <li className="flex items-center space-x-3 active:text-sky-500 hover:text-sky-500">
               <BsFillPeopleFill className="h-5 w-5"/>
-              <NavLink to='/dashboard'> Abo mukorana </NavLink>
+              <NavLink to='/customers'> Abakiriya </NavLink>
             </li>
             <li className="flex items-center space-x-3 active:text-sky-500 hover:text-sky-500">
               <BiSolidReport className="h-5 w-5"/>
-              <NavLink to='/dashboard'> Raporo </NavLink>
+              <NavLink to='/reports'> Raporo </NavLink>
             </li>
           </ul>
         </div>
