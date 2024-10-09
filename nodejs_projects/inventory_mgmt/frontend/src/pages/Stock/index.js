@@ -3,75 +3,109 @@ import Footer from "../../components/Footer";
 import { MdFilterList } from "react-icons/md";
 import Modal from "../../components/Modal";
 import { useState } from "react";
+import UpdateModal from "../../components/UpdateModal";
 
 function Stock() {
     const [products, setProducts] = useState([]);
-    const [modalOpen, setModalOpen] = useState(true);
-    const handleFilter = () => {
-        alert("Attempted to filter");
+    const [tempProducts, setTempProducts] = useState([]);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [updateModalOpen, setUpdateModalOpen] = useState(false);
+    const [filterOpen, setFilterOpen] = useState(false);
+
+    const handleFilter = (e) => {
+        const value = e.target.textContent;
+        const filteredProducts = products.filter((product) => product.name === value)
+        setTempProducts(filteredProducts);
+    }
+    
+    const handleProductUpdate = (id) => {
+        const product = products.find((product) => product.id === id)
+        setUpdateModalOpen((prev)=>!prev);
+        console.log(product);
+    }
+    const handleDeleteProduct = () => {
+        const isSure = window.confirm("Do you want to delete this product?");
+        alert(isSure);
     }
 
     return (
         <div>
             <Navigator />
-            {modalOpen ?
-                <>
-                    <div className="relative">
-                        <div className="bg-black opacity-50 absolute top-0 left-0 z-30 h-screen w-full"
-                            onClick={()=>{setModalOpen((prev)=>!prev)}}
-                        ></div>
-                        <Modal setProducts={setProducts} products={products}/>
-                    </div>
-                </>
-                : null
-            }
+            {modalOpen && (
+                <div className="relative">
+                    <div className="bg-black opacity-50 absolute top-0 left-0 z-30 h-screen w-full"
+                        onClick={()=>{setModalOpen((prev)=>!prev)}}
+                    ></div>
+                    <Modal setProducts={setProducts} products={products} setTempProducts={setTempProducts} />
+                </div>
+            )}
             <div className="relative top-20 px-5 lg:ml-[18.5%] bg-slate-200">
                 <h1 className="text-2xl font-medium text-blue-500">STOCK</h1>
                 <div className="bg-white rounded-sm shadow-sm w-full p-4 mb-5">
                     <div className="flex justify-between">
-                        <div>Product</div>
-                        <div className="space-x-4 flex">
-                            <button className="capitalize border-0 rounded-sm py-1 px-2 bg-blue-600 text-white"
+                        <div className="basis-2/3">Product</div>
+                        <div className="space-x-4 flex basis-1/3">
+                            <button className="basis-1/3 capitalize border-0 rounded-sm py-1 px-2 bg-blue-600 text-white"
                                 onClick={()=>setModalOpen((prev)=>!prev)}
                             >
                                 add product
                             </button>
-                            <div className="flex items-center border rounded-sm justify-center cursor-pointer px-2 hover:text-white hover:bg-blue-600 transition-all duration-300"
-                                onClick={handleFilter}
+                            <div className="basis-2/3 relative flex items-center border rounded-sm justify-center cursor-pointer px-2 hover:text-white hover:bg-blue-600 transition-all duration-300"
+                                onClick={()=>setFilterOpen((prev)=>!prev)}
                             >
-                                <MdFilterList />
+                                <MdFilterList/>
                                 <span>Filter</span>
+                                    {
+                                        filterOpen ?
+                                            <div className="absolute top-full w-full left-1/2 -translate-x-1/2 rounded-sm shadow-sm bg-white py-3 text-black">
+                                                <div className="hover:bg-blue-500 hover:text-white" onClick={handleFilter}>
+                                                    ibigori
+                                                </div>
+                                                <div className="hover:bg-blue-500 hover:text-white" onClick={handleFilter}>
+                                                    Amasaka
+                                                </div>
+                                                <div className="hover:bg-blue-500 hover:text-white" onClick={()=>setTempProducts(products)}>
+                                                    Reset filter
+                                                </div>
+                                            </div>
+                                        : ''
+                                    }
+                                {}
                             </div>
                         </div>
                     </div>
-                    <div className="my-2 font-light">
-                        <table className="w-full text-right text-black border-collapse border-e border-s border-t">
-                            <thead className="text-slate-400">
-                                <tr className="border-b">
-                                    <th className="text-left">Igicuruzwa</th>
-                                    <th>Umukiriya</th>
-                                    <th>Igiciro waguzeho</th>
-                                    <th>Ingano waguze</th>
-                                    <th>Italiki (wabiguriye)</th>
-                                    <th>Total (ayo wabitanzeho)</th>
-                                </tr>
-                            </thead>
-                            <tbody className="[&>*]:py-5">
-                                {products.map((product, index) => {
-                                    let totalPrice = parseFloat(product.quantity) * parseFloat(product.buyingPrice)
-                                    return (
-                                        <tr key={index}>
-                                            <td className="text-left">{product.name}</td>
-                                            <td>{product.customer}</td>
-                                            <td>{product.buyingPrice} Frw</td>
-                                            <td>{product.quantity} Kgs</td>
-                                            <td>{product.date}</td>
-                                            <td>{totalPrice.toLocaleString()} Frw</td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
+                    <div className="my-2 font-light overflow-auto custom-scrollbar">
+                        <div className="flex w-full [&>*]:w-3/12 md:[&>*]:w-2/12 text-blue-500 font-bold border [&>*]:border-r [&>*]:px-1 [&>*]:shrink-0">
+                            <h1 className="lg:text-left">Igicuruzwa</h1>
+                            <h1 className="lg:text-left">Umukiriya</h1>
+                            <h1>Igiciro waguzeho</h1>
+                            <h1>Ingano waguze</h1>
+                            <h1>Italiki (wabiguriye)</h1>
+                            <h1>Total (ayo wabitanzeho)</h1>
+                            <h1>Action</h1>
+                        </div>
+                        <div className="border-l border-r">
+                            {tempProducts.map((product, index) => {
+                                let totalPrice = parseFloat(product.quantity) * parseFloat(product.buyingPrice)
+                                return (
+                                    <div key={index} className="flex w-full [&>*]:w-3/12 md:[&>*]:w-2/12 [&>*]:px-1 [&>*]:shrink-0">
+                                        {updateModalOpen && (
+                                            <UpdateModal/>
+                                        )}
+                                        <h1>{product.name}</h1>
+                                        <h1>{product.customer}</h1>
+                                        <h1>{product.buyingPrice} Frw</h1>
+                                        <h1>{product.quantity} Kgs</h1>
+                                        <h1>{product.date}</h1>
+                                        <h1>{totalPrice.toLocaleString()} Frw</h1>
+                                        <h1 className="space-x-2 cursor-pointer">
+                                            <span className="text-blue-500 underline decoration-blue-500" onClick={()=>handleProductUpdate(product.id)}>Edit</span>
+                                            <span className="text-red-500 underline decoration-red-500" onClick={()=>handleDeleteProduct(product.id)}>Delete</span>
+                                        </h1>
+                                    </div>
+                                )
+                            })}
+                        </div>
                     </div>
                 </div>
                 <Footer />

@@ -1,9 +1,8 @@
 import { useState } from "react";
 
-function Modal({ products, setProducts, setTempProducts }) {
+function UpdateModal({ products, setProducts, setTempProducts }) {
     // States
     const [productDetail, setProductDetail] = useState({
-        id: products.length,
         name: '',
         customer: '',
         buyingPrice: '',
@@ -14,26 +13,21 @@ function Modal({ products, setProducts, setTempProducts }) {
     const [showMessage, setShowMessage] = useState(false);
     
     // Handlers
-    const handleAddProduct = () => {
-        setProducts([...products, productDetail]);
-        setTempProducts([...products, productDetail]);
-        setProductDetail({id: products.length + 1, name: '', customer: '', buyingPrice: '', quantity: '', date: '' })
-        setMessage({ category: 'blue', message: 'Product successfully added!' })
+    const handleUpdateProduct = () => {
         handleShowMessage();
     };
   
     const handleShowMessage = () => {
-        setShowMessage(true); // Show the message instantly 
+        setShowMessage(true);
         
-        // Set the timer to hide the message after 3 seconds
         setTimeout(() => {
         setShowMessage(false);
-        }, 4000); // 5000ms = 3 seconds
+        }, 4000);
     };
   return (
     <div className='fixed top-10 z-30 w-2/3 bg-white rounded-sm shadow-md p-5 left-1/2 -translate-x-1/2'>
         <div className="flex justify-between">
-            <h1>New product</h1>
+            <h1>Update product</h1>
         </div>
         <hr />
         <div className={`text-${message.category}-500 text-center shadow-sm text-lg`}>
@@ -65,13 +59,13 @@ function Modal({ products, setProducts, setTempProducts }) {
                 <input type="date" id="date" value={productDetail.date} className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, date: e.target.value})}}/>  
             </div>
             <button className="mt-3 border-0 rounded-sm py-1 px-2 bg-blue-600 text-white"
-                onClick={handleAddProduct}
+                onClick={handleUpdateProduct}
             >
-                Add Product
+                Update Product
             </button>
         </div>
     </div>
   )
 }
 
-export default Modal;
+export default UpdateModal;
