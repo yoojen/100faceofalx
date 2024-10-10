@@ -8,6 +8,7 @@ import UpdateModal from "../../components/UpdateModal";
 function Stock() {
     const [products, setProducts] = useState([]);
     const [tempProducts, setTempProducts] = useState([]);
+    const [selectedProduct, setSelectedProduct] = useState({});
     const [modalOpen, setModalOpen] = useState(false);
     const [updateModalOpen, setUpdateModalOpen] = useState(false);
     const [filterOpen, setFilterOpen] = useState(false);
@@ -17,12 +18,13 @@ function Stock() {
         const filteredProducts = products.filter((product) => product.name === value)
         setTempProducts(filteredProducts);
     }
-    
+
     const handleProductUpdate = (id) => {
         const product = products.find((product) => product.id === id)
-        setUpdateModalOpen((prev)=>!prev);
-        console.log(product);
+        setSelectedProduct(product);
+        setUpdateModalOpen((prev) => !prev);
     }
+
     const handleDeleteProduct = () => {
         const isSure = window.confirm("Do you want to delete this product?");
         alert(isSure);
@@ -57,24 +59,25 @@ function Stock() {
                                 <span>Filter</span>
                                     {
                                         filterOpen ?
-                                            <div className="absolute top-full w-full left-1/2 -translate-x-1/2 rounded-sm shadow-sm bg-white py-3 text-black">
-                                                <div className="hover:bg-blue-500 hover:text-white" onClick={handleFilter}>
-                                                    ibigori
-                                                </div>
-                                                <div className="hover:bg-blue-500 hover:text-white" onClick={handleFilter}>
-                                                    Amasaka
-                                                </div>
-                                                <div className="hover:bg-blue-500 hover:text-white" onClick={()=>setTempProducts(products)}>
-                                                    Reset filter
-                                                </div>
+                                        <div className="absolute top-full w-full left-1/2 -translate-x-1/2 rounded-sm shadow-sm bg-white py-3 text-black">
+                                            {products.map((p, i) => {
+                                                return (
+                                                    <div className="hover:bg-blue-500 hover:text-white" onClick={handleFilter}>
+                                                        {p.name}
+                                                    </div>
+                                                )
+                                            })}
+                                            <div className="hover:bg-blue-500 hover:text-white" onClick={()=>setTempProducts(products)}>
+                                                Reset filter
                                             </div>
+                                        </div>
                                         : ''
                                     }
                                 {}
                             </div>
                         </div>
                     </div>
-                    <div className="my-2 font-light overflow-auto custom-scrollbar">
+                    <div className="my-2 font-light overflow-auto horizontal-custom-scrollbar">
                         <div className="flex w-full [&>*]:w-3/12 md:[&>*]:w-2/12 text-blue-500 font-bold border [&>*]:border-r [&>*]:px-1 [&>*]:shrink-0">
                             <h1 className="lg:text-left">Igicuruzwa</h1>
                             <h1 className="lg:text-left">Umukiriya</h1>
@@ -89,9 +92,6 @@ function Stock() {
                                 let totalPrice = parseFloat(product.quantity) * parseFloat(product.buyingPrice)
                                 return (
                                     <div key={index} className="flex w-full [&>*]:w-3/12 md:[&>*]:w-2/12 [&>*]:px-1 [&>*]:shrink-0">
-                                        {updateModalOpen && (
-                                            <UpdateModal/>
-                                        )}
                                         <h1>{product.name}</h1>
                                         <h1>{product.customer}</h1>
                                         <h1>{product.buyingPrice} Frw</h1>
@@ -102,6 +102,15 @@ function Stock() {
                                             <span className="text-blue-500 underline decoration-blue-500" onClick={()=>handleProductUpdate(product.id)}>Edit</span>
                                             <span className="text-red-500 underline decoration-red-500" onClick={()=>handleDeleteProduct(product.id)}>Delete</span>
                                         </h1>
+                                        {updateModalOpen && (
+                                            <div className="">
+                                                <div className="bg-black opacity-50 absolute -top-20 left-0 z-30 h-screen w-full"
+                                                    onClick={()=>{setUpdateModalOpen((prev)=>!prev)}}
+                                                ></div>
+
+                                                <UpdateModal product={selectedProduct} products={products} setTempProducts={setTempProducts} />
+                                            </div>
+                                        )}
                                     </div>
                                 )
                             })}

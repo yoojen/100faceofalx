@@ -1,20 +1,37 @@
 import { useState } from "react";
 
-function UpdateModal({ products, setProducts, setTempProducts }) {
+function UpdateModal({ product, products, setTempProducts }) {
     // States
+    console.log(product.id, "from modal")
     const [productDetail, setProductDetail] = useState({
-        name: '',
-        customer: '',
-        buyingPrice: '',
-        quantity: '',
-        date: ''
+        id: product.id,
+        name: product.name,
+        customer: product.customer,
+        buyingPrice: product.buyingPrice,
+        quantity: product.quantity,
+        date: product.date
     });
     const [message, setMessage] = useState({category: '', message: ''});
     const [showMessage, setShowMessage] = useState(false);
     
     // Handlers
     const handleUpdateProduct = () => {
+        const product = products.find((product) => product.id === productDetail.id)
+        if (product.name !== productDetail.name) product.name = productDetail.name;
+        if (product.customer !== productDetail.customer) product.customer = productDetail.customer;
+        if (product.buyingPrice !== productDetail.buyingPrice) product.buyingPrice = productDetail.buyingPrice;
+        if (product.quantity !== productDetail.quantity) product.quantity = productDetail.quantity;
+        if (product.date !== productDetail.date) product.date = productDetail.date;
+        setMessage({category: 'blue', message: 'Product updated successfully!'})
         handleShowMessage();
+        setProductDetail({
+            id: '',
+            name: '',
+            customer: '',
+            buyingPrice: '',
+            quantity: '',
+            date:''
+        })
     };
   
     const handleShowMessage = () => {
@@ -25,7 +42,7 @@ function UpdateModal({ products, setProducts, setTempProducts }) {
         }, 4000);
     };
   return (
-    <div className='fixed top-10 z-30 w-2/3 bg-white rounded-sm shadow-md p-5 left-1/2 -translate-x-1/2'>
+    <div className='fixed top-10 z-30 w-1/2 bg-white rounded-sm shadow-md p-5 left-1/2 -translate-x-1/2'>
         <div className="flex justify-between">
             <h1>Update product</h1>
         </div>
