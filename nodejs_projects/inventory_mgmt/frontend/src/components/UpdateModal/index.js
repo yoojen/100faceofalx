@@ -42,7 +42,7 @@ function UpdateModal({ product, products, setTempProducts }) {
         }, 4000);
     };
   return (
-    <div className='fixed top-10 z-30 w-1/2 bg-white rounded-sm shadow-md p-5 left-1/2 -translate-x-1/2'>
+    <div className='fixed top-10 z-30 w-full md:w-1/2 bg-white rounded-sm shadow-md p-5 left-1/2 -translate-x-1/2'>
         <div className="flex justify-between">
             <h1>Update product</h1>
         </div>

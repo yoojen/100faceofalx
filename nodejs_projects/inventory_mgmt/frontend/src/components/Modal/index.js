@@ -42,7 +42,7 @@ function Modal({ products, setProducts, setTempProducts }) {
         <div className="[&>*]:flex [&>*]:flex-col [&>*]:justify-between [&>*]:p-2 mt-5"> 
             <div>
                 <label htmlFor="name">Izina ry'igicuruzwa</label>
-                <input type="text" id="name" value={productDetail.name} className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, name: e.target.value})}}/>
+                <input type="text" id="name" value={productDetail.name} autoComplete="name" className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, name: e.target.value})}}/>
             </div>
             <div>
                 <label htmlFor="customer">Uwo uguze nawe</label>
@@ -54,15 +54,15 @@ function Modal({ products, setProducts, setTempProducts }) {
             </div>
             <div>
                 <label htmlFor="price">Igiciro wakiguzeho</label>
-                <input type="text" id="price" value={productDetail.buyingPrice} className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, buyingPrice: e.target.value})}}/>  
+                <input type="text" id="price" value={productDetail.buyingPrice} autoComplete="price" className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, buyingPrice: e.target.value})}}/>  
             </div>
             <div>
                 <label htmlFor="quantity">Ibiro waguze</label>
-                <input type="text" id="quantity" value={productDetail.quantity} className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, quantity: e.target.value})}}/>  
+                <input type="text" id="quantity" value={productDetail.quantity} autoComplete="quantity" className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, quantity: e.target.value})}}/>  
             </div>
             <div>
                 <label htmlFor="date">Italiki wabiguriye</label>
-                <input type="date" id="date" value={productDetail.date} className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, date: e.target.value})}}/>  
+                <input type="date" id="date" value={productDetail.date} autoComplete="date" className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, date: e.target.value})}}/>  
             </div>
             <button className="mt-3 border-0 rounded-sm py-1 px-2 bg-blue-600 text-white"
                 onClick={handleAddProduct}

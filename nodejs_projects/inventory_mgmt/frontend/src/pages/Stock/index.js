@@ -25,9 +25,13 @@ function Stock() {
         setUpdateModalOpen((prev) => !prev);
     }
 
-    const handleDeleteProduct = () => {
+    const handleDeleteProduct = (id) => {
         const isSure = window.confirm("Do you want to delete this product?");
-        alert(isSure);
+        if (isSure) {
+            const filteredProducts = products.filter((p) => p.id !== id);
+            setProducts(filteredProducts);
+            setTempProducts(filteredProducts);
+        }
     }
 
     return (
@@ -62,7 +66,7 @@ function Stock() {
                                         <div className="absolute top-full w-full left-1/2 -translate-x-1/2 rounded-sm shadow-sm bg-white py-3 text-black">
                                             {products.map((p, i) => {
                                                 return (
-                                                    <div className="hover:bg-blue-500 hover:text-white" onClick={handleFilter}>
+                                                    <div className="hover:bg-blue-500 hover:text-white" key={i} onClick={handleFilter}>
                                                         {p.name}
                                                     </div>
                                                 )
