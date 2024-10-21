@@ -5,7 +5,7 @@ import Modal from "../../components/Modal";
 import { useState } from "react";
 import UpdateModal from "../../components/UpdateModal";
 
-function Stock() {
+function Specials() {
     const [products, setProducts] = useState([]);
     const [tempProducts, setTempProducts] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState({});
@@ -15,7 +15,7 @@ function Stock() {
 
     const handleFilter = (e) => {
         const value = e.target.textContent;
-        const filteredProducts = products.filter((product) => product.name === value)
+        const filteredProducts = produacts.filter((product) => product.customer === value)
         setTempProducts(filteredProducts);
     }
 
@@ -36,21 +36,20 @@ function Stock() {
 
     return (
         <div>
-            <Navigator />
-            {/* If product is amamera, I've to either increase or decrease balance based on profit */}
+            <Navigator/>
             {modalOpen && (
                 <div className="relative">
                     <div className="bg-black opacity-50 absolute top-0 left-0 z-30 h-screen w-full"
                         onClick={()=>{setModalOpen((prev)=>!prev)}}
                     ></div>
-                    <Modal setProducts={setProducts} products={products} setTempProducts={setTempProducts} />
+                    <Modal setProducts={setProducts} products={products} setTempProducts={setTempProducts} type="specials"/>
                 </div>
             )}
             <div className="relative top-20 px-5 lg:ml-[18.5%] bg-slate-200">
-                <h1 className="text-2xl font-medium text-blue-500">STOCK</h1>
-                <div className="bg-white rounded-sm shadow-sm p-4 mb-5">
+                <h1 className="text-2xl font-medium text-blue-500">IBYIHARIYE - KUGURA</h1>
+                <div className="bg-white rounded-sm shadow-sm w-full p-4 mb-5">
                     <div className="flex justify-between">
-                        <div className="basis-2/3 font-medium">Product</div>
+                        <div className="basis-2/3">Product</div>
                         <div className="space-x-4 flex basis-1/3">
                             <button className="basis-1/3 capitalize border-0 rounded-sm py-1 px-2 bg-blue-600 text-white"
                                 onClick={()=>setModalOpen((prev)=>!prev)}
@@ -68,7 +67,7 @@ function Stock() {
                                             {products.map((p, i) => {
                                                 return (
                                                     <div className="hover:bg-blue-500 hover:text-white" key={i} onClick={handleFilter}>
-                                                        {p.name}
+                                                        {p.customer}
                                                     </div>
                                                 )
                                             })}
@@ -83,26 +82,28 @@ function Stock() {
                         </div>
                     </div>
                     <div className="my-2 font-light overflow-auto horizontal-custom-scrollbar">
-                        <div className="flex w-full [&>*]:w-3/12 md:[&>*]:w-2/12 text-blue-500 font-bold border [&>*]:border-r [&>*]:px-1 [&>*]:shrink-0">
-                            <h1 className="lg:text-left">Igicuruzwa</h1>
+                        <div className="flex w-full [&>*]:w-3/12 md:[&>*]:w-2/12 text-blue-500 font-bold [&>*]:border-r [&>*]:border-l [&>*]:border-b [&>*]:border-t [&>*]:px-1 [&>*]:shrink-0">
                             <h1 className="lg:text-left">Umukiriya</h1>
                             <h1>Igiciro waguzeho</h1>
                             <h1>Ingano waguze</h1>
                             <h1>Italiki (wabiguriye)</h1>
                             <h1>Total (ayo wabitanzeho)</h1>
+                            <h1>Status</h1>
                             <h1>Action</h1>
                         </div>
                         <div className="border-l border-r">
                             {tempProducts.map((product, index) => {
                                 let totalPrice = parseFloat(product.quantity) * parseFloat(product.buyingPrice)
                                 return (
-                                    <div key={index} className="flex w-full [&>*]:w-3/12 md:[&>*]:w-2/12 [&>*]:px-1 [&>*]:shrink-0">
-                                        <h1>{product.name}</h1>
+                                    <div key={index} className="flex w-full [&>*]:w-3/12 md:[&>*]:w-2/12 [&>*]:px-1 [&>*]:shrink-0 ">
                                         <h1>{product.customer}</h1>
                                         <h1>{product.buyingPrice} Frw</h1>
                                         <h1>{product.quantity} Kgs</h1>
                                         <h1>{product.date}</h1>
                                         <h1>{totalPrice.toLocaleString()} Frw</h1>
+                                        <h1 className="space-x-2 cursor-pointer">
+                                            <span className="text-blue-500 bg-blue-200 px-3" onClick={()=>handleProductUpdate(product.id)}>Paid</span>
+                                        </h1>
                                         <h1 className="space-x-2 cursor-pointer">
                                             <span className="text-blue-500 underline decoration-blue-500" onClick={()=>handleProductUpdate(product.id)}>Edit</span>
                                             <span className="text-red-500 underline decoration-red-500" onClick={()=>handleDeleteProduct(product.id)}>Delete</span>
@@ -112,7 +113,8 @@ function Stock() {
                                                 <div className="bg-black opacity-50 absolute -top-20 left-0 z-30 h-screen w-full"
                                                     onClick={()=>{setUpdateModalOpen((prev)=>!prev)}}
                                                 ></div>
-                                                <UpdateModal product={selectedProduct} products={products} setTempProducts={setTempProducts} />
+
+                                                <UpdateModal product={selectedProduct} products={products} setTempProducts={setTempProducts} type="specials"/>
                                             </div>
                                         )}
                                     </div>
@@ -127,4 +129,4 @@ function Stock() {
     )
 }
 
-export default Stock;
+export default Specials;

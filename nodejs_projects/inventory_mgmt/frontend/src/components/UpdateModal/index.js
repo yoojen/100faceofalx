@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function UpdateModal({ product, products, setTempProducts }) {
+function UpdateModal({ product, products, setTempProducts, type }) {
     // States
     console.log(product.id, "from modal")
     const [productDetail, setProductDetail] = useState({
@@ -51,10 +51,15 @@ function UpdateModal({ product, products, setTempProducts }) {
             {showMessage ? message.message: ''}
         </div>
         <div className="[&>*]:flex [&>*]:flex-col [&>*]:justify-between [&>*]:p-2 mt-5"> 
-            <div>
-                <label htmlFor="name">Izina ry'igicuruzwa</label>
-                <input type="text" id="name" value={productDetail.name} className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, name: e.target.value})}}/>
-            </div>
+            {
+                type !== 'specials' &&
+                (
+                    <div>
+                        <label htmlFor="name">Izina ry'igicuruzwa</label>
+                        <input type="text" id="name" value={productDetail.name} className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, name: e.target.value})}}/>
+                    </div>
+                )
+            }
             <div>
                 <label htmlFor="customer">Uwo uguze nawe</label>
                 <select name="customer" id="customer" value={productDetail.customer} className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, customer: e.target.value})}}>

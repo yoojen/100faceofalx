@@ -6,6 +6,7 @@ import Login from './pages/login';
 import Signup from './pages/signup';
 import Dashboard from './pages/Dashboard';
 import Stock from './pages/Stock';
+import Customer from './pages/Customer';
 
 function App() {
   return (
@@ -15,7 +16,8 @@ function App() {
           <Route exact path='/login' Component={Login}/>
           <Route exact path='/register' Component={Signup} />
           <Route exact path='/dashboard' Component={Dashboard} />
-          <Route exact path='/stock' Component={Stock}/>
+          <Route exact path='/stock' Component={Stock} />
+          <Route exact path='/customers' Component={Customer} />
         </Routes>
       </BrowserRouter>
     </div>
