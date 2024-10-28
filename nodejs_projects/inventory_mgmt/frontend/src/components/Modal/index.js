@@ -31,38 +31,24 @@ function Modal({ products, setProducts, setTempProducts, type }) {
         }, 4000); // 5000ms = 3 seconds
     };
 
-    if (type === 'sales') {
-        <div className="[&>*]:flex [&>*]:flex-col [&>*]:justify-between [&>*]:p-2 mt-5">
+    const formElements = (
+        <div className="[&>*]:flex [&>*]:flex-col [&>*]:justify-between [&>*]:p-2 mt-5"> 
             <div>
-                <label htmlFor="customer">Igicuruzwa</label>
+                <label htmlFor="customer">Umukiriya</label>
                 <select name="customer" id="customer" value={productDetail.customer} className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, customer: e.target.value})}}>
-                    <option value="">.....</option>
+                    <option value="" className="text-slate-300">...</option>
                     <option value="mutuye-140-650">mutuye-140-650</option>
                     <option value="ncemeti-145-720">ncemeti-145-720</option>
                 </select>
-                <button className="mt-3 border-0 rounded-sm py-1 px-2 bg-blue-600 text-white" onClick={handleAddProduct} >
-                    Add Product
-                </button>
-            </div>
+            </div>    
             <div>
-                <label htmlFor="price">Igiciro ugurishijeho</label>
-                <input type="text" id="price" value={productDetail.buyingPrice} autoComplete="price" className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, buyingPrice: e.target.value})}}/>  
-            </div>
-        </div>
-        
-    }
-    const formElements = (
-        <div className="[&>*]:flex [&>*]:flex-col [&>*]:justify-between [&>*]:p-2 mt-5"> 
-            {
-                type !== "specials" &&
-                  (
-                    <div>
-                        <label htmlFor="name">Izina ry'igicuruzwa</label>
-                        <input type="text" id="name" value={productDetail.name} autoComplete="name" className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, name: e.target.value})}}/>
-                    </div>
-                  )
-            }
-            
+                <label htmlFor="customer">Igicuruzwa</label>
+                <select name="customer" id="customer" value={productDetail.name} className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, customer: e.target.value})}}>
+                    <option value="" className="text-slate-300">...</option>
+                    <option value="mutuye-140-650">mutuye-140-650</option>
+                    <option value="ncemeti-145-720">ncemeti-145-720</option>
+                </select>
+            </div>    
             <div>
                 <label htmlFor="price">Igiciro wakiguzeho</label>
                 <input type="text" id="price" value={productDetail.buyingPrice} autoComplete="price" className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, buyingPrice: e.target.value})}}/>  

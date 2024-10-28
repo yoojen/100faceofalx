@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
-import Navigator from '../../components/Navigator'
-import Footer from '../../components/Footer'
-import CustomerModal from '../../components/CustomerModal'
+import React, { useState } from 'react';
+import Navigator from '../../components/Navigator';
+import Footer from '../../components/Footer';
+import CustomerModal from '../../components/CustomerModal';
 
 const Customer = () => {
     const [modalOpen, setModalOpen] = useState(false);
