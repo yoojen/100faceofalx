@@ -43,7 +43,7 @@ function Modal({ products, setProducts, setTempProducts, type }) {
             </div>    
             <div>
                 <label htmlFor="customer">Igicuruzwa</label>
-                <select name="customer" id="customer" value={productDetail.name} className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, customer: e.target.value})}}>
+                <select name="customer" id="customer" value={productDetail.name} className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, name: e.target.value})}}>
                     <option value="" className="text-slate-300">...</option>
                     <option value="mutuye-140-650">mutuye-140-650</option>
                     <option value="ncemeti-145-720">ncemeti-145-720</option>
