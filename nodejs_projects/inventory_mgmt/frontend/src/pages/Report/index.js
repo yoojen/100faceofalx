@@ -86,11 +86,11 @@ function Report() {
                         <div className="w-full flex [&>*]:shrink-0 overflow-auto [&>*]:w-full horizontal-custom-scrollbar">
                             <LineChart 
                                 xAxis={[
-                                    { data: [1, 2, 3, 4, 5, 6, 7], id: 1 },
-                                    { data: [3, 1, 6, 4.3, 6, 4, 8], id: 2 }
+                                    { data: [1, 2, 3, 4, 5, 6, 7], id: 1, label: "X label"},
+                                    { data: [3, 1, 6, 4.3, 6, 4, 8], id: 2, }
                                 ]}
                                 series={[
-                                    { data: [1, 2, 3, 4, 5, 6, 7],label:"First One" },
+                                    { data: [1, 2, 3, 4, 5, 6, 7], label:"First One" },
                                     { data: [1, 3, 2, 4, 3, 5, 6], label: "Second one"}
                                 ]}
                                 grid={{ vertical: false, horizontal: true }}

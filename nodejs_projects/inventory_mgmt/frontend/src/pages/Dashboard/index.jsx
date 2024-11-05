@@ -1,3 +1,4 @@
+import { BarChart } from "@mui/x-charts/BarChart";
 import { FcSalesPerformance } from "react-icons/fc";
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import InventoryOutlinedIcon from '@mui/icons-material/InventoryOutlined';
@@ -160,8 +161,26 @@ function Dashboard() {
                                 <div className="font-medium text-blue-500">
                                     <h1>Uko wacuruje (Ibyumweru 4)</h1>
                                 </div>
-                                <div className="px-3">
-                                    Graph
+                                <div className="px-3 overflow-auto flex [&>*]:shrink-0 horizontal-custom-scrollbar">
+                                    <BarChart 
+                                        xAxis={[
+                                            {
+                                                scaleType: 'band',
+                                                data: [1, 2, 4],
+                                                label: "Months",
+                                                categoryGapRatio: 0.2,
+                                                barGapRatio: 0.2
+                                            }
+                                        ]}
+                                        series={[{ data: [4, 5, 3], label: "Sales" }, { data: [1, 3, 2], label:"Purchase"}]}
+                                        barLabel={'value'}
+                                        yAxis={[{ label: "Total (FRW) " }]}
+                                        grid={{ vertical: false, horizontal: true }}
+                                        borderRadius={10}
+                                        slotProps={{legend: {hidden: false}}}
+                                        width={300}
+                                        height={270}
+                                    />
                                 </div>
                             </div>
                         </div>
