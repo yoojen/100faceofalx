@@ -31,8 +31,8 @@ const Customer = () => {
             <h1 className="text-2xl font-medium text-blue-500">CUSTOMERS</h1>
             <div className='w-full bg-white p-4 mb-5 rounded-sm shadow-sm'>
                 <div className="flex justify-between">
-                    <h1 className='font-medium'>Abakiriya</h1>
-                    <div className='space-x-2'>
+                    <h1 className='hidden md:block font-medium'>Abakiriya</h1>
+                    <div className='space-x-2 flex'>
                         <button className="capitalize border-0 rounded-sm px-2 py-1 bg-red-600 text-white"
                             onClick={()=>handleModalOpen("reduce")}
                         >
@@ -46,7 +46,7 @@ const Customer = () => {
                     </div>
                 </div>
                 <div className="my-2 font-light overflow-auto horizontal-custom-scrollbar border border-sky-700">
-                    <div className="flex justify-around w-full [&>*]:w-3/12 md:[&>*]:w-2/12 text-blue-500 font-bold border-b border-sky-700 [&>*]:px-1 [&>*]:shrink-0">
+                    <div className="flex justify-between w-full text-blue-500 font-bold border-b border-sky-700 [&>*]:px-1 [&>*]:shrink-0">
                         <h1>Amazina</h1>
                         <h1>Balance</h1>
                     </div>
@@ -54,7 +54,7 @@ const Customer = () => {
                     {customers.map((c, i)=>{
                        
                         return (
-                            <div className="flex justify-around w-full [&>*]:w-3/12 md:[&>*]:w-2/12 [&>*]:px-1 [&>*]:shrink-0" key={i}>
+                            <div className="flex justify-between w-full [&>*]:px-1 [&>*]:shrink-0" key={i}>
                                 <h1>{c.name}</h1>
                                 <h1>{(c.amount).toLocaleString()} Frw</h1>
                             </div>

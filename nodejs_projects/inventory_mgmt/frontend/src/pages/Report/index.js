@@ -22,8 +22,8 @@ function Report() {
             <div className="relative top-20 px-5 lg:ml-[18.5%] bg-slate-200">
                 <h1 className="text-2xl font-medium text-blue-500">RAPORO</h1>
                 <div className="[&>*]:rounded-sm [&>*]:shadow-sm space-y-3 mb-5">
-                    <div className="flex [&>*]:bg-white space-x-3 [&>*]:p-2">
-                        <div className="basis-2/3">
+                    <div className="[&>*]:bg-white [&>*]:rounded-sm [&>*]:shadow-sm space-y-3 md:flex md:item-center md:space-x-2">
+                        <div className="basis-2/3 p-2">
                             <h1>Overview</h1>
                             <div className="flex justify-between">
                                 <div className="px-2 flex flex-col items-center">
@@ -53,7 +53,7 @@ function Report() {
                                 Filtered by {year}
                             </div>
                         </div>
-                        <div className="basis-2/3">
+                        <div className="basis-2/3 p-2">
                             <h1>Best selling category</h1>
                             <div>
                                 <div className="my-2 font-light overflow-auto horizontal-custom-scrollbar">
@@ -101,7 +101,7 @@ function Report() {
                     </div>
                     <div className="bg-white p-2">
                         <div><h1>Best selling price</h1></div>
-                        <div>
+                        <div className="overflow-auto">
                             <table className="table w-full text-left">
                                 <thead>
                                     <tr className="[&>*]:px-2">

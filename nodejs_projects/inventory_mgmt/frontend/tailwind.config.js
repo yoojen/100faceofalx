@@ -13,9 +13,9 @@ module.exports = {
         "navbar-width": "81.5%"
       },
       fontFamily: {
-        "reporting": ["calibri", "sans serif"]
+        "reporting": ["Verdana", "sans serif"]
       }
-    },
+    }
   },
   plugins: [],
 }

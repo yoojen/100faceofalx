@@ -11,7 +11,7 @@ import Report from './pages/Report';
 
 function App() {
   return (
-    <div className='font-reporting'>
+    <div className='font-reporting text-sm'>
       <BrowserRouter>
         <Routes>
           <Route exact path='/login' Component={Login}/>

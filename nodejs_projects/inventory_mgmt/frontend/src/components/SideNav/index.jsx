@@ -8,7 +8,7 @@ import { NavLink } from "react-router-dom";
 
 function SideNav() {  
   return (
-    <div className="hidden h-screen w-full bg-white p-5 space-y-32 md:block">
+    <div className="hidden h-screen w-full bg-white p-5 space-y-32 sm:block">
       <div className="space-y-10">
         <GiHamburgerMenu className="cursor-pointer h-5 w-5 hover:text-blue-500"/>
         <div className="flex items-center">

@@ -1,9 +1,10 @@
+import { useState } from "react";
+import { MdFilterList } from "react-icons/md";
 import Navigator from "../../components/Navigator"
 import Footer from "../../components/Footer";
-import { MdFilterList } from "react-icons/md";
 import Modal from "../../components/Modal";
-import { useState } from "react";
 import UpdateModal from "../../components/UpdateModal";
+import Form from "../../components/Form";
 
 function Stock() {
     const [products, setProducts] = useState([]);
@@ -47,6 +48,7 @@ function Stock() {
                 </div>
             )}
             <div className="relative top-20 px-5 lg:ml-[18.5%] bg-slate-200">
+                <Form fields={ ['product', 'quantity', 'amount']} />
                 <h1 className="text-2xl font-medium text-blue-500">STOCK</h1>
                 <div className="bg-white rounded-sm shadow-sm p-4 mb-5">
                     <div className="flex justify-between">
@@ -83,7 +85,7 @@ function Stock() {
                         </div>
                     </div>
                     <div className="my-2 font-light overflow-auto horizontal-custom-scrollbar">
-                        <div className="flex w-full [&>*]:w-3/12 md:[&>*]:w-2/12 text-blue-500 font-bold border [&>*]:border-r [&>*]:px-1 [&>*]:shrink-0">
+                        <div className="flex w-full [&>*]:w-4/12 md:[&>*]:w-2/12 text-blue-500 font-bold border [&>*]:border-r [&>*]:px-1 [&>*]:shrink-0">
                             <h1 className="lg:text-left">Igicuruzwa</h1>
                             <h1 className="lg:text-left">Umukiriya</h1>
                             <h1>Igiciro waguzeho</h1>
@@ -96,7 +98,7 @@ function Stock() {
                             {tempProducts.map((product, index) => {
                                 let totalPrice = parseFloat(product.quantity) * parseFloat(product.buyingPrice)
                                 return (
-                                    <div key={index} className="flex w-full [&>*]:w-3/12 md:[&>*]:w-2/12 [&>*]:px-1 [&>*]:shrink-0">
+                                    <div key={index} className="flex w-full [&>*]:w-4/12 md:[&>*]:w-2/12 [&>*]:px-1 [&>*]:shrink-0">
                                         <h1>{product.name}</h1>
                                         <h1>{product.customer}</h1>
                                         <h1>{product.buyingPrice} Frw</h1>
