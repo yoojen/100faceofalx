@@ -1,16 +1,26 @@
+import { NavLink } from "react-router-dom";
+import {useSelector, useDispatch} from 'react-redux'
+  
 import { IoHomeOutline } from "react-icons/io5";
 import { MdProductionQuantityLimits } from "react-icons/md";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { BsFillPeopleFill } from "react-icons/bs";
 import { BiSolidReport } from "react-icons/bi";
 import { FiLogOut } from "react-icons/fi";
-import { NavLink } from "react-router-dom";
 
-function SideNav() {  
+import { toggleSideNav } from '../../context/SideNav'
+import { useEffect } from "react";
+
+function SideNav() {
+  const navOpen = useSelector((state) => state.sidenav)
+  const dispatch = useDispatch();
+
   return (
-    <div className="hidden h-screen w-full bg-white p-5 space-y-32 sm:block">
+    <div className={`${navOpen ? 'hidden md:block h-screen w-full bg-white p-5 space-y-32' : 'hidden' }`} >
       <div className="space-y-10">
-        <GiHamburgerMenu className="cursor-pointer h-5 w-5 hover:text-blue-500"/>
+        <GiHamburgerMenu className="cursor-pointer h-5 w-5 hover:text-blue-500" 
+          
+        />
         <div className="flex items-center">
           <img src="/assets/logo_.png" alt="" width={80} height={80} />
           <div className="uppercase -space-y-3 text-center text-sky-500">

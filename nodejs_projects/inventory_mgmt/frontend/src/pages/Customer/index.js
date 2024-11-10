@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import Navigator from '../../components/Navigator';
+import { toggleSideNav } from '../../context/SideNav';
 import Footer from '../../components/Footer';
 import CustomerModal from '../../components/CustomerModal';
+import { useDispatch } from "react-redux";
 
 const Customer = () => {
+    const dispatch = useDispatch();
     const [modalOpen, setModalOpen] = useState(false);
     const REDUCE = "reduce";
     const [actionType, setActionType] = useState(REDUCE);
@@ -14,20 +16,20 @@ const Customer = () => {
 
     const handleModalOpen = (type) => {
         setActionType(type);
-        setModalOpen((prev) => !prev)
+        setModalOpen((prev) => !prev);
+        dispatch(toggleSideNav());
     }
   return (
     <div>
-        {modalOpen && (
-            <div className="relative">
-                <div className="bg-black opacity-50 absolute top-0 left-0 z-30 h-screen w-full"
-                    onClick={()=>setModalOpen((prev)=>!prev)}
-                ></div>
-                  <CustomerModal type='customer' customers={customers} actionType={actionType} />
-            </div>
-        )}
-        <Navigator/>
-        <div className="relative top-20 px-5 lg:ml-[18.5%] bg-slate-200">
+        <div className="px-5 bg-slate-200">
+            {modalOpen && (
+                <div className="">
+                    <div className="bg-black opacity-50 absolute top-0 left-0 z-30 h-screen w-full"
+                        onClick={handleModalOpen}
+                    ></div>
+                    <CustomerModal type='customer' customers={customers} actionType={actionType} />
+                </div>
+            )}
             <h1 className="text-2xl font-medium text-blue-500">CUSTOMERS</h1>
             <div className='w-full bg-white p-4 mb-5 rounded-sm shadow-sm'>
                 <div className="flex justify-between">

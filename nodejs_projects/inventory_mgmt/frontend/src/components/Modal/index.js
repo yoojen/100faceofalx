@@ -15,6 +15,13 @@ function Modal({ products, setProducts, setTempProducts, type }) {
     
     // Handlers
     const handleAddProduct = () => {
+        if (productDetail.id == '' || productDetail.customer == '' || productDetail.name == '' ||
+            productDetail.buyingPrice == '' || productDetail.quantity == ''
+        ) {
+            setMessage({category: 'red', message: 'Please fill required info. Date is optional'});
+            handleShowMessage();
+            return;
+        }
         setProducts([...products, productDetail]);
         setTempProducts([...products, productDetail]);
         setProductDetail({id: products.length + 1, name: '', customer: '', buyingPrice: '', quantity: '', date: '' })
@@ -37,16 +44,16 @@ function Modal({ products, setProducts, setTempProducts, type }) {
                 <label htmlFor="customer">Umukiriya</label>
                 <select name="customer" id="customer" value={productDetail.customer} className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, customer: e.target.value})}}>
                     <option value="" className="text-slate-300">...</option>
-                    <option value="mutuye-140-650">mutuye-140-650</option>
-                    <option value="ncemeti-145-720">ncemeti-145-720</option>
+                    <option value="Doe">Doe</option>
+                    <option value="John">John</option>
                 </select>
             </div>    
             <div>
                 <label htmlFor="customer">Igicuruzwa</label>
                 <select name="customer" id="customer" value={productDetail.name} className="border px-4 py-1" onChange={(e)=>{setProductDetail({...productDetail, name: e.target.value})}}>
                     <option value="" className="text-slate-300">...</option>
-                    <option value="mutuye-140-650">mutuye-140-650</option>
-                    <option value="ncemeti-145-720">ncemeti-145-720</option>
+                    <option value="Sorghum">Sorghum</option>
+                    <option value="Beans">Beans</option>
                 </select>
             </div>    
             <div>

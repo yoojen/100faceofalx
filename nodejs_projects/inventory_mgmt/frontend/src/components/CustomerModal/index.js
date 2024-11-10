@@ -39,7 +39,7 @@ function CustomerModal({ customers, actionType }) {
     return (
         <div className='w-2/3 fixed top-10 z-30 bg-white rounded-sm shadow-md p-5 left-1/2 -translate-x-1/2'>
             <div className="flex justify-between">
-                <h1>New product</h1>
+                <h1>Customer</h1>
             </div>
             <hr />
             <div className={`text-${message.category}-500 text-center shadow-sm text-lg`}>

@@ -1,20 +1,12 @@
 import { BarChart } from "@mui/x-charts/BarChart";
-import { FcSalesPerformance } from "react-icons/fc";
-import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import InventoryOutlinedIcon from '@mui/icons-material/InventoryOutlined';
-import SummarizeOutlinedIcon from '@mui/icons-material/SummarizeOutlined';
-import { GiExpense } from "react-icons/gi";
-import { GiProfit } from "react-icons/gi";
 import { FaRankingStar } from "react-icons/fa6";
-import Navigator from "../../components/Navigator"
 import Footer from "../../components/Footer";
 
 
 function Dashboard() {
     return (
-        <div>
-            <Navigator/>
-            <div className="relative top-20 px-5 lg:ml-[18.5%] bg-slate-200">
+            <div className="px-5 bg-slate-200">
                 <h1 className="text-2xl font-medium text-blue-500">AHABANZA</h1>
                 <div className="md:flex md:basis-3/4 md:space-x-3">
                     <div className="md:w-2/3 [&>*]:bg-white [&>*]:rounded-sm [&>*]:shadow-md [&>*]:p-2 space-y-3">
@@ -59,36 +51,40 @@ function Dashboard() {
                                 <h1>Ibyo waguze (per week)</h1>
                             </div>
                             <table className="table-auto mx-2  w-full">
-                                <tr className="text-left">
-                                    <th>Product</th>
-                                    <th>Qty</th>
-                                    <th>Total Cost</th>
-                                </tr>
-                                <tr>
-                                    <td>amasaka</td>
-                                    <td>200kgs</td>
-                                    <td>frw 250, 500</td>
-                                </tr>
-                                <tr>
-                                    <td>ibigori</td>
-                                    <td>200kgs</td>
-                                    <td>frw 250, 500</td>
-                                </tr>
-                                <tr>
-                                    <td>ingano</td>
-                                    <td>200kgs</td>
-                                    <td>frw 250, 500</td>
-                                </tr>
-                                <tr>
-                                    <td>uburo</td>
-                                    <td>200kgs</td>
-                                    <td>frw 250, 500</td>
-                                </tr>
-                                <tr>
-                                    <td>amamera</td>
-                                    <td>200kgs</td>
-                                    <td>frw 250, 500</td>
-                                </tr>
+                                <thead>
+                                    <tr className="text-left">
+                                        <th>Product</th>
+                                        <th>Qty</th>
+                                        <th>Total Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>amasaka</td>
+                                        <td>200kgs</td>
+                                        <td>frw 250, 500</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ibigori</td>
+                                        <td>200kgs</td>
+                                        <td>frw 250, 500</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ingano</td>
+                                        <td>200kgs</td>
+                                        <td>frw 250, 500</td>
+                                    </tr>
+                                    <tr>
+                                        <td>uburo</td>
+                                        <td>200kgs</td>
+                                        <td>frw 250, 500</td>
+                                    </tr>
+                                    <tr>
+                                        <td>amamera</td>
+                                        <td>200kgs</td>
+                                        <td>frw 250, 500</td>
+                                    </tr>
+                                </tbody>    
                             </table>
                         </div>
                         <div style={{ marginBottom: "20px" }}>
@@ -188,7 +184,6 @@ function Dashboard() {
                 </div>
                 <Footer />
             </div>
-        </div>
     )
 }
 

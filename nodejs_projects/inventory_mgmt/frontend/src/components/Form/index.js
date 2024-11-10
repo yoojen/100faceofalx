@@ -7,7 +7,7 @@ const Form = ({ fields }) => {
     }
     
   return (
-    <div className='my-5'>
+    <div>
         <h1 className="text-2xl font-medium text-blue-500 uppercase">Kura Mu Bubiko</h1>
         <p>Koresha iyi form ukura mu bubiko ibyo wagurishije</p>
         <form className='sm:flex items-center justify-between bg-white rounded-sm shadow-sm p-4' onSubmit={handleSubmit}>
