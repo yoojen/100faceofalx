@@ -15,8 +15,9 @@ function Modal({ products, setProducts, setTempProducts, type }) {
     
     // Handlers
     const handleAddProduct = () => {
-        if (productDetail.id == '' || productDetail.customer == '' || productDetail.name == '' ||
-            productDetail.buyingPrice == '' || productDetail.quantity == ''
+        if (
+            (productDetail.id === '') || (productDetail.customer === '') || (productDetail.name === '') ||
+            (productDetail.buyingPrice === '') || (productDetail.quantity === '')
         ) {
             setMessage({category: 'red', message: 'Please fill required info. Date is optional'});
             handleShowMessage();

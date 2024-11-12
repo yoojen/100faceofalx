@@ -1,51 +1,32 @@
 import { NavLink } from "react-router-dom";
-import {useSelector, useDispatch} from 'react-redux'
-  
-import { IoHomeOutline } from "react-icons/io5";
-import { MdProductionQuantityLimits } from "react-icons/md";
-import { GiHamburgerMenu } from "react-icons/gi";
-import { BsFillPeopleFill } from "react-icons/bs";
-import { BiSolidReport } from "react-icons/bi";
 import { FiLogOut } from "react-icons/fi";
 
-import { toggleSideNav } from '../../context/SideNav'
-import { useEffect } from "react";
+import { navLinks } from "../Utils";
 
 function SideNav() {
-  const navOpen = useSelector((state) => state.sidenav)
-  const dispatch = useDispatch();
 
   return (
-    <div className={`${navOpen ? 'hidden md:block h-screen w-full bg-white p-5 space-y-32' : 'hidden' }`} >
-      <div className="space-y-10">
-        <GiHamburgerMenu className="cursor-pointer h-5 w-5 hover:text-blue-500" 
-          
-        />
-        <div className="flex items-center">
+    <div>
+      <div className="mt-14 space-y-6">
+        <div className="lg:flex items-center  w-1/4">
           <img src="/assets/logo_.png" alt="" width={80} height={80} />
-          <div className="uppercase -space-y-3 text-center text-sky-500">
-            <small>stock</small>
+          <div className="-mt-5 uppercase -space-y-3 text-center text-sky-500">
+            <small className="text-black font-medium">stock</small>
             <h1 className="text-xl">yanjye</h1>
           </div>
         </div>
         <div className="w-full overflow-hidden">
           <ul className="space-y-6 w-full">
-            <li className="flex items-center space-x-3 active:text-sky-500 hover:text-sky-500">
-              <IoHomeOutline className="h-5 w-5"/>
-              <NavLink to='/dashboard'> Ahabanza </NavLink>
-            </li>
-            <li className="flex items-center space-x-3 active:text-sky-500 hover:text-sky-500">
-              <MdProductionQuantityLimits className="h-5 w-5"/>
-              <NavLink to='/stock'> Stock </NavLink>
-            </li>
-            <li className="flex items-center space-x-3 active:text-sky-500 hover:text-sky-500">
-              <BsFillPeopleFill className="h-5 w-5"/>
-              <NavLink to='/customers'> Abakiriya </NavLink>
-            </li>
-            <li className="flex items-center space-x-3 active:text-sky-500 hover:text-sky-500">
-              <BiSolidReport className="h-5 w-5"/>
-              <NavLink to='/reports'> Raporo </NavLink>
-            </li>
+            {
+              navLinks.map((link) => {
+                return (
+                  <li className="flex items-center space-x-3 active:text-sky-500 hover:text-sky-500" key={link.id}>
+                    {link.icon}
+                    <NavLink to={link.rel}> {link.text} </NavLink>
+                  </li>
+                )
+              })
+            }
           </ul>
         </div>
       </div>

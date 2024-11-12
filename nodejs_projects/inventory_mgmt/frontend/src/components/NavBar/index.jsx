@@ -16,7 +16,7 @@ function NavBar() {
   }
 
   return (
-    <div className="px-5 py-3 flex justify-between w-full bg-white">
+    <div className="px-8 py-3 flex justify-between w-full bg-white">
       <div className="relative w-full">
         <input
           type="text"

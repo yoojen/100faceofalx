@@ -10,7 +10,7 @@ module.exports = {
       },
       width: {
         "sidebar-width": "18%",
-        "navbar-width": "81.5%"
+        "navbar-width": "82%"
       },
       fontFamily: {
         "reporting": ["Verdana", "sans serif"]
