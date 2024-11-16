@@ -1,24 +1,49 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { MdFilterList } from "react-icons/md";
 import Footer from "../../components/Footer";
 import Modal from "../../components/Modal";
 import UpdateModal from "../../components/UpdateModal";
 import Form from "../../components/Form";
-import { useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { toggleSideNav } from '../../context/SideNav';
 
 function Stock() {
-    const dispatch = useDispatch();
     const [products, setProducts] = useState([]);
     const [tempProducts, setTempProducts] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState({});
     const [modalOpen, setModalOpen] = useState(false);
     const [updateModalOpen, setUpdateModalOpen] = useState(false);
     const [filterOpen, setFilterOpen] = useState(false);
+    const navOpen = useSelector(state => state.sidenav);
+    const navRef = useRef(null);
+    const dispatch = useDispatch();
+
 
     const handleModalOpen = () => {
-        dispatch(toggleSideNav());
-        setModalOpen((prev) => !prev);
+        console.log('at start ----> ', navOpen, navRef)
+        if (modalOpen) {
+            if (!navRef.current) {
+                setModalOpen((prev) => !prev);
+                return;
+            } else {
+                setModalOpen((prev) => !prev);
+                dispatch(toggleSideNav());
+                return;
+            }
+        }
+        if (!modalOpen) {
+            if (!navOpen) {
+                navRef.current = false;
+                setModalOpen((prev) => !prev);
+                return;
+            } else {
+                navRef.current = true;
+                dispatch(toggleSideNav());
+                setModalOpen((prev) => !prev);
+                return;
+            }
+        }
+        console.log('at end ----> ', navOpen, navRef)
     }
     const handleFilter = (e) => {
         const value = e.target.textContent;
@@ -29,7 +54,14 @@ function Stock() {
     const handleProductUpdate = (id) => {
         const product = products.find((product) => product.id === id)
         setSelectedProduct(product);
-        setUpdateModalOpen((prev) => !prev);
+         if ((!updateModalOpen && !navOpen)) {
+                setUpdateModalOpen((prev) => !prev);
+                return;
+            } else {
+                setUpdateModalOpen((prev) => !prev);
+                dispatch(toggleSideNav());
+                return;
+            }
     }
 
     const handleDeleteProduct = (id) => {
@@ -41,6 +73,17 @@ function Stock() {
         }
     }
 
+    const tableHeader = (
+        <div className="flex w-full [&>*]:w-4/12 md:[&>*]:w-2/12 text-blue-500 font-bold border [&>*]:border-r [&>*]:px-1 [&>*]:shrink-0">
+            <h1 className="lg:text-left">Igicuruzwa</h1>
+            <h1 className="lg:text-left">Umukiriya</h1>
+            <h1>Igiciro waguzeho</h1>
+            <h1>Ingano waguze</h1>
+            <h1>Italiki (wabiguriye)</h1>
+            <h1>Total (ayo wabitanzeho)</h1>
+            <h1>Action</h1>
+        </div>
+    )
     return (            
         <div className="px-5 bg-slate-200">
             {modalOpen && (
@@ -51,7 +94,6 @@ function Stock() {
                     <Modal setProducts={setProducts} products={products} setTempProducts={setTempProducts} />
                 </div>
             )}
-            {/* If product is amamera, I've to either increase or decrease balance based on profit */}
             <Form fields={ ['product', 'quantity', 'amount']} />
             <h1 className="text-2xl font-medium text-blue-500">STOCK</h1>
             <div className="bg-white rounded-sm shadow-sm p-4 mb-5">
@@ -89,15 +131,8 @@ function Stock() {
                     </div>
                 </div>
                 <div className="my-2 font-light overflow-auto horizontal-custom-scrollbar">
-                    <div className="flex w-full [&>*]:w-4/12 md:[&>*]:w-2/12 text-blue-500 font-bold border [&>*]:border-r [&>*]:px-1 [&>*]:shrink-0">
-                        <h1 className="lg:text-left">Igicuruzwa</h1>
-                        <h1 className="lg:text-left">Umukiriya</h1>
-                        <h1>Igiciro waguzeho</h1>
-                        <h1>Ingano waguze</h1>
-                        <h1>Italiki (wabiguriye)</h1>
-                        <h1>Total (ayo wabitanzeho)</h1>
-                        <h1>Action</h1>
-                    </div>
+                    {tableHeader}
+                    
                     <div className="border-l border-r">
                         {tempProducts.map((product, index) => {
                             let totalPrice = parseFloat(product.quantity) * parseFloat(product.buyingPrice)
@@ -116,7 +151,7 @@ function Stock() {
                                     {updateModalOpen && (
                                         <div className="">
                                             <div className="bg-black opacity-50 absolute -top-20 left-0 z-30 h-screen w-full"
-                                                onClick={()=>{setUpdateModalOpen((prev)=>!prev)}}
+                                                onClick={() => handleProductUpdate(product.id)}
                                             ></div>
                                             <UpdateModal product={selectedProduct} products={products} setTempProducts={setTempProducts} />
                                         </div>
