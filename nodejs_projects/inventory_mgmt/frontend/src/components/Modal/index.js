@@ -31,12 +31,11 @@ function Modal({ products, setProducts, setTempProducts, type }) {
     };
   
     const handleShowMessage = () => {
-        setShowMessage(true); // Show the message instantly 
+        setShowMessage(true);
         
-        // Set the timer to hide the message after 3 seconds
         setTimeout(() => {
         setShowMessage(false);
-        }, 4000); // 5000ms = 3 seconds
+        }, 4000);
     };
 
     const formElements = (
@@ -77,7 +76,7 @@ function Modal({ products, setProducts, setTempProducts, type }) {
         </div>
     )
   return (
-    <div className='fixed top-10 z-30 w-2/3 bg-white rounded-sm shadow-md p-5 left-1/2 -translate-x-1/2'>
+    <div className='fixed top-40 z-30 w-2/3 bg-white rounded-sm shadow-md p-5 left-1/2 -translate-x-1/2'>
         <div className="flex justify-between">
             <h1>New product</h1>
         </div>
