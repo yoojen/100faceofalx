@@ -6,7 +6,6 @@ class Product extends Model { }
 class Supplier extends Model { }
 class SpecialCustomer extends Model { }
 class Category extends Model { }
-class ProductCategory  extends Model { }
 class InventoryTransaction extends Model { }
 
 User.init(
@@ -76,6 +75,18 @@ User.init(
     }
 )
 
+
+Supplier.init(
+    {
+        name: DataTypes.STRING,
+        phone_number: DataTypes.STRING,
+    },
+    {
+        sequelize,
+        tableName: 'Suppliers'
+    }
+)
+
 Product.init(
     {
         name: {
@@ -94,35 +105,10 @@ Product.init(
             type: DataTypes.INTEGER,
             allowNull: false
         },
-        supplier: {
-            allowNull: true,
-            references: {
-                model: Supplier,
-                key: 'id',
-            }
-        },
-        sp_customer: {
-            allowNull: true,
-            references: {
-                model: SpecialCustomer,
-                key: 'id'
-            }
-        }
     },
     {
         sequelize,
         tableName: 'Products'
-    }
-)
-
-Supplier.init(
-    {
-        name: DataTypes.STRING,
-        phone_number: DataTypes.STRING,
-    },
-    {
-        sequelize,
-        tableName: 'Suppliers'
     }
 )
 
@@ -149,47 +135,9 @@ Category.init(
     }
 )
 
-ProductCategory.init(
-    {
-        product_id: {
-            references: {
-                model: Product,
-                key: 'id'
-            }
-        },
-        category_id: {
-            references: {
-                model: Category,
-                key: 'id'
-            }
-        },
-    },
-    {
-        sequelize,
-        tableName: 'ProductCategories'
-    }
-)
 
 InventoryTransaction.init(
     {
-        product: {
-            references: {
-                model: Product,
-                key: 'id'
-            }
-        },
-        supplier: {
-            references: {
-                model: Supplier,
-                key: 'id'
-            }
-        },
-        sp_customer: {
-            references: {
-                model: SpecialCustomer,
-                key: 'id'
-            }
-        },
         quantity: {
             type: DataTypes.INTEGER,
             validate: {
@@ -203,6 +151,7 @@ InventoryTransaction.init(
             }
         },
         selling_price: {
+            type: DataTypes.INTEGER,
             validate: {
                 isInt: {
                     msg: 'Quantity must be integer'
@@ -212,9 +161,9 @@ InventoryTransaction.init(
                     msg: 'Quantity must be atleast 1'
                 }
             }
-            
         },
         total_amount: {
+            type: DataTypes.INTEGER,
             validate: {
                 isInt: {
                     msg: 'Quantity must be integer'
@@ -243,3 +192,44 @@ InventoryTransaction.init(
         tableName: 'InventoryTransactions'
     }
 )
+
+//Relationships
+Supplier.hasMany(Product);
+Product.belongsTo(Supplier);
+
+SpecialCustomer.hasMany(Product);
+Product.belongsTo(SpecialCustomer);
+
+
+Category.hasMany(Product);
+Product.belongsTo(Category);
+
+Product.hasMany(InventoryTransaction)
+InventoryTransaction.belongsTo(Product);
+
+User.hasMany(InventoryTransaction);
+InventoryTransaction.belongsTo(User);
+
+const models = {
+    Supplier,
+    SpecialCustomer,
+    Product,
+    Category,
+    InventoryTransaction,
+    User,
+};
+
+(async function(){
+    try {
+        await Supplier.sync({alter: true})
+        await SpecialCustomer.sync({alter: true})
+        await Category.sync({alter: true})
+        await Product.sync({alter: true})
+        await User.sync({alter: true})
+        await InventoryTransaction.sync({alter: true})
+    } catch (error) {
+        console.error(error)
+        return false
+    }
+}())
+module.exports = models;

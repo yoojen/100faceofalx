@@ -6,7 +6,7 @@ let sequelize = new Sequelize('inventory_mgmt', 'root', process.env.DATABASE_PAS
     host: 'localhost',
     dialect: 'mysql',
     port: 3306,
-    logging: console.log
+    logging: false
 });
 
 module.exports = sequelize;
