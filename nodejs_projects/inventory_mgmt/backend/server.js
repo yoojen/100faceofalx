@@ -3,9 +3,7 @@ const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 
 
-const sequelize = require('./Config/db.config');
 const connectDB = require('./Helpers/checkDB');
-const models = require('./Models/models');
 const UserRouter = require('./Routes/UserRouter');
 
 dotenv.config();
@@ -28,14 +26,6 @@ app.get('/status', (req, res) => {
     return res.status(200).send({ status: 'OK', success: true });
 })
 
-app.use('/db-status', async (req, res) => {
-    const connected = await connectDB();
-    if (connected) {
-        return res.status(200).send({ status: 'OK', success: true })
-    } else {
-        return res.status(400).send({ status: 'BAD', success: false })
-   }
-})
 
 app.use(UserRouter);
 
