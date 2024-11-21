@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const sequelize = require('./Config/db.config');
 const connectDB = require('./Helpers/checkDB');
 const models = require('./Models/models');
+const UserRouter = require('./Routes/UserRouter');
 
 dotenv.config();
 
@@ -36,16 +37,6 @@ app.use('/db-status', async (req, res) => {
    }
 })
 
-app.get('/users', (req, res) => {
-    const { User } = models;
-    const users = User.findAll();
-    res.status(200).send(users)
-})
-app.post('/create-user', (req, res) => {
-    const { username, email, password, firstName, lastName } = req.body;
-    console.log(username, email, password, firstName, lastName)
-
-    res.status(201).send({ status: 'OK', success: true });
-})
+app.use(UserRouter);
 
 app.listen(PORT);
