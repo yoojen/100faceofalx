@@ -2,9 +2,9 @@ const Router = require('express').Router()
 const {
     createTransaction, getTransactions,
     getTransactionById, searchTransaction,
-    getTransactionByDate,
-    getTransactionReport,
-    getTransactionYearReport
+    getTransactionByDate, getTransactionReport,
+    getTransactionYearReport, updateTransaction,
+    deleteTransaction
 } = require('../Controllers/TransactionController');
 
 
@@ -15,5 +15,6 @@ Router.get('/transactions/q/search', searchTransaction);
 Router.get('/transactions/q/date', getTransactionByDate);
 Router.get('/transactions/q/week', getTransactionReport);
 Router.get('/transactions/q/year', getTransactionYearReport);
-
+Router.put('/transactions/mgmt/:id', updateTransaction)
+Router.delete('/transactions/mgmt/:id', deleteTransaction)
 module.exports = Router;

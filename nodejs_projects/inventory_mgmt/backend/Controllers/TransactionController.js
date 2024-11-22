@@ -100,7 +100,6 @@ const getTransactionReport = async (req, res) => {
             })
         res.send({success: true, transactions: transactions, message: 'Retrieved successfully'})
     } catch (error) {
-        console.log(error);
         apiErrorHandler(res, error, 'transactions')
     }
 }
@@ -145,7 +144,7 @@ const createTransaction = async (req, res) => {
 
 const updateTransaction = async (req, res) => {
     try {
-        const { id } = req.body;
+        const { id } = req.params;
         const modelFields = Object.keys(InventoryTransaction.getAttributes());
         var bodyFields = Object.keys(req.body);
 
@@ -159,7 +158,6 @@ const updateTransaction = async (req, res) => {
                 const transaction = await InventoryTransaction.findByPk(id);
                 req.body.selling_price = transaction.selling_price;
                 req.body.total_amount = transaction.selling_price * req.body.quantity
-                console.log(req.body);
             } else if (!bodyFields.includes('quantity') && bodyFields.includes('selling_price')) {
                 const transaction = await InventoryTransaction.findByPk(id);
                 req.body.total_amount = transaction.quantity * req.body.selling_price
@@ -179,11 +177,19 @@ const updateTransaction = async (req, res) => {
     }
 }
 
-const deleteTransaction = (req, res) => {
+const deleteTransaction = async (req, res) => {
     try {
-        
+        const { id } = req.params;
+        const transaction = await InventoryTransaction.findByPk(id);
+        if (transaction) {
+            await transaction.destroy();
+            res.status(204).send({ success: true, message: 'Deleted successfully' });
+        } else {
+            res.status(404).send({ success: false, message: 'No transaction found' });
+        }
     } catch (error) {
-        
+        console.log(error);
+        apiErrorHandler(res, error, 'transaction');
     }
 }
 
