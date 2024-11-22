@@ -125,7 +125,7 @@ const createTransaction = async (req, res) => {
         const { InventoryTransaction } = models;
         const formData = {
             quantity, selling_price, total_amount,
-            transaction_type,transaction_date
+            transaction_type, transaction_date
         } = req.body;
         
         if (formData.quantity * formData.selling_price == formData.total_amount) {
@@ -139,20 +139,43 @@ const createTransaction = async (req, res) => {
             res.status(400).send({success: false, transaction: null, message: 'Invalid multiplication'})
         }
     } catch (error) {
-        if (error.errors) {
-            const msg = error.errors[0].message;
-            res.status(400).send({ success: false, transaction: null, message: msg })
-        } else {
-            res.status(400).send({ success: false, transaction: null, message: "Something went wrong" })
-        }
+        apiErrorHandler(res, error, 'transaction')
     }
 }
 
-const updateTransaction = (req, res) => {
+const updateTransaction = async (req, res) => {
     try {
-        
+        const { id } = req.body;
+        const modelFields = Object.keys(InventoryTransaction.getAttributes());
+        var bodyFields = Object.keys(req.body);
+
+        const outFields = bodyFields.filter(key => !modelFields.includes(key));
+        if (outFields.length > 0) {
+            res.status(400).send({ success: false, transaction: null, message: `${outFields.map(key => key)} is/are not present` });
+        } else {
+            if (bodyFields.includes('quantity') && bodyFields.includes('selling_price')) {
+                req.body.total_amount = req.body.quantity * req.body.selling_price;
+            } else if (bodyFields.includes('quantity') && !bodyFields.includes('selling_price')) {
+                const transaction = await InventoryTransaction.findByPk(id);
+                req.body.selling_price = transaction.selling_price;
+                req.body.total_amount = transaction.selling_price * req.body.quantity
+                console.log(req.body);
+            } else if (!bodyFields.includes('quantity') && bodyFields.includes('selling_price')) {
+                const transaction = await InventoryTransaction.findByPk(id);
+                req.body.total_amount = transaction.quantity * req.body.selling_price
+                req.body.quantity = transaction.quantity;
+            } else {
+                req.body = req.body
+            }
+            const transaction = await InventoryTransaction.update(req.body, {
+                where: {
+                    id: id
+                }
+            });
+            res.status(200).send({ success: true, transaction: transaction, message: 'Updated successfully' });
+        }
     } catch (error) {
-        
+        apiErrorHandler(res, error, 'transaction');
     }
 }
 
