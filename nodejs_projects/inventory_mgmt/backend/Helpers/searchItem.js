@@ -1,6 +1,6 @@
 async function searchItem(model, option, include) {
     try {
-        if (include) {
+        if (include.length > 0) {
             var item = await model.findAll({ where:  option, include: include })
         } else {
             var item = await model.findAll({ where:  option })

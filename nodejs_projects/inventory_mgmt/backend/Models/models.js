@@ -18,6 +18,12 @@ class Stock extends Model { }
 
 User.init(
     {
+        id: {
+            type: DataTypes.UUID,
+            allowNull: false,
+            primaryKey: true,
+            defaultValue: DataTypes.UUIDV4
+        },
         username: {
             type: DataTypes.STRING,
             unique: {
@@ -69,7 +75,8 @@ User.init(
                 this.hashPassword(value);
             }
         },
-        firstName:{
+        firstName: {
+            allowNull: false,
             type: DataTypes.STRING,
             validate: {
                 isAlpha: {
@@ -95,8 +102,20 @@ User.init(
 
 Supplier.init(
     {
-        name: DataTypes.STRING,
-        phone_number: DataTypes.STRING,
+        id: {
+            type: DataTypes.UUID,
+            allowNull: false,
+            primaryKey: true,
+            defaultValue: DataTypes.UUIDV4
+        },
+        name: {
+            allowNull: false,
+            type: DataTypes.STRING
+        },
+        phone_number: {
+            allowNull: false,
+            type: DataTypes.STRING
+        },
     },
     {
         sequelize,
@@ -106,6 +125,12 @@ Supplier.init(
 
 Product.init(
     {
+        id: {
+            type: DataTypes.UUID,
+            allowNull: false,
+            primaryKey: true,
+            defaultValue: DataTypes.UUIDV4
+        },
         name: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -132,6 +157,12 @@ Product.init(
 
 Stock.init(
     {
+        id: {
+            type: DataTypes.UUID,
+            allowNull: false,
+            primaryKey: true,
+            defaultValue: DataTypes.UUIDV4
+        },
         name: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -153,10 +184,18 @@ Stock.init(
 
 SpecialCustomer.init(
     {
-        name: DataTypes.STRING,
+        id: {
+            type: DataTypes.UUID,
+            allowNull: false,
+            primaryKey: true,
+            defaultValue: DataTypes.UUIDV4
+        },
+        name: {
+            allowNull: false,
+            type: DataTypes.STRING
+        },
         balance: {
             type: DataTypes.INTEGER,
-            allowNull: true,
         }
     },
     {
@@ -166,7 +205,16 @@ SpecialCustomer.init(
 )
 Category.init(
     {
-        name: DataTypes.STRING
+        id: {
+            type: DataTypes.UUID,
+            allowNull: false,
+            primaryKey: true,
+            defaultValue: DataTypes.UUIDV4
+        },
+        name: {
+            allowNull: false,
+            type: DataTypes.STRING
+        }
     },
     {
         sequelize,
@@ -177,7 +225,14 @@ Category.init(
 
 InventoryTransaction.init(
     {
+        id: {
+            type: DataTypes.UUID,
+            allowNull: false,
+            primaryKey: true,
+            defaultValue: DataTypes.UUIDV4
+        },
         quantity: {
+            allowNull: false,
             type: DataTypes.INTEGER,
             validate: {
                 isInt: {
@@ -190,6 +245,7 @@ InventoryTransaction.init(
             }
         },
         selling_price: {
+            allowNull: false,
             type: DataTypes.INTEGER,
             validate: {
                 isInt: {
@@ -202,6 +258,7 @@ InventoryTransaction.init(
             }
         },
         total_amount: {
+            allowNull: false,
             type: DataTypes.INTEGER,
             validate: {
                 isInt: {
@@ -219,12 +276,10 @@ InventoryTransaction.init(
             }
         },
         transaction_type: {
-            type: DataTypes.ENUM(['in, out'])
+            allowNull: false,
+            type: DataTypes.ENUM,
+            values: ['IN', 'OUT']
         },
-        transaction_date: {
-            type: DataTypes.DATEONLY,
-            defaultValue: sequelize.NOW
-        }
     },
     {
         sequelize,
@@ -233,23 +288,35 @@ InventoryTransaction.init(
 )
 
 //Relationships
-Supplier.hasMany(Product);
+Supplier.hasMany(Product, {
+    onDelete: "SET NULL"
+});
 Product.belongsTo(Supplier);
 
-SpecialCustomer.hasMany(Product);
+SpecialCustomer.hasMany(Product, {
+    onDelete: 'SET NULL'
+});
 Product.belongsTo(SpecialCustomer);
 
 
-Category.hasMany(Product);
+Category.hasMany(Product, {
+    onDelete: 'CASCADE',
+});
 Product.belongsTo(Category);
 
-Product.hasMany(InventoryTransaction);
+Product.hasMany(InventoryTransaction, {
+    onDelete: "CASCADE"
+});
 InventoryTransaction.belongsTo(Product);
 
-User.hasMany(InventoryTransaction);
+User.hasMany(InventoryTransaction, {
+    onDelete: 'CASCADE'
+});
 InventoryTransaction.belongsTo(User);
 
-User.hasMany(Stock);
+User.hasMany(Stock, {
+    onDelete: 'CASCADE'
+});
 Stock.belongsTo(User);
 
 const models = {

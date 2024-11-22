@@ -1,5 +1,9 @@
-const searchItem  = require('../Helpers/searchItem');
+const { Op, Sequelize } = require('sequelize')
+const searchItem = require('../Helpers/searchItem');
+const { apiErrorHandler } = require('../Helpers/errorHandler');
 const  { InventoryTransaction, User, Product } = require('../Models/models');
+const getTimeDifference = require('../Helpers/dateOperations');
+const sequelize = require('../Config/db.config');
 
 
 const getTransactions = async (req, res) => {
@@ -18,11 +22,9 @@ const getTransactionById = async (req, res) => {
         const transaction = await InventoryTransaction.findByPk(id, {include: [User, Product]});
         if (transaction) {
             res.status(200).send({ success: true, transaction: transaction, message: 'Retrieved successfully' });
-        } else {
-            res.status(400).send({ success: false, transaction: null, message: 'Failed to pull transaction' });
-        }
+        } 
     } catch (error) {
-        res.status(400).send({ success: false, transaction: null, message: 'Failed to pull transaction' });
+        apiErrorHandler(res, error, 'transaction')
     }
 }
 
@@ -31,39 +33,90 @@ const searchTransaction = async (req, res) => {
         const transaction = await searchItem(InventoryTransaction, req.query, include = [User, Product]);
         if (transaction) {
             res.status(200).send({ success: true, transaction: transaction, message: 'Retrieved successfully' });
+        }
+    } catch (error) {
+        apiErrorHandler(res, error, 'transaction')
+    }
+}
+
+const getTransactionByDate = async (req, res) => {
+    try {
+        const { sDate, eDate } = req.query;
+        if (sDate && !eDate) {
+            var transactions = await InventoryTransaction.findAll({
+                where: {
+                    updatedAt: {
+                        [Op.gte]: new Date(sDate)
+                    }
+                },
+                order: [
+                    ['updatedAt', 'DESC']
+                ]
+            })
+        } else if (!sDate && eDate) {
+            var transactions = await InventoryTransaction.findAll({
+                where: {
+                    updatedAt:{
+                        [Op.lte]: new Date(eDate)
+                    }
+                },
+                order: [
+                    ['updatedAt', 'DESC']
+                ]
+            })
         } else {
-            res.status(400).send({success: false, transaction: null, message: 'Failed to pull the transaction'});
+            var transactions = await InventoryTransaction.findAll({
+                where: {
+                    updatedAt: {
+                        [Op.between]: [new Date(sDate), new Date(eDate)]
+                    }
+                },
+                order: [
+                    ['updatedAt', 'DESC']
+                ]
+            })
+        } 
+        if (transactions) {
+            res.status(200).send({ success: true, transactions: transactions, message: 'Retrieved successfully' });
         }
     } catch (error) {
-        if (error.errors) {
-            const msg = error.errors[0].message;
-            res.status(400).send({success: false, transaction: null, message: msg});
-        }
-        res.status(400).send({success: false, transaction: null, message: 'Failed to pull the transaction'});
+        apiErrorHandler(res, error, 'transactions')
     }
 }
 
-const getTransactionByDate = (req, res) => {
+const getTransactionReport = async (req, res) => {
     try {
-        
+        const { report } = req.query;
+        const ago = getTimeDifference(report);
+        const transactions = await InventoryTransaction.findAll({
+                where: {
+                    updatedAt:{
+                        [Op.gte]: ago
+                    }
+                },
+                order: [
+                    ['updatedAt', 'DESC']
+                ]
+            })
+        res.send({success: true, transactions: transactions, message: 'Retrieved successfully'})
     } catch (error) {
-        
+        console.log(error);
+        apiErrorHandler(res, error, 'transactions')
     }
 }
 
-const getTransactionPerWeekReport = (req, res) => {
+const getTransactionYearReport = async (req, res) => {
     try {
-        
+        const { report } = req.query;
+        const transactions = await InventoryTransaction.findAll({
+                where: sequelize.where(sequelize.fn('YEAR', sequelize.col('updatedAt')), report),
+                order: [
+                    ['updatedAt', 'DESC']
+                ]
+        })
+        res.send({success: true, transactions: transactions, message: 'Retrieved successfully'})
     } catch (error) {
-        
-    }
-}
-
-const getTransactionPerMonthReport = (req, res) => {
-    try {
-        
-    } catch (error) {
-        
+        apiErrorHandler(res, error, 'transactions')
     }
 }
 
@@ -115,8 +168,8 @@ module.exports = {
     getTransactions,
     getTransactionById,
     getTransactionByDate,
-    getTransactionPerWeekReport,
-    getTransactionPerMonthReport,
+    getTransactionReport,
+    getTransactionYearReport,
     searchTransaction,
     createTransaction,
     updateTransaction,
