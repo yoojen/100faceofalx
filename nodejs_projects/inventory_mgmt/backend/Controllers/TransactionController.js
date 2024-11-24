@@ -121,13 +121,18 @@ module.exports.getTransactionYearReport = async (req, res) => {
     }
 }
 
+// Transaction 'IN' will create product or increment its value if already exists
+// Creation of Product, creates transaction automatically
 module.exports.createTransaction = async (req, res) => {
     try {
         const formData = {
             quantity, selling_price, total_amount,
             transaction_type, transaction_date, ProductId, UserId
         } = req.body;
-        
+        if (!ProductId) {
+            res.status(400).send({success: false, transaction: null, message: 'Please select product'})
+            return;
+        }
         if (formData.quantity * formData.selling_price == formData.total_amount) {
             const transaction = await InventoryTransaction.create(formData)
             if (transaction) {

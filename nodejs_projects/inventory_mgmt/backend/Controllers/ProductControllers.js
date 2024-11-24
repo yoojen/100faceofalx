@@ -1,5 +1,74 @@
-const { Product, Supplier } = require('../Models/models');
+const { Product, Supplier, SpecialCustomer, Category } = require('../Models/models');
 const { apiErrorHandler } = require('../Helpers/errorHandler');
+
+
+module.exports.getProducts = async (req, res) => {
+    try {
+        const products = await Product.findAll({
+            include: [
+                {
+                    model: SpecialCustomer,
+                    attributes: ['name']
+                },
+                {
+                    model: Supplier,
+                    attributes: ['name']
+                }
+            ]
+        });
+        res.status(200).send({ success: true, products: products, message: 'Retrieved successfully' });
+    } catch (error) {
+        apiErrorHandler(res, error, 'product');
+    }
+}
+
+module.exports.getProductById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const product = await Product.findByPk(id, {
+            include: [
+                {
+                    model: SpecialCustomer,
+                    attributes: ['id', 'name']
+                },
+                {
+                    model: Supplier,
+                    attributes: ['id', 'name']
+                }
+            ]
+        });
+        res.status(200).send({ success: true, product: product, message: 'Retrieved successfully' });
+    } catch (error) {
+        apiErrorHandler(res, error, 'product');
+    }
+}
+
+module.exports.searchProduct = async (req, res) => {
+    try {
+        const options = req.query;
+        const product = await Product.findAll({
+            where:  options,
+            include: [
+                {
+                    model: SpecialCustomer,
+                    attributes: ['name']
+                },
+                {
+                    model: Supplier,
+                    attributes: ['name']
+                },
+                {
+                    model: Category,
+                    attributes: ['id', 'name']
+                }
+            ]
+        })
+        res.status(200).send({ success: true, product: product, message: 'Retrieved successfully' });
+    } catch (error) {
+        console.log(error);
+        apiErrorHandler(res, error, 'product');
+    }
+}
 
 module.exports.addProduct = async (req, res) => {
     try {
