@@ -112,8 +112,8 @@ Supplier.init(
             allowNull: false,
             type: DataTypes.STRING
         },
-        phone_number: {
-            allowNull: false,
+        specialId: {
+            allowNull: true,
             type: DataTypes.STRING
         },
     },
@@ -213,7 +213,13 @@ Category.init(
         },
         name: {
             allowNull: false,
-            type: DataTypes.STRING
+            unique: true,
+            type: DataTypes.STRING,
+            validate: {
+                notEmpty: {
+                    msg: 'Name can not be empty'
+                }
+            }
         }
     },
     {
@@ -288,20 +294,14 @@ InventoryTransaction.init(
 )
 
 //Relationships
-Supplier.hasMany(Product, {
-    onDelete: "SET NULL"
-});
+Supplier.hasMany(Product);
 Product.belongsTo(Supplier);
 
-SpecialCustomer.hasMany(Product, {
-    onDelete: 'SET NULL'
-});
+SpecialCustomer.hasMany(Product);
 Product.belongsTo(SpecialCustomer);
 
 
-Category.hasMany(Product, {
-    onDelete: 'CASCADE',
-});
+Category.hasMany(Product);
 Product.belongsTo(Category);
 
 Product.hasMany(InventoryTransaction, {

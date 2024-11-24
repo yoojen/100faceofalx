@@ -15,6 +15,6 @@ Router.get('/transactions/q/search', searchTransaction);
 Router.get('/transactions/q/date', getTransactionByDate);
 Router.get('/transactions/q/week', getTransactionReport);
 Router.get('/transactions/q/year', getTransactionYearReport);
-Router.put('/transactions/mgmt/:id', updateTransaction)
-Router.delete('/transactions/mgmt/:id', deleteTransaction)
+Router.put('/transactions/modify/:id', updateTransaction)
+Router.delete('/transactions/erase/:id', deleteTransaction)
 module.exports = Router;

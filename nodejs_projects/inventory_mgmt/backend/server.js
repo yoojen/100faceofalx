@@ -6,6 +6,8 @@ const bodyParser = require('body-parser');
 const connectDB = require('./Helpers/checkDB');
 const UserRouter = require('./Routes/UserRouter');
 const TransactionRouter = require('./Routes/TransactionRouter');
+const CategoryRouter = require('./Routes/CategoryRouter');
+const ProductRouter = require('./Routes/ProductRouter');
 
 dotenv.config();
 
@@ -29,5 +31,7 @@ app.get('/status', (req, res) => {
 
 
 app.use(UserRouter);
-app.use(TransactionRouter)
+app.use(TransactionRouter);
+app.use(CategoryRouter);
+app.use(ProductRouter);
 app.listen(PORT);

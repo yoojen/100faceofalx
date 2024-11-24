@@ -6,7 +6,7 @@ const getTimeDifference = require('../Helpers/dateOperations');
 const sequelize = require('../Config/db.config');
 
 
-const getTransactions = async (req, res) => {
+module.exports.getTransactions = async (req, res) => {
     try {
         const transactions = await InventoryTransaction.findAll({});
         res.status(200).send({success: true, transactions: transactions, message: 'Retrieved successfully'})
@@ -16,19 +16,21 @@ const getTransactions = async (req, res) => {
 }
 
 
-const getTransactionById = async (req, res) => {
+module.exports.getTransactionById = async (req, res) => {
     try {
         const { id } = req.params;
         const transaction = await InventoryTransaction.findByPk(id, {include: [User, Product]});
         if (transaction) {
             res.status(200).send({ success: true, transaction: transaction, message: 'Retrieved successfully' });
-        } 
+        } else {
+            res.status(400).send({ success: false, transaction: null, message: 'No transaction found' });
+        }
     } catch (error) {
         apiErrorHandler(res, error, 'transaction')
     }
 }
 
-const searchTransaction = async (req, res) => {
+module.exports.searchTransaction = async (req, res) => {
     try {
         const transaction = await searchItem(InventoryTransaction, req.query, include = [User, Product]);
         if (transaction) {
@@ -39,7 +41,7 @@ const searchTransaction = async (req, res) => {
     }
 }
 
-const getTransactionByDate = async (req, res) => {
+module.exports.getTransactionByDate = async (req, res) => {
     try {
         const { sDate, eDate } = req.query;
         if (sDate && !eDate) {
@@ -84,7 +86,7 @@ const getTransactionByDate = async (req, res) => {
     }
 }
 
-const getTransactionReport = async (req, res) => {
+module.exports.getTransactionReport = async (req, res) => {
     try {
         const { report } = req.query;
         const ago = getTimeDifference(report);
@@ -104,7 +106,7 @@ const getTransactionReport = async (req, res) => {
     }
 }
 
-const getTransactionYearReport = async (req, res) => {
+module.exports.getTransactionYearReport = async (req, res) => {
     try {
         const { report } = req.query;
         const transactions = await InventoryTransaction.findAll({
@@ -119,20 +121,18 @@ const getTransactionYearReport = async (req, res) => {
     }
 }
 
-const createTransaction = async (req, res) => {
+module.exports.createTransaction = async (req, res) => {
     try {
-        const { InventoryTransaction } = models;
         const formData = {
             quantity, selling_price, total_amount,
-            transaction_type, transaction_date
+            transaction_type, transaction_date, ProductId, UserId
         } = req.body;
         
         if (formData.quantity * formData.selling_price == formData.total_amount) {
             const transaction = await InventoryTransaction.create(formData)
             if (transaction) {
-                res.status(201).send({success: true, transaction: transaction.id, message: 'Transaction recorded successfully'});
-            } else {
-                res.status(400).send({ success: false, transaction: null, message: 'Failed to record transctions' });
+                res.status(201).send({ success: true, transaction: transaction.id, message: 'Transaction recorded successfully' });
+                return;
             }
         } else {
             res.status(400).send({success: false, transaction: null, message: 'Invalid multiplication'})
@@ -142,7 +142,7 @@ const createTransaction = async (req, res) => {
     }
 }
 
-const updateTransaction = async (req, res) => {
+module.exports.updateTransaction = async (req, res) => {
     try {
         const { id } = req.params;
         const modelFields = Object.keys(InventoryTransaction.getAttributes());
@@ -165,19 +165,19 @@ const updateTransaction = async (req, res) => {
             } else {
                 req.body = req.body
             }
-            const transaction = await InventoryTransaction.update(req.body, {
+            const updatedTransaction = await InventoryTransaction.update(req.body, {
                 where: {
                     id: id
                 }
             });
-            res.status(200).send({ success: true, transaction: transaction, message: 'Updated successfully' });
+            res.status(200).send({ success: true, transaction: updatedTransaction, message: 'Updated successfully' });
         }
     } catch (error) {
         apiErrorHandler(res, error, 'transaction');
     }
 }
 
-const deleteTransaction = async (req, res) => {
+module.exports.deleteTransaction = async (req, res) => {
     try {
         const { id } = req.params;
         const transaction = await InventoryTransaction.findByPk(id);
@@ -188,19 +188,6 @@ const deleteTransaction = async (req, res) => {
             res.status(404).send({ success: false, message: 'No transaction found' });
         }
     } catch (error) {
-        console.log(error);
         apiErrorHandler(res, error, 'transaction');
     }
-}
-
-module.exports = {
-    getTransactions,
-    getTransactionById,
-    getTransactionByDate,
-    getTransactionReport,
-    getTransactionYearReport,
-    searchTransaction,
-    createTransaction,
-    updateTransaction,
-    deleteTransaction
 }
