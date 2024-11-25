@@ -1,6 +1,7 @@
 const { DataTypes, Model } = require('sequelize')
 const sequelize = require('../Config/db.config')
 const crypto = require('crypto');
+const { v4:uuidv4 } = require('uuid');
 
 class User extends Model {
     hashPassword(value) {
@@ -149,11 +150,16 @@ Product.init(
         },
     },
     {
+        
         sequelize,
         tableName: 'Products'
     }
 )
-
+Product.addHook('beforeValidate', (instance) => {
+    if (!instance.id) {
+        instance.id = uuidv4(); // Generate the UUID if not already set
+    }
+});
 
 Stock.init(
     {
@@ -207,7 +213,6 @@ Category.init(
     {
         id: {
             type: DataTypes.UUID,
-            allowNull: false,
             primaryKey: true,
             defaultValue: DataTypes.UUIDV4
         },
@@ -250,16 +255,29 @@ InventoryTransaction.init(
                 }
             }
         },
-        selling_price: {
-            allowNull: false,
+        buying_price: {
+            allowNull: true,
             type: DataTypes.INTEGER,
             validate: {
                 isInt: {
-                    msg: 'Quantity must be integer'
+                    msg: 'Price must be integer'
                 },
                 min: {
                     args: 1,
-                    msg: 'Quantity must be atleast 1'
+                    msg: 'Price must be atleast 1'
+                }
+            }
+        },
+        selling_price: {
+            allowNull: true,
+            type: DataTypes.INTEGER,
+            validate: {
+                isInt: {
+                    msg: 'Price must be integer'
+                },
+                min: {
+                    args: 1,
+                    msg: 'Price must be atleast 1'
                 }
             }
         },
@@ -268,14 +286,14 @@ InventoryTransaction.init(
             type: DataTypes.INTEGER,
             validate: {
                 isInt: {
-                    msg: 'Quantity must be integer'
+                    msg: 'Amount must be integer'
                 },
                 min: {
                     args: 1,
-                    msg: 'Quantity must be atleast 1'
+                    msg: 'Amount must be atleast 1'
                 },
                 isMatch(value) {
-                    if (parseInt(value) !== this.quantity * this.selling_price) {
+                    if (parseInt(value) !== this.quantity * (this.selling_price || this.buying_price)) {
                         throw new Error('Total amount must match the product of quantity and price');
                     }
                 }
@@ -305,6 +323,9 @@ Category.hasMany(Product);
 Product.belongsTo(Category);
 
 Product.hasMany(InventoryTransaction, {
+    foreignKey: {
+        allowNull: false
+    },
     onDelete: "CASCADE"
 });
 InventoryTransaction.belongsTo(Product);
