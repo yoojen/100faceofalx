@@ -10,12 +10,22 @@ class User extends Model {
         this.setDataValue('password', hashedVersion);
     }
  };
-class Product extends Model { }
+class Product extends Model { 
+    async safeDecrement(field, by) {
+        await this.reload();
+        if (this[field] - by < 0) {
+            throw new Error(`${this[field]} quantity only remains`)
+        } else {
+            this[field] -= by;
+        } await this.save();
+        return this;
+    }
+}
 class Supplier extends Model { }
 class SpecialCustomer extends Model { }
 class Category extends Model { }
-class InventoryTransaction extends Model { }
-class Stock extends Model { }
+class InventoryTransaction extends Model {}
+
 
 User.init(
     {
@@ -140,53 +150,29 @@ Product.init(
             type: DataTypes.TEXT,
             allowNull: true
         },
-        price: {
-            type: DataTypes.INTEGER,
-            allowNull: false
-        },
         quantity_in_stock: {
+            allowNull: true,
             type: DataTypes.INTEGER,
-            allowNull: false
-        },
-    },
-    {
-        
-        sequelize,
-        tableName: 'Products'
-    }
-)
-Product.addHook('beforeValidate', (instance) => {
-    if (!instance.id) {
-        instance.id = uuidv4(); // Generate the UUID if not already set
-    }
-});
-
-Stock.init(
-    {
-        id: {
-            type: DataTypes.UUID,
-            allowNull: false,
-            primaryKey: true,
-            defaultValue: DataTypes.UUIDV4
-        },
-        name: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        location: {
-            type: DataTypes.STRING,
+            defaultValue: 0,
             validate: {
-                isAlphanumeric: {
-                    msg: 'Field has to be alphanumeric'
+                min: 0,
+                isInt: {
+                    msg: 'Quantity should be integer'
+                },
+                isLessThanZero(value) {
+                    if (value < 0) {
+                        throw new Error('Quantity can not be less than zero');
+                    }
                 }
             }
         }
     },
     {
         sequelize,
-        tableName: 'stocks'
+        tableName: 'Products'
     }
 )
+
 
 SpecialCustomer.init(
     {
@@ -293,6 +279,8 @@ InventoryTransaction.init(
                     msg: 'Amount must be atleast 1'
                 },
                 isMatch(value) {
+                    // console.log(this);
+                    console.log(value, this.selling_price, this.buying_price);
                     if (parseInt(value) !== this.quantity * (this.selling_price || this.buying_price)) {
                         throw new Error('Total amount must match the product of quantity and price');
                     }
@@ -302,7 +290,13 @@ InventoryTransaction.init(
         transaction_type: {
             allowNull: false,
             type: DataTypes.ENUM,
-            values: ['IN', 'OUT']
+            values: ['IN', 'OUT'],
+            validate: {
+                isIn: {
+                    args: [['IN', 'OUT']],
+                    msg: 'Transction type should be \'IN\' or \'OUT\''
+                }
+            }
         },
     },
     {
@@ -312,14 +306,9 @@ InventoryTransaction.init(
 )
 
 //Relationships
-Supplier.hasMany(Product);
-Product.belongsTo(Supplier);
-
-SpecialCustomer.hasMany(Product);
-Product.belongsTo(SpecialCustomer);
-
-
-Category.hasMany(Product);
+Category.hasMany(Product, {
+    onDelete: 'CASCADE'
+});
 Product.belongsTo(Category);
 
 Product.hasMany(InventoryTransaction, {
@@ -330,15 +319,17 @@ Product.hasMany(InventoryTransaction, {
 });
 InventoryTransaction.belongsTo(Product);
 
+Supplier.hasMany(InventoryTransaction);
+InventoryTransaction.belongsTo(Supplier);
+
+SpecialCustomer.hasMany(InventoryTransaction);
+InventoryTransaction.belongsTo(SpecialCustomer);
+
 User.hasMany(InventoryTransaction, {
     onDelete: 'CASCADE'
 });
 InventoryTransaction.belongsTo(User);
 
-User.hasMany(Stock, {
-    onDelete: 'CASCADE'
-});
-Stock.belongsTo(User);
 
 const models = {
     Supplier,
@@ -346,7 +337,6 @@ const models = {
     Product,
     Category,
     InventoryTransaction,
-    Stock,
     User,
 };
 
@@ -354,10 +344,9 @@ const models = {
     try {
         await Supplier.sync({alter: true})
         await SpecialCustomer.sync({alter: true})
-        await Category.sync({alter: true})
-        await Product.sync({alter: true})
+        // await Category.sync({alter: true})
+        await Product.sync({ alter: true })
         await User.sync({ alter: true })
-        await Stock.sync({alter: true})
         await InventoryTransaction.sync({alter: true})
     } catch (error) {
         console.error(error)

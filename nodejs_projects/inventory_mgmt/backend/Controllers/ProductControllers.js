@@ -1,21 +1,11 @@
 const { Product, Supplier, SpecialCustomer, Category, InventoryTransaction } = require('../Models/models');
 const { apiErrorHandler } = require('../Helpers/errorHandler');
+const sequelize = require('../Config/db.config');
 
 
 module.exports.getProducts = async (req, res) => {
     try {
-        const products = await Product.findAll({
-            include: [
-                {
-                    model: SpecialCustomer,
-                    attributes: ['name']
-                },
-                {
-                    model: Supplier,
-                    attributes: ['name']
-                }
-            ]
-        });
+        const products = await Product.findAll({});
         res.status(200).send({ success: true, products: products, message: 'Retrieved successfully' });
     } catch (error) {
         apiErrorHandler(res, error, 'product');
@@ -25,18 +15,7 @@ module.exports.getProducts = async (req, res) => {
 module.exports.getProductById = async (req, res) => {
     try {
         const { id } = req.params;
-        const product = await Product.findByPk(id, {
-            include: [
-                {
-                    model: SpecialCustomer,
-                    attributes: ['id', 'name']
-                },
-                {
-                    model: Supplier,
-                    attributes: ['id', 'name']
-                }
-            ]
-        });
+        const product = await Product.findByPk(id);
         res.status(200).send({ success: true, product: product, message: 'Retrieved successfully' });
     } catch (error) {
         apiErrorHandler(res, error, 'product');
@@ -47,21 +26,7 @@ module.exports.searchProduct = async (req, res) => {
     try {
         const options = req.query;
         const product = await Product.findAll({
-            where:  options,
-            include: [
-                {
-                    model: SpecialCustomer,
-                    attributes: ['name']
-                },
-                {
-                    model: Supplier,
-                    attributes: ['name']
-                },
-                {
-                    model: Category,
-                    attributes: ['id', 'name']
-                }
-            ]
+            where: options
         })
         res.status(200).send({ success: true, product: product, message: 'Retrieved successfully' });
     } catch (error) {
@@ -70,31 +35,16 @@ module.exports.searchProduct = async (req, res) => {
 }
 
 module.exports.createProduct = async (req, res) => {
+    const t = await sequelize.transaction();
     try {
         const formData = {
-            name, description, price, quantity_in_stock, specialId, SupplierId,
-            SpecialCustomerId, CategoryId, categoryName, supplierName, supplierAddress
+            name, description, price, quantity_in_stock,
+            SpecialCustomerId, CategoryId, categoryName
         } = req.body;
         //If product exists
         if (await Product.findOne({ where: { name: formData.name } })) {
             res.status(400).send({ success: false, product: null, message: 'Create transaction instead' });
             return;
-        }
-
-        //Creation of supplier
-        if (!formData.SupplierId && !formData.supplierName) {
-            res.status(400).send({ success: false, product: null, message: 'Please select supplier or create one' });
-            return;
-        }
-        if (formData.SupplierId) {
-            const supplier = await Supplier.findByPk(formData.SupplierId);
-            if (!supplier) {
-                res.status(400).send({ success: false, product: null, message: 'Supplier doesn\'t exist. Please create supplier' });
-                return;
-            }
-        } else if (formData.supplierName) {
-            const supplier = await Supplier.create({ name: formData.supplierName, specialId: formData?.supplierAddress });
-            formData.SupplierId = supplier.id;
         }
 
         //Creation of category
@@ -117,27 +67,61 @@ module.exports.createProduct = async (req, res) => {
                 apiErrorHandler(res, error, 'category');
             }
         }
-        //Creating transaction
-        var product = await Product.create(formData);
-        const transaction = await InventoryTransaction.create({
-            quantity: formData.quantity_in_stock,
-            buying_price: formData.price,
-            total_amount: formData.quantity_in_stock * formData.price,
-            transaction_type: 'IN',
-            ProductId: product.id
-        })
-        if (transaction) {
-            if (product) {
-                res.status(200).send({ success: true, product: product, message: 'Product added successfully' });
-            } else {
-                product.destroy();
-                res.status(400).send({ success: false, product: null, message: 'Invalid input' });
-            }
+
+        var product = await Product.create(formData, {transaction: t});
+        if (product) {
+            await t.commit();
+            res.status(200).send({ success: true, product: product, message: 'Product added successfully' });
         } else {
-            res.status(400).send({ success: false, product: null, message: 'Try again' });
+            await t.rollback();
+            res.status(400).send({ success: false, product: null, message: 'Invalid input' });
         }
     } catch (error) {
-        if (product) await product.destroy();
+        await t.rollback();
         apiErrorHandler(res, error, 'product')
+    }
+}
+
+//When adding product I'll change behavior
+module.exports.updateProduct = async (req, res) => {
+    const t = await sequelize.transaction()
+    try {
+        const { id } = req.params;
+        if (Object.keys(req.body).length < 1) {
+            res.status(400).send({ success: false, product: null, message: 'Update parameters missing' });
+            return;
+        }
+        const product = await Product.findOne({ where: { id: id } });
+        if (!product) {
+            res.status(400).send({ success: false, product: null, message: 'No product found' });
+        }
+        const affectedRows = await Product.update(req.body, { where: { id: id }, transaction: t });
+        if (affectedRows[0] > 0){
+            await t.commit();
+            res.status(200).send({ success: true, product: product, message: 'Updated successfully' });
+        } else {
+            await t.rollback();
+            res.status(200).send({ success: false, product: null, message: 'Failed to update' });
+        }
+    } catch (error) {
+        await t.rollback()
+        apiErrorHandler(res, error, 'product');
+    }
+}
+
+
+module.exports.deleteProduct = async (req, res) => {
+    const t = await sequelize.transaction();
+    try {
+        const { id } = req.params;
+        const product = await Product.findByPk(id);
+        if (product) {
+            await product.destroy({transaction: t});
+            res.status(204).send({ success: true, message: 'Deleted successfully' });
+        } else {
+            res.status(404).send({ success: false, message: 'No product found' });
+        }
+    } catch (error) {
+        apiErrorHandler(res, error, 'product');
     }
 }

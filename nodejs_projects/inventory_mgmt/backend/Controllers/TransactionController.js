@@ -1,10 +1,10 @@
-const { Op, Sequelize } = require('sequelize')
+const { Op, where } = require('sequelize')
 const searchItem = require('../Helpers/searchItem');
 const { apiErrorHandler } = require('../Helpers/errorHandler');
 const  { InventoryTransaction, User, Product } = require('../Models/models');
 const getTimeDifference = require('../Helpers/dateOperations');
 const sequelize = require('../Config/db.config');
-
+require('dotenv').config()
 
 module.exports.getTransactions = async (req, res) => {
     try {
@@ -121,63 +121,124 @@ module.exports.getTransactionYearReport = async (req, res) => {
     }
 }
 
-// Transaction 'IN' will create product or increment its value if already exists
-// Creation of Product, creates transaction automatically
 module.exports.createTransaction = async (req, res) => {
     try {
         const formData = {
-            quantity, selling_price, total_amount,
-            transaction_type, transaction_date, ProductId, UserId
+            quantity, selling_price, total_amount, transaction_type,
+            SpecialCustomerId, transaction_date, ProductId, UserId
         } = req.body;
-        if (!ProductId) {
-            res.status(400).send({success: false, transaction: null, message: 'Please select product'})
+
+        if (!formData.ProductId) {
+            res.status(400).send({ success: false, transaction: null, message: 'Please select product' });
             return;
         }
-        if (formData.quantity * formData.selling_price == formData.total_amount) {
-            const transaction = await InventoryTransaction.create(formData)
-            if (transaction) {
-                res.status(201).send({ success: true, transaction: transaction.id, message: 'Transaction recorded successfully' });
+        if ((formData.buying_price && formData.transaction_type == 'OUT')
+            || (formData.selling_price && formData.transaction_type == 'IN')
+        ) {
+            res.status(400).send({ success: false, transaction: null, message: 'Select correct transaction type' });
+            return;
+        }
+        if ((formData.SpecialCustomerId && formData.SupplierId)
+        ) {
+            res.status(400).send({ success: false, transaction: null, message: 'Choose either supplier or special customer' });
+            return;
+        }
+        const product = await Product.findOne({ where: { id: formData.ProductId } });
+
+        if (formData.transaction_type == 'IN') {
+            if (!(formData.quantity * formData.buying_price == formData.total_amount) || !product) {
+                res.status(400).send({ success: false, transaction: null, message: 'Check input' });
                 return;
             }
+            var transaction = InventoryTransaction.build(formData);
+            await product.increment('quantity_in_stock', { by: transaction.quantity });
+            await transaction.save();
         } else {
-            res.status(400).send({success: false, transaction: null, message: 'Invalid multiplication'})
+            if (!(formData.quantity * formData.selling_price == formData.total_amount) || !product) {
+                res.status(400).send({ success: false, transaction: null, message: 'Check input' });
+                return;
+            }
+            var transaction = InventoryTransaction.build(formData);
+            await product.safeDecrement('quantity_in_stock', transaction.quantity)
+            await transaction.save();
         }
+        res.status(201).send({ success: true, transaction: transaction, message: 'Transaction recorded successfully' });
     } catch (error) {
         apiErrorHandler(res, error, 'transaction')
     }
 }
 
 module.exports.updateTransaction = async (req, res) => {
+    const t = await sequelize.transaction();
     try {
         const { id } = req.params;
-        const modelFields = Object.keys(InventoryTransaction.getAttributes());
-        var bodyFields = Object.keys(req.body);
-
-        const outFields = bodyFields.filter(key => !modelFields.includes(key));
-        if (outFields.length > 0) {
-            res.status(400).send({ success: false, transaction: null, message: `${outFields.map(key => key)} is/are not present` });
-        } else {
-            if (bodyFields.includes('quantity') && bodyFields.includes('selling_price')) {
-                req.body.total_amount = req.body.quantity * req.body.selling_price;
-            } else if (bodyFields.includes('quantity') && !bodyFields.includes('selling_price')) {
-                const transaction = await InventoryTransaction.findByPk(id);
-                req.body.selling_price = transaction.selling_price;
-                req.body.total_amount = transaction.selling_price * req.body.quantity
-            } else if (!bodyFields.includes('quantity') && bodyFields.includes('selling_price')) {
-                const transaction = await InventoryTransaction.findByPk(id);
-                req.body.total_amount = transaction.quantity * req.body.selling_price
-                req.body.quantity = transaction.quantity;
-            } else {
-                req.body = req.body
-            }
-            const updatedTransaction = await InventoryTransaction.update(req.body, {
-                where: {
-                    id: id
-                }
-            });
-            res.status(200).send({ success: true, transaction: updatedTransaction, message: 'Updated successfully' });
+        const transaction = await InventoryTransaction.findByPk(id, {include: [{model: Product, attributes: ['id']}]});
+        
+        if (!transaction){
+            res.status(404).send({ success: false, transaction: null, message: 'Transaction not found' });
+            return;
         }
+        const product = await Product.findByPk(transaction.Product.id);
+        const tobeUsedAsPrice = transaction.transaction_type == 'IN' ? (req.body.buying_price || transaction.buying_price ): (req.body.selling_price || transaction.selling_price)
+        if (req.body.transaction_type == process.env.IN_TRANSACTION) {
+            const buying_price = req.body.buying_price || null;
+            //be in and previously you were in
+            if (transaction.transaction_type == process.env.IN_TRANSACTION) {
+                // check if value does not change and abort
+                if ((transaction.quantity == req.body.quantity) || (req.body.quantity == 0)) {
+                    res.status(400).send({ success: false, transaction: null, message: 'Update values can not be the same' })
+                    return;
+                }
+                req.body.buying_price = buying_price ? buying_price : transaction.buying_price;
+                req.body.total_amount = (req.body.quantity || transaction.quantity) * (tobeUsedAsPrice);
+                const previous = product.quantity_in_stock - transaction.quantity;
+                console.log(req.body);
+                var updatedTransaction = await InventoryTransaction.update(req.body, { where: { id: id } });
+                await Product.update({ quantity_in_stock: previous + (req.body.quantity || 0) }, { where: { id: product.id } });
+            } else {
+                const incrementor = transaction.quantity == req.body.quantity ? transaction.quantity : transaction.quantity + (req.body.quantity || 0)
+                console.log(incrementor, req.body);
+                if (!buying_price) {
+                    req.body.buying_price = transaction.selling_price;
+                }
+                req.body.selling_price = null
+                var updatedTransaction = await InventoryTransaction.update(req.body, { where: { id: id } });
+                await product.increment('quantity_in_stock', { by: incrementor });
+            }
+
+        } else if (req.body.transaction_type == process.env.OUT_TRANSACTION) {
+            const selling_price = req.body.selling_price || null;
+            req.body.total_amount = (req.body.quantity || transaction.quantity) * (tobeUsedAsPrice);
+            if (transaction.transaction_type == process.env.IN_TRANSACTION) {
+                const previous = product.quantity_in_stock - transaction.quantity;
+                req.body.selling_price = transaction.buying_price;
+                req.body.buying_price = null;
+                const actualValue = transaction.quantity != req.body.quantity ? previous - (req.body.quantity || 0) : previous
+                
+                if (!selling_price) {
+                    req.body.selling_price = transaction.buying_price;
+                }
+                await Product.update({ quantity_in_stock: actualValue }, { where: { id: product.id }, transaction: t });
+                var updatedTransaction = await InventoryTransaction.update(req.body, { where: { id: id }, transaction: t });
+                await t.commit()
+            } else {
+                // check if value does not change and abort
+                if ((transaction.quantity == req.body.quantity) || (req.body.quantity == 0)) {
+                    res.status(400).send({ success: false, transaction: null, message: 'Update values can not be the same' })
+                    return;
+                }
+                const previous = product.quantity_in_stock + transaction.quantity;
+                req.body.buying_price = null;
+                var updatedTransaction = await InventoryTransaction.update(req.body, { where: { id: id } });
+                await Product.update({ quantity_in_stock: previous - (req.body.quantity || 0)}, { where: { id: product.id } });
+            }
+        } else {
+            console.log('None');
+        }
+       
+        res.status(200).send({ success: true, transaction: updatedTransaction, message: 'Updated successfully' });
     } catch (error) {
+        await t.rollback();
         apiErrorHandler(res, error, 'transaction');
     }
 }
