@@ -279,8 +279,6 @@ InventoryTransaction.init(
                     msg: 'Amount must be atleast 1'
                 },
                 isMatch(value) {
-                    // console.log(this);
-                    console.log(value, this.selling_price, this.buying_price);
                     if (parseInt(value) !== this.quantity * (this.selling_price || this.buying_price)) {
                         throw new Error('Total amount must match the product of quantity and price');
                     }

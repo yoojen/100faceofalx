@@ -179,58 +179,59 @@ module.exports.updateTransaction = async (req, res) => {
             return;
         }
         const product = await Product.findByPk(transaction.Product.id);
-        const tobeUsedAsPrice = transaction.transaction_type == 'IN' ? (req.body.buying_price || transaction.buying_price ): (req.body.selling_price || transaction.selling_price)
         if (req.body.transaction_type == process.env.IN_TRANSACTION) {
-            const buying_price = req.body.buying_price || null;
-            //be in and previously you were in
-            if (transaction.transaction_type == process.env.IN_TRANSACTION) {
-                // check if value does not change and abort
-                if ((transaction.quantity == req.body.quantity) || (req.body.quantity == 0)) {
+            if (transaction.transaction_type == process.env.IN_TRANSACTION) {//previous transaction was IN - to be updated with IN again
+                if ((transaction.quantity == req.body.quantity) || (req.body.quantity == null)) {
                     res.status(400).send({ success: false, transaction: null, message: 'Update values can not be the same' })
                     return;
                 }
-                req.body.buying_price = buying_price ? buying_price : transaction.buying_price;
-                req.body.total_amount = (req.body.quantity || transaction.quantity) * (tobeUsedAsPrice);
+                req.body.buying_price = req.body.buying_price || transaction.buying_price;
+                req.body.quantity = req.body.quantity || transaction.quantity;
+                req.body.total_amount = (req.body.quantity) * (req.body.buying_price);
                 const previous = product.quantity_in_stock - transaction.quantity;
                 console.log(req.body);
-                var updatedTransaction = await InventoryTransaction.update(req.body, { where: { id: id } });
-                await Product.update({ quantity_in_stock: previous + (req.body.quantity || 0) }, { where: { id: product.id } });
-            } else {
+                var updatedTransaction = await InventoryTransaction.update(req.body, { where: { id: id }, transaction: t });
+                await Product.update({ quantity_in_stock: previous + (req.body.quantity) }, { where: { id: product.id }, transaction: t });
+                await t.commit();
+            } else {//previous transaction was OUT - to be updated with IN again
                 const incrementor = transaction.quantity == req.body.quantity ? transaction.quantity : transaction.quantity + (req.body.quantity || 0)
-                console.log(incrementor, req.body);
-                if (!buying_price) {
-                    req.body.buying_price = transaction.selling_price;
-                }
+                req.body.buying_price = req.body.buying_price || transaction.selling_price;
+                req.body.quantity = req.body.quantity || transaction.quantity;
+                req.body.total_amount = (req.body.quantity) * (req.body.buying_price);
                 req.body.selling_price = null
-                var updatedTransaction = await InventoryTransaction.update(req.body, { where: { id: id } });
-                await product.increment('quantity_in_stock', { by: incrementor });
+
+                var updatedTransaction = await InventoryTransaction.update(req.body, { where: { id: id }, transaction: t });
+                await product.increment('quantity_in_stock', { by: incrementor }, { transaction: t });
+                await t.commit();
             }
 
         } else if (req.body.transaction_type == process.env.OUT_TRANSACTION) {
-            const selling_price = req.body.selling_price || null;
-            req.body.total_amount = (req.body.quantity || transaction.quantity) * (tobeUsedAsPrice);
-            if (transaction.transaction_type == process.env.IN_TRANSACTION) {
+            if (transaction.transaction_type == process.env.IN_TRANSACTION) { //previous transaction was IN - to be updated with OUT
                 const previous = product.quantity_in_stock - transaction.quantity;
-                req.body.selling_price = transaction.buying_price;
+                req.body.selling_price = req.body.selling_price || transaction.buying_price;
+                req.body.quantity = req.body.quantity || transaction.quantity;
+                req.body.total_amount = (req.body.quantity) * (req.body.selling_price);
                 req.body.buying_price = null;
                 const actualValue = transaction.quantity != req.body.quantity ? previous - (req.body.quantity || 0) : previous
-                
-                if (!selling_price) {
-                    req.body.selling_price = transaction.buying_price;
-                }
+                console.log(req.body);
                 await Product.update({ quantity_in_stock: actualValue }, { where: { id: product.id }, transaction: t });
                 var updatedTransaction = await InventoryTransaction.update(req.body, { where: { id: id }, transaction: t });
                 await t.commit()
-            } else {
-                // check if value does not change and abort
-                if ((transaction.quantity == req.body.quantity) || (req.body.quantity == 0)) {
+            } else {//previous transaction was OUT - to be updated with OUT again
+                if ((transaction.quantity == req.body.quantity) || (req.body.quantity == null)) {
                     res.status(400).send({ success: false, transaction: null, message: 'Update values can not be the same' })
                     return;
                 }
                 const previous = product.quantity_in_stock + transaction.quantity;
+                req.body.selling_price = req.body.selling_price || transaction.selling_price;
+                req.body.total_amount = (req.body.quantity || transaction.quantity) * (req.body.selling_price);
                 req.body.buying_price = null;
-                var updatedTransaction = await InventoryTransaction.update(req.body, { where: { id: id } });
-                await Product.update({ quantity_in_stock: previous - (req.body.quantity || 0)}, { where: { id: product.id } });
+
+                var updatedTransaction = await InventoryTransaction.update(req.body, { where: { id: id }, transaction: t });
+                await Product.update({ quantity_in_stock: previous - (req.body.quantity || 0) }, {
+                    where: { id: product.id }, transaction: t
+                });
+                await t.commit();
             }
         } else {
             console.log('None');
