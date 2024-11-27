@@ -123,10 +123,24 @@ Supplier.init(
             allowNull: false,
             type: DataTypes.STRING
         },
-        specialId: {
+        isSpecial: {
             allowNull: true,
-            type: DataTypes.STRING
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
         },
+        balance: {
+            allowNull: true,
+            type: DataTypes.INTEGER,
+            validate: {
+                checkSpecial(value) {
+                    if (this.isSpecial) {
+                        if (!value) {
+                            throw new Error('Supplier can\'t be special and has no balance');
+                        }
+                    }
+                }
+            }
+        }
     },
     {
         sequelize,
@@ -173,28 +187,6 @@ Product.init(
     }
 )
 
-
-SpecialCustomer.init(
-    {
-        id: {
-            type: DataTypes.UUID,
-            allowNull: false,
-            primaryKey: true,
-            defaultValue: DataTypes.UUIDV4
-        },
-        name: {
-            allowNull: false,
-            type: DataTypes.STRING
-        },
-        balance: {
-            type: DataTypes.INTEGER,
-        }
-    },
-    {
-        sequelize,
-        tableName: 'SpecialCustomers'
-    }
-)
 Category.init(
     {
         id: {

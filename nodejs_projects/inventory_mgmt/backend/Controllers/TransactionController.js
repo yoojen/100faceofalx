@@ -234,7 +234,7 @@ module.exports.updateTransaction = async (req, res) => {
                 await t.commit();
             }
         } else {
-            console.log('None');
+            res.status(400).send({ success: false, transaction: null, message: 'Something went wrong' });
         }
        
         res.status(200).send({ success: true, transaction: updatedTransaction, message: 'Updated successfully' });
