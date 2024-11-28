@@ -22,7 +22,6 @@ class Product extends Model {
     }
 }
 class Supplier extends Model { }
-class SpecialCustomer extends Model { }
 class Category extends Model { }
 class InventoryTransaction extends Model {}
 
@@ -312,8 +311,6 @@ InventoryTransaction.belongsTo(Product);
 Supplier.hasMany(InventoryTransaction);
 InventoryTransaction.belongsTo(Supplier);
 
-SpecialCustomer.hasMany(InventoryTransaction);
-InventoryTransaction.belongsTo(SpecialCustomer);
 
 User.hasMany(InventoryTransaction, {
     onDelete: 'CASCADE'
@@ -323,23 +320,10 @@ InventoryTransaction.belongsTo(User);
 
 const models = {
     Supplier,
-    SpecialCustomer,
     Product,
     Category,
     InventoryTransaction,
     User,
 };
 
-(async function(){
-    try {
-        await Supplier.sync({alter: true})
-        await SpecialCustomer.sync({alter: true})
-        // await Category.sync({alter: true})
-        await Product.sync({ alter: true })
-        await User.sync({ alter: true })
-        await InventoryTransaction.sync({alter: true})
-    } catch (error) {
-        console.error(error)
-    }
-}())
 module.exports = models;

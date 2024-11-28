@@ -8,6 +8,7 @@ const UserRouter = require('./Routes/UserRouter');
 const TransactionRouter = require('./Routes/TransactionRouter');
 const CategoryRouter = require('./Routes/CategoryRouter');
 const ProductRouter = require('./Routes/ProductRouter');
+const SupplierRouter = require('./Routes/SupplierRouter');
 
 dotenv.config();
 
@@ -34,4 +35,5 @@ app.use(UserRouter);
 app.use(TransactionRouter);
 app.use(CategoryRouter);
 app.use(ProductRouter);
+app.use(SupplierRouter)
 app.listen(PORT);

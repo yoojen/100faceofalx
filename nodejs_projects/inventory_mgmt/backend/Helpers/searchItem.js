@@ -1,6 +1,7 @@
-async function searchItem(model, option, include) {
+async function searchItems(model, option, include) {
     try {
         if (include.length > 0) {
+            
             var item = await model.findAll({ where:  option, include: include })
         } else {
             var item = await model.findAll({ where:  option })
@@ -12,4 +13,4 @@ async function searchItem(model, option, include) {
     }
 }
 
-module.exports = searchItem;
+module.exports = searchItems;

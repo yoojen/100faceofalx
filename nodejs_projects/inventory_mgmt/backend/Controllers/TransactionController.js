@@ -1,17 +1,31 @@
-const { Op, where } = require('sequelize')
-const searchItem = require('../Helpers/searchItem');
-const { apiErrorHandler } = require('../Helpers/errorHandler');
+const { Op, } = require('sequelize')
 const  { InventoryTransaction, User, Product } = require('../Models/models');
-const getTimeDifference = require('../Helpers/dateOperations');
 const sequelize = require('../Config/db.config');
+const getTimeDifference = require('../Helpers/dateOperations');
+const apiErrorHandler = require('../Helpers/errorHandler');
+const searchItems = require('../Helpers/searchItem');
+const paginate = require('../Helpers/paginate');
 require('dotenv').config()
 
 module.exports.getTransactions = async (req, res) => {
     try {
-        const transactions = await InventoryTransaction.findAll({});
-        res.status(200).send({success: true, transactions: transactions, message: 'Retrieved successfully'})
+        const {
+            rows,
+            count,
+            totalPages,
+            currentPage
+        } = await paginate(req = req, model = InventoryTransaction, options = null, include = [{ model: User }, { model: Product }]);
+
+        res.status(200).send({
+            success: true,
+            data: rows,
+            totalItems: count,
+            currentPage: currentPage,
+            totalPages: totalPages,
+            message: 'Retrieved successfully'
+        });
     } catch (error) {
-        res.status(400).send({success: true, transactions: transactions, message: 'Retrieved successfully'})
+        apiErrorHandler(res, error, 'transactions');
     }
 }
 
@@ -21,9 +35,9 @@ module.exports.getTransactionById = async (req, res) => {
         const { id } = req.params;
         const transaction = await InventoryTransaction.findByPk(id, {include: [User, Product]});
         if (transaction) {
-            res.status(200).send({ success: true, transaction: transaction, message: 'Retrieved successfully' });
+            res.status(200).send({ success: true, data: transaction, message: 'Retrieved successfully' });
         } else {
-            res.status(400).send({ success: false, transaction: null, message: 'No transaction found' });
+            res.status(400).send({ success: false, data: null, message: 'No transaction found' });
         }
     } catch (error) {
         apiErrorHandler(res, error, 'transaction')
@@ -32,10 +46,21 @@ module.exports.getTransactionById = async (req, res) => {
 
 module.exports.searchTransaction = async (req, res) => {
     try {
-        const transaction = await searchItem(InventoryTransaction, req.query, include = [User, Product]);
-        if (transaction) {
-            res.status(200).send({ success: true, transaction: transaction, message: 'Retrieved successfully' });
-        }
+        const {
+            rows,
+            count,
+            totalPages,
+            currentPage
+        } = await paginate(req = req, model = InventoryTransaction, options = req.query, include = [User, Product]);
+
+        res.status(200).send({
+            success: true,
+            data: rows,
+            totalItems: count,
+            currentPage: currentPage,
+            totalPages: totalPages,
+            message: 'Retrieved successfully'
+        });
     } catch (error) {
         apiErrorHandler(res, error, 'transaction')
     }
@@ -44,43 +69,42 @@ module.exports.searchTransaction = async (req, res) => {
 module.exports.getTransactionByDate = async (req, res) => {
     try {
         const { sDate, eDate } = req.query;
+        let opts;
+
         if (sDate && !eDate) {
-            var transactions = await InventoryTransaction.findAll({
-                where: {
-                    updatedAt: {
-                        [Op.gte]: new Date(sDate)
-                    }
-                },
-                order: [
-                    ['updatedAt', 'DESC']
-                ]
-            })
+            opts = { updatedAt: { [Op.gte]: new Date(sDate) } };
+            var {
+                rows,
+                count,
+                totalPages,
+                currentPage
+            } = await paginate(req = req, model = InventoryTransaction, options = opts, include = [User, Product]);
         } else if (!sDate && eDate) {
-            var transactions = await InventoryTransaction.findAll({
-                where: {
-                    updatedAt:{
-                        [Op.lte]: new Date(eDate)
-                    }
-                },
-                order: [
-                    ['updatedAt', 'DESC']
-                ]
-            })
+            opts = { updatedAt: { [Op.lte]: new Date(eDate) } };
+            var {
+                rows,
+                count,
+                totalPages,
+                currentPage
+            } = await paginate(req = req, model = InventoryTransaction, options = opts, include = [User, Product]);
         } else {
-            var transactions = await InventoryTransaction.findAll({
-                where: {
-                    updatedAt: {
-                        [Op.between]: [new Date(sDate), new Date(eDate)]
-                    }
-                },
-                order: [
-                    ['updatedAt', 'DESC']
-                ]
-            })
+            opts = { updatedAt: { [Op.between]: [new Date(sDate), new Date(eDate)] } };
+            var {
+                rows,
+                count,
+                totalPages,
+                currentPage
+            } = await paginate(req = req, model = InventoryTransaction, options = opts, include = [User, Product]);
+
         } 
-        if (transactions) {
-            res.status(200).send({ success: true, transactions: transactions, message: 'Retrieved successfully' });
-        }
+        res.status(200).send({
+            success: true,
+            data: rows,
+            totalItems: count,
+            currentPage: currentPage,
+            totalPages: totalPages,
+            message: 'Retrieved successfully'
+        });
     } catch (error) {
         apiErrorHandler(res, error, 'transactions')
     }
@@ -90,17 +114,28 @@ module.exports.getTransactionReport = async (req, res) => {
     try {
         const { report } = req.query;
         const ago = getTimeDifference(report);
-        const transactions = await InventoryTransaction.findAll({
-                where: {
-                    updatedAt:{
-                        [Op.gte]: ago
-                    }
-                },
-                order: [
-                    ['updatedAt', 'DESC']
-                ]
-            })
-        res.send({success: true, transactions: transactions, message: 'Retrieved successfully'})
+        if (!report) {
+            res.status(400).send({ success: false, data: null, message: 'Please provide weeks' });
+            return;
+        }
+        const opts = { updatedAt: { [Op.gte]: ago } };
+        req.query.sort = 'updatedAt-DESC';
+        const {
+            rows,
+            count,
+            totalPages,
+            currentPage
+        } = await paginate(req = req, model = InventoryTransaction, options=opts, include = [User, Product]);
+
+        
+        res.status(200).send({
+            success: true,
+            data: rows,
+            totalItems: count,
+            currentPage: currentPage,
+            totalPages: totalPages,
+            message: 'Retrieved successfully'
+        });
     } catch (error) {
         apiErrorHandler(res, error, 'transactions')
     }
@@ -109,13 +144,23 @@ module.exports.getTransactionReport = async (req, res) => {
 module.exports.getTransactionYearReport = async (req, res) => {
     try {
         const { report } = req.query;
-        const transactions = await InventoryTransaction.findAll({
-                where: sequelize.where(sequelize.fn('YEAR', sequelize.col('updatedAt')), report),
-                order: [
-                    ['updatedAt', 'DESC']
-                ]
-        })
-        res.send({success: true, transactions: transactions, message: 'Retrieved successfully'})
+        const opts = sequelize.where(sequelize.fn('YEAR', sequelize.col('InventoryTransaction.updatedAt')), report);
+        req.query.sort = 'updatedAt-DESC';
+        const {
+            rows,
+            count,
+            totalPages,
+            currentPage
+        } = await paginate(req = req, model = InventoryTransaction, options = opts, include = [User, Product]);
+        
+        res.status(200).send({
+            success: true,
+            data: rows,
+            totalItems: count,
+            currentPage: currentPage,
+            totalPages: totalPages,
+            message: 'Retrieved successfully'
+        });
     } catch (error) {
         apiErrorHandler(res, error, 'transactions')
     }
@@ -125,29 +170,25 @@ module.exports.createTransaction = async (req, res) => {
     try {
         const formData = {
             quantity, selling_price, total_amount, transaction_type,
-            SpecialCustomerId, transaction_date, ProductId, UserId
+            transaction_date, ProductId, UserId
         } = req.body;
 
         if (!formData.ProductId) {
-            res.status(400).send({ success: false, transaction: null, message: 'Please select product' });
+            res.status(400).send({ success: false, data: null, message: 'Please select product' });
             return;
         }
         if ((formData.buying_price && formData.transaction_type == 'OUT')
             || (formData.selling_price && formData.transaction_type == 'IN')
         ) {
-            res.status(400).send({ success: false, transaction: null, message: 'Select correct transaction type' });
+            res.status(400).send({ success: false, data: null, message: 'Select correct transaction type' });
             return;
         }
-        if ((formData.SpecialCustomerId && formData.SupplierId)
-        ) {
-            res.status(400).send({ success: false, transaction: null, message: 'Choose either supplier or special customer' });
-            return;
-        }
+
         const product = await Product.findOne({ where: { id: formData.ProductId } });
 
         if (formData.transaction_type == 'IN') {
             if (!(formData.quantity * formData.buying_price == formData.total_amount) || !product) {
-                res.status(400).send({ success: false, transaction: null, message: 'Check input' });
+                res.status(400).send({ success: false, data: null, message: 'Check input' });
                 return;
             }
             var transaction = InventoryTransaction.build(formData);
@@ -155,14 +196,14 @@ module.exports.createTransaction = async (req, res) => {
             await transaction.save();
         } else {
             if (!(formData.quantity * formData.selling_price == formData.total_amount) || !product) {
-                res.status(400).send({ success: false, transaction: null, message: 'Check input' });
+                res.status(400).send({ success: false, data: null, message: 'Check input' });
                 return;
             }
             var transaction = InventoryTransaction.build(formData);
             await product.safeDecrement('quantity_in_stock', transaction.quantity)
             await transaction.save();
         }
-        res.status(201).send({ success: true, transaction: transaction, message: 'Transaction recorded successfully' });
+        res.status(201).send({ success: true, data: transaction, message: 'Transaction recorded successfully' });
     } catch (error) {
         apiErrorHandler(res, error, 'transaction')
     }
@@ -175,14 +216,14 @@ module.exports.updateTransaction = async (req, res) => {
         const transaction = await InventoryTransaction.findByPk(id, {include: [{model: Product, attributes: ['id']}]});
         
         if (!transaction){
-            res.status(404).send({ success: false, transaction: null, message: 'Transaction not found' });
+            res.status(404).send({ success: false, data: null, message: 'Transaction not found' });
             return;
         }
         const product = await Product.findByPk(transaction.Product.id);
         if (req.body.transaction_type == process.env.IN_TRANSACTION) {
             if (transaction.transaction_type == process.env.IN_TRANSACTION) {//previous transaction was IN - to be updated with IN again
                 if ((transaction.quantity == req.body.quantity) || (req.body.quantity == null)) {
-                    res.status(400).send({ success: false, transaction: null, message: 'Update values can not be the same' })
+                    res.status(400).send({ success: false, data: null, message: 'Update values can not be the same' })
                     return;
                 }
                 req.body.buying_price = req.body.buying_price || transaction.buying_price;
@@ -219,7 +260,7 @@ module.exports.updateTransaction = async (req, res) => {
                 await t.commit()
             } else {//previous transaction was OUT - to be updated with OUT again
                 if ((transaction.quantity == req.body.quantity) || (req.body.quantity == null)) {
-                    res.status(400).send({ success: false, transaction: null, message: 'Update values can not be the same' })
+                    res.status(400).send({ success: false, data: null, message: 'Update values can not be the same' })
                     return;
                 }
                 const previous = product.quantity_in_stock + transaction.quantity;
@@ -234,10 +275,10 @@ module.exports.updateTransaction = async (req, res) => {
                 await t.commit();
             }
         } else {
-            res.status(400).send({ success: false, transaction: null, message: 'Something went wrong' });
+            res.status(400).send({ success: false, data: null, message: 'Something went wrong' });
         }
        
-        res.status(200).send({ success: true, transaction: updatedTransaction, message: 'Updated successfully' });
+        res.status(200).send({ success: true, data: updatedTransaction, message: 'Updated successfully' });
     } catch (error) {
         await t.rollback();
         apiErrorHandler(res, error, 'transaction');
@@ -250,7 +291,7 @@ module.exports.deleteTransaction = async (req, res) => {
         const transaction = await InventoryTransaction.findByPk(id);
         if (transaction) {
             await transaction.destroy();
-            res.status(204).send({ success: true, message: 'Deleted successfully' });
+            res.status(204).send();
         } else {
             res.status(404).send({ success: false, message: 'No transaction found' });
         }

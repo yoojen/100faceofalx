@@ -1,10 +1,14 @@
+const { apiErrorHandler } = require('../Helpers/errorHandler');
 const models = require('../Models/models');
-const sequelize = require('../Config/db.config');
 
 const getUsers = async (req, res) => {
-    const { User } = models;
-    const users = await User.findAll();
-    res.status(200).send(users)
+    try {
+        const { User } = models;
+        const users = await User.findAll();
+        res.status(200).send({ success: true, data: users, message: 'Retrieved successfully' });
+    } catch (error) {
+        apiErrorHandler(res, error, 'user');
+    }
 }
 
 const createUser = async (req, res) => {
@@ -33,10 +37,10 @@ const getUserById = async (req, res) => {
         const { username } = req.params;
         const user = await User.findOne({ where: { username: username }, include: Stock });
         
-        if (user) res.send({ success: true, user: user, message: 'User found' });
-        else res.send({ success: false, user: null, message: 'No user found' });
+        if (user) res.send({ success: true, data: user, message: 'User found' });
+        else res.send({ success: false, data: null, message: 'No user found' });
     } catch (error) {
-        res.status(400).send({ success: false, message: 'Failed to load user' });
+        res.status(400).send({ success: false, data: null, message: 'Failed to load user' });
     }
 }
 
