@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import {BarChart} from '@mui/x-charts/BarChart'
-import Navigator from "../../components/Navigator"
-import Footer from "../../components/Footer";
 import { LineChart } from "@mui/x-charts/LineChart";
-
+// import {BarChart} from '@mui/x-charts/BarChart'
+// import Navigator from "../../components/Navigator"
+import Form from '../../components/Form';
+import Footer from "../../components/Footer";
+import SideWindow from "../../components/SideWindow";
 
 function Report() {
     const [year, setYear] = useState(null);
+    const [openSideWindow, setOpenSideWindow] = useState(false);
     const [tempProducts, setTempProducts] = useState([
         {id:1, category: "amasaka", turnOver: 12000, rate: 10},
         {id:2, category: "amamera", turnOver: 23000, rate: 15},
@@ -18,10 +20,12 @@ function Report() {
     
     return (
         <div className="px-5 bg-slate-200">
-            <h1 className="text-2xl font-medium text-blue-500">RAPORO</h1>
+            {openSideWindow && (<SideWindow />) }
+            <Form fields={ ['amount', 'year', 'weeks']} />
+            <h1 className="text-2xl font-medium text-blue-500 mt-5">RAPORO</h1>
             <div className="[&>*]:rounded-sm [&>*]:shadow-sm space-y-3 mb-5">
                 <div className="[&>*]:bg-white [&>*]:rounded-sm [&>*]:shadow-sm space-y-3 md:flex md:item-center md:space-x-2">
-                    <div className="basis-2/3 p-2">
+                    <div className="2/4 p-2">
                         <h1>Overview</h1>
                         <div className="flex justify-between">
                             <div className="px-2 flex flex-col items-center">
@@ -29,14 +33,7 @@ function Report() {
                                     &euro;
                                     <span>500</span>
                                 </p>
-                                <small>Total profit</small>
-                            </div>
-                            <div className="px-2 flex flex-col items-center">
-                                <p className="space-x-3">
-                                    &euro;
-                                    <span>500</span>
-                                </p>
-                                <small>Revenue</small>
+                                <small>Purchases</small>
                             </div>
                             <div className="px-2 flex flex-col items-center">
                                 <p className="space-x-3">
@@ -45,37 +42,53 @@ function Report() {
                                 </p>
                                 <small>Sales</small>
                             </div>
-                        </div>
-                        <hr />
-                        <div className="text-center text-lg text-blue-500">
-                            Filtered by {year}
+                            <div className="px-2 flex flex-col items-center">
+                                <p className="space-x-3">
+                                    &euro;
+                                    <span>500</span>
+                                </p>
+                                <small>COGS</small>
+                            </div>
+                            <div className="px-2 flex flex-col items-center">
+                                <p className="space-x-3">
+                                    &euro;
+                                    <span>500</span>
+                                </p>
+                                <small>Other expenses</small>
+                            </div>
+
+                            <div className="px-2 flex flex-col items-center">
+                                <p className="space-x-3">
+                                    &euro;
+                                    <span>500</span>
+                                </p>
+                                <small>Net profit</small>
+                            </div>
                         </div>
                     </div>
-                    <div className="basis-2/3 p-2">
+                    <div className="2/4 p-2">
                         <h1>Best selling category</h1>
-                        <div>
-                            <div className="my-2 font-light overflow-auto horizontal-custom-scrollbar">
-                                <table className="table w-full text-left">
-                                    <thead>
-                                        <tr className="[&>*]:px-2">
-                                            <th>Category</th>
-                                            <th>Turn Over</th>
-                                            <th>Rate</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {tempProducts.map((product, index) => {
-                                            return (
-                                                <tr key={index} className="[&>*]:px-2">
-                                                    <td>{product.category}</td>
-                                                    <td>{product.turnOver.toLocaleString()} Frw</td>
-                                                    <td>{product.rate}%</td>
-                                                </tr>
-                                            )
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
+                        <div className="my-2 font-light overflow-auto horizontal-custom-scrollbar">
+                            <table className="table w-full text-left">
+                                <thead>
+                                    <tr className="[&>*]:px-2">
+                                        <th>Category</th>
+                                        <th>Turn Over</th>
+                                        <th>Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {tempProducts.map((product, index) => {
+                                        return (
+                                            <tr key={index} className="[&>*]:px-2">
+                                                <td>{product.category}</td>
+                                                <td>{product.turnOver.toLocaleString()} Frw</td>
+                                                <td>{product.rate}%</td>
+                                            </tr>
+                                        )
+                                    })}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

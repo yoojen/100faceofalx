@@ -11,6 +11,7 @@ function Stock() {
     const [products, setProducts] = useState([]);
     const [tempProducts, setTempProducts] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState({});
+    const [type, setType] = useState('');
     const [modalOpen, setModalOpen] = useState(false);
     const [updateModalOpen, setUpdateModalOpen] = useState(false);
     const [filterOpen, setFilterOpen] = useState(false);
@@ -20,7 +21,6 @@ function Stock() {
 
 
     const handleModalOpen = () => {
-        console.log('at start ----> ', navOpen, navRef)
         if (modalOpen) {
             if (!navRef.current) {
                 setModalOpen((prev) => !prev);
@@ -43,7 +43,6 @@ function Stock() {
                 return;
             }
         }
-        console.log('at end ----> ', navOpen, navRef)
     }
     const handleFilter = (e) => {
         const value = e.target.textContent;
@@ -74,7 +73,7 @@ function Stock() {
     }
 
     const tableHeader = (
-        <div className="flex w-full [&>*]:w-4/12 md:[&>*]:w-2/12 text-blue-500 font-bold border [&>*]:border-r [&>*]:px-1 [&>*]:shrink-0">
+        <div className="flex w-full [&>*]:w-4/12 md:[&>*]:w-2/12 text-blue-500 uppercase border [&>*]:border-r [&>*]:px-1 [&>*]:shrink-0">
             <h1 className="lg:text-left">Igicuruzwa</h1>
             <h1 className="lg:text-left">Umukiriya</h1>
             <h1>Igiciro waguzeho</h1>
@@ -91,19 +90,38 @@ function Stock() {
                     <div className="bg-black opacity-50 absolute top-0 left-0 z-30 h-screen w-full"
                         onClick={handleModalOpen}
                     ></div>
-                    <Modal setProducts={setProducts} products={products} setTempProducts={setTempProducts} />
+                    <Modal type={type} setProducts={setProducts} products={products} setTempProducts={setTempProducts} />
                 </div>
             )}
-            <Form fields={ ['product', 'quantity', 'amount']} />
-            <h1 className="text-2xl font-medium text-blue-500">STOCK</h1>
+            <Form fields={ ['product', 'quantity', 'amount', 'year', 'weeks', 'supplier']} />
+            <h1 className="text-2xl font-medium text-blue-500 mt-4">STOCK TRANSACTIONS</h1>
             <div className="bg-white rounded-sm shadow-sm p-4 mb-5">
                 <div className="flex justify-between">
-                    <div className="basis-2/3 font-medium">Product</div>
-                    <div className="space-x-4 flex basis-1/3">
+                    <div className="basis-2/4 font-medium">Product</div>
+                    <div className="space-x-4 flex basis-2/4">
                         <button className="basis-1/3 capitalize border-0 rounded-sm py-1 px-2 bg-blue-600 text-white"
-                        onClick={handleModalOpen}
+                            onClick={() => {
+                                setType('supplier');
+                                handleModalOpen();
+                            }}
                         >
-                            add product
+                            add Supplier
+                        </button>
+                        <button className="basis-1/3 capitalize border-0 rounded-sm py-1 px-2 bg-blue-600 text-white"
+                            onClick={() => {
+                                setType('product');
+                                handleModalOpen();
+                            }}
+                        >
+                            add Product
+                        </button>
+                        <button className="basis-1/3 capitalize border-0 rounded-sm py-1 px-2 bg-blue-600 text-white"
+                            onClick={() => {
+                                setType('transaction');
+                                handleModalOpen();
+                            }}
+                        >
+                            add transaction
                         </button>
                         <div className="basis-2/3 relative flex items-center border rounded-sm justify-center cursor-pointer px-2 hover:text-white hover:bg-blue-600 transition-all duration-300"
                             onClick={()=>setFilterOpen((prev)=>!prev)}
