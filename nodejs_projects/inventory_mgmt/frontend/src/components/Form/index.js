@@ -3,13 +3,12 @@ import React from 'react'
 const Form = ({ fields }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
-        alert("attempted to submit");
+        alert("attempted to search");
     }
     
   return (
     <div>
-        <h1 className="text-2xl font-medium text-blue-500 uppercase">Kura Mu Bubiko</h1>
-        <p>Koresha iyi form ukura mu bubiko ibyo wagurishije</p>
+        <p>Koresha iyi form ushaka Igicuruzwa cg transaction</p>
         <form className='sm:flex items-center justify-between bg-white rounded-sm shadow-sm p-4' onSubmit={handleSubmit}>
             {
                 fields.map((field, index)=>{
@@ -21,7 +20,12 @@ const Form = ({ fields }) => {
                                     <option value="">----</option>
                                     <option value="1">Amasaka</option>
                                 </select>
-                                : <input type="text" className='border px-4 py-1 w-50 sm:w-1/2'/>}
+                                : field === 'supplier' ? 
+                                    <select name={field} id={`id_${field}`} className='border px-4 py-1 w-50 sm:w-1/2'>
+                                        <option value="">----</option>
+                                        <option value="1">John</option>
+                                    </select>
+                                : <input type="text" className='border px-4 py-1 w-50 sm:w-1/2' />}
                         </div>
                     )
                 })
