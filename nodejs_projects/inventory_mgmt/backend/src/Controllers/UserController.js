@@ -38,16 +38,18 @@ module.exports.createUser = async (req, res) => {
 module.exports.loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
+        console.log(email, password);
+        console.log(req.body);
         if (!email || !password) {
             return res.status(422).json({
-                email: "Email is required",
-                password: "Password is required",
+                message: "Email or Password is required",
             });
         }
+        //first find user to to avoid 
         const userCredentials = await signInWithEmailAndPassword(auth, email, password);
         const idToken = userCredentials._tokenResponse.idToken;
         if (idToken) {
-            res.cookie('signin', idToken, { httpOnly: true });
+            res.cookie('signin', idToken, { httpOnly: true, sameSite: 'strict' });
             return res.status(200).send({ success: true, data: userCredentials, message: 'User logged in successfully' });
         } else {
             return res.status(500).send({ success: false, data: null, message: 'Something went wrong! Try again' });

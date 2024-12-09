@@ -1,6 +1,11 @@
 import { useState } from "react";
-import {ToLoginOnly} from "../../components/Footer";
-import { NavLink} from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from "react-redux";
+import { ToLoginOnly } from "../../components/Footer";
+import { fetchingStarted, loginFailure, loginSuccess } from '../../redux/Auth';
+import axios from "axios";
+
+
 export default function Login() {
 
     const [userCredentials, setUserCredentials] = useState({
@@ -8,17 +13,32 @@ export default function Login() {
         password: '',
         rememberMe: false
     });
+    const { user, error, loading } = useSelector(state => state.auth);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
-    const [error, setError] = useState('')
-
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault()
-        // while logging user
-        setError('');
-        console.log(userCredentials)
+        // dispatch(loginUser(userCredentials.email, userCredentials.password));
+        try {
+            dispatch(fetchingStarted());
+            const response = await axios.post('/users/auth/login',
+                { email: userCredentials.email, password: userCredentials.password },
+                { withCredentials: true }
+            );
+
+            dispatch(loginSuccess(response.data)).unwrap().then(() => {
+                if (user) {
+                    navigate('/dashboard');
+                }
+            })
+        } catch (error) {
+            dispatch(loginFailure(error.response.data.message));
+        }
     }
+
     return (
-        <div className="w-3/4 h-login-height mt-10 mx-auto flex rounded-sm shadow-lg overflow-hidden">
+        <div className="w-3/4 md:2/4 ml-[50%] -translate-x-[50%] mt-[7%] h-login-height flex rounded-sm shadow-lg border overflow-hidden">
             <div className="w-1/2 h-full relative">
                 <div className="absolute bg-slate-700 opacity-50 h-full w-full"></div>
                 <div className="absolute -z-10 w-full h-full opacity-80">
@@ -41,16 +61,17 @@ export default function Login() {
                 <small className="italic">
                     kanda
                     <span className='text-blue-500'>
-                        <NavLink to="/register"> hano </NavLink>
+                        <NavLink to="/auth/register"> hano </NavLink>
                     </span>
                     niba udafite konte
                 </small>
-                {error ? <small className="my-2 text-red-500 transition-all duration-300">{error}</small> : ''}
+                {error ? <small className="mt-5 mb-2 text-red-500 transition-all duration-300">{error}</small> : ''}
 
-                <form action="" className="my-10 space-y-5 w-full" onSubmit={handleLogin}>
+                <form action="" className="mt-5 mb-10 space-y-5 w-full" onSubmit={handleLogin}>
                     <div className="relative w-2/3 mx-auto">
                         <input
                             type="email"
+                            name="email"
                             className="peer/email w-full rounded-sm border border-sky-400 px-3 py-2" id="email"
                             onChange={(e) => setUserCredentials({...userCredentials, email: e.target.value })}
                             required
@@ -65,7 +86,7 @@ export default function Login() {
                         <input
                             type="password"
                             id="password"
-                            name="email"
+                            name="password"
                             className="peer/password w-full rounded-sm border border-sky-400 px-3 py-2"
                             onChange={(e)=>setUserCredentials({...userCredentials, password: e.target.value})}
                             required
@@ -79,16 +100,16 @@ export default function Login() {
                     <div className="w-2/3 mx-auto flex items-center">
                         <input type="checkbox"
                             name="remember_me" id="remember_me"
-                            className="w-5 h-5" required
-                            onChange={(e) => setUserCredentials({ ...userCredentials, rememberMe: e.target.value })}
+                            className="w-5 h-5"
+                            onChange={(e) => setUserCredentials({ ...userCredentials, rememberMe: e.target.checked })}
                             />
                         <label htmlFor="remember_me">Remember me</label>
                     </div>
                     <div className="w-1/4 mx-auto text-center">
                         <input
                             type="submit"
-                            value="Login"
-                            className="cursor-pointer bg-sky-500 px-10 py-3 rounded-sm text-white font-medium text-lg" 
+                            value={`${loading ? 'loading...' : 'Login'}`}
+                            className="cursor-pointer bg-sky-500 px-10 py-2 rounded-sm text-white font-bold text-md" 
                         />
                     </div>
                 </form>

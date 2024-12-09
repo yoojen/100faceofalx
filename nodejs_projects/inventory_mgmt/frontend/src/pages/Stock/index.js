@@ -5,7 +5,7 @@ import Modal from "../../components/Modal";
 import UpdateModal from "../../components/UpdateModal";
 import Form from "../../components/Form";
 import { useSelector, useDispatch } from "react-redux";
-import { toggleSideNav } from '../../context/SideNav';
+import { toggleSideNav } from '../../redux/SideNav';
 
 function Stock() {
     const [products, setProducts] = useState([]);

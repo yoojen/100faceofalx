@@ -21,7 +21,7 @@ export default function Signup() {
         console.log(userCredentials)
     }
     return (
-        <div className="w-3/4 h-login-height mt-10 mx-auto flex rounded-sm shadow-lg overflow-hidden">
+        <div className="w-3/4 ml-[50%] -translate-x-[68.5%] h-login-height mt-10 flex rounded-sm shadow-lg border overflow-hidden">
             <div className="w-1/2 h-full relative">
                 <div className="absolute bg-slate-700 opacity-50 h-full w-full"></div>
                 <div className="absolute -z-10 w-full h-full opacity-80">
@@ -44,7 +44,7 @@ export default function Signup() {
                 <small className="italic">
                     kanda
                     <span className='text-blue-500'>
-                        <NavLink to="/login"> hano </NavLink>
+                        <NavLink to="/auth/login"> hano </NavLink>
                     </span>
                     niba ufite konte
                 </small>

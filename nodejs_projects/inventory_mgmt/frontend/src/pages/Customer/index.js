@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { toggleSideNav } from '../../context/SideNav';
+import { toggleSideNav } from '../../redux/SideNav';
 import Footer from '../../components/Footer';
 import CustomerModal from '../../components/CustomerModal';
 import { useDispatch } from "react-redux";

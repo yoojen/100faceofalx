@@ -1,4 +1,8 @@
 const apiErrorHandler = (res, error, text) => {
+    //firebase
+    if (error.code == 'auth/invalid-credential') {
+        return res.status(400).send({ success: false, data: null, message: 'Incorrect email or password', model: text });
+    }
     if (error.original) {
         const ERR_CODE_NUM = error.original.errno;
         if (ERR_CODE_NUM == 1452) {

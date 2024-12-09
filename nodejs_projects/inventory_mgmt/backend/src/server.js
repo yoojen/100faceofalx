@@ -1,6 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
+var cors = require('cors')
 const cookieParser = require('cookie-parser');
 
 
@@ -13,12 +14,14 @@ const SupplierRouter = require('./Routes/SupplierRouter');
 const verifyToken = require('./Midddlelware');
 
 dotenv.config();
+const corsConfig = { origin: 'http://localhost:3000', credentials: true, maxAge: 7 * 24 * 60 * 60 * 1000 };
 
 const app = express()
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cors(corsConfig));
 app.use(cookieParser());
 
 
@@ -35,9 +38,7 @@ app.get('/status', (req, res) => {
     return res.status(200).send({ status: 'OK', success: true });
 })
 
-
 app.use(UserRouter);
-app.use(verifyToken);
 app.use(TransactionRouter);
 app.use(CategoryRouter);
 app.use(ProductRouter);
