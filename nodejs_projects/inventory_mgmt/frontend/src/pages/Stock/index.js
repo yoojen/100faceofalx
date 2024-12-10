@@ -1,11 +1,10 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useContext } from "react";
 import { MdFilterList } from "react-icons/md";
 import Footer from "../../components/Footer";
 import Modal from "../../components/Modal";
 import UpdateModal from "../../components/UpdateModal";
 import Form from "../../components/Form";
-import { useSelector, useDispatch } from "react-redux";
-import { toggleSideNav } from '../../redux/SideNav';
+import NavigationContext from "../../redux/SideNav";
 
 function Stock() {
     const [products, setProducts] = useState([]);
@@ -15,11 +14,10 @@ function Stock() {
     const [modalOpen, setModalOpen] = useState(false);
     const [updateModalOpen, setUpdateModalOpen] = useState(false);
     const [filterOpen, setFilterOpen] = useState(false);
-    const navOpen = useSelector(state => state.sidenav);
+    const { isNavOpen, openNav, closeNav } = useContext(NavigationContext);
     const navRef = useRef(null);
-    const dispatch = useDispatch();
 
-
+    console.log(isNavOpen, modalOpen);
     const handleModalOpen = () => {
         if (modalOpen) {
             if (!navRef.current) {
@@ -27,18 +25,18 @@ function Stock() {
                 return;
             } else {
                 setModalOpen((prev) => !prev);
-                dispatch(toggleSideNav());
+                isNavOpen ? closeNav() : openNav();
                 return;
             }
         }
         if (!modalOpen) {
-            if (!navOpen) {
+            if (!isNavOpen) {
                 navRef.current = false;
                 setModalOpen((prev) => !prev);
                 return;
             } else {
                 navRef.current = true;
-                dispatch(toggleSideNav());
+                isNavOpen ? closeNav() : openNav();
                 setModalOpen((prev) => !prev);
                 return;
             }
@@ -53,12 +51,12 @@ function Stock() {
     const handleProductUpdate = (id) => {
         const product = products.find((product) => product.id === id)
         setSelectedProduct(product);
-         if ((!updateModalOpen && !navOpen)) {
+         if ((!updateModalOpen && !isNavOpen)) {
                 setUpdateModalOpen((prev) => !prev);
                 return;
             } else {
-                setUpdateModalOpen((prev) => !prev);
-                dispatch(toggleSideNav());
+             setUpdateModalOpen((prev) => !prev);
+                isNavOpen ? closeNav() : openNav();
                 return;
             }
     }

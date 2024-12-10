@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { LineChart } from "@mui/x-charts/LineChart";
-// import {BarChart} from '@mui/x-charts/BarChart'
-// import Navigator from "../../components/Navigator"
 import Form from '../../components/Form';
 import Footer from "../../components/Footer";
 import SideWindow from "../../components/SideWindow";

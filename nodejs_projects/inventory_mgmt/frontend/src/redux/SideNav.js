@@ -1,15 +1,26 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createContext, useState} from 'react';
 
-const SideNavSlice = createSlice({
-    name: 'sidenav',
-    initialState: true,
-    reducers: {
-        toggleSideNav: state => {
-            return !state;
-        }
+const NavigationContext = createContext(true);
+
+export const NavigationProvider = ({ children }) => {
+    const [isNavOpen, setIsNavOpen] = useState(true);
+
+    const closeNav = () => {
+        console.log('attempt to close nav');
+        setIsNavOpen(false);
     }
-})
 
+    const openNav = () => {
+        console.log('attempt to open nav');
+        setIsNavOpen(true);
+    }
 
-export const { toggleSideNav } = SideNavSlice.actions;
-export default SideNavSlice.reducer;
+    return (
+        <NavigationContext.Provider value={{ isNavOpen, openNav, closeNav}}>
+            {children}
+        </NavigationContext.Provider>
+    )
+
+}
+
+export default NavigationContext;

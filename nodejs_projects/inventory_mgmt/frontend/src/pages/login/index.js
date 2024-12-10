@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from "react-redux";
 import { ToLoginOnly } from "../../components/Footer";
-import { fetchingStarted, loginFailure, loginSuccess } from '../../redux/Auth';
-import axios from "axios";
 
 
 export default function Login() {
@@ -13,28 +10,10 @@ export default function Login() {
         password: '',
         rememberMe: false
     });
-    const { user, error, loading } = useSelector(state => state.auth);
-    const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault()
-        // dispatch(loginUser(userCredentials.email, userCredentials.password));
-        try {
-            dispatch(fetchingStarted());
-            const response = await axios.post('/users/auth/login',
-                { email: userCredentials.email, password: userCredentials.password },
-                { withCredentials: true }
-            );
-
-            dispatch(loginSuccess(response.data)).unwrap().then(() => {
-                if (user) {
-                    navigate('/dashboard');
-                }
-            })
-        } catch (error) {
-            dispatch(loginFailure(error.response.data.message));
-        }
     }
 
     return (

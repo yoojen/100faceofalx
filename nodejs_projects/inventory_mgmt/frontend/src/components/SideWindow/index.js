@@ -1,4 +1,3 @@
-import React from 'react'
 
 const SideWindow = ({ }) => {
     const actionType = 'product';

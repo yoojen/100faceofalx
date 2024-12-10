@@ -2,12 +2,10 @@ import { IoSearchOutline } from "react-icons/io5";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import DropDown from "../DropDown";
 import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 
 function NavBar() {
   const [notificationOpen, setNofiticationOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
-  const { user } = useSelector(state => state.auth);
 
 
   const searchChanged = () => {
@@ -45,7 +43,6 @@ function NavBar() {
       <div className="flex basis-1/4 justify-end">
         <div className="cursor-pointer">
           <div className="relative">
-            {user.email}
             <IoMdNotificationsOutline className="h-10 w-10" onClick={toggleNotification} />
             <span>
               <small

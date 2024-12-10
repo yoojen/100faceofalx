@@ -1,23 +1,25 @@
-import React, { useState } from 'react';
-import { toggleSideNav } from '../../redux/SideNav';
+import { useState, useContext } from 'react';
+import NavigationContext from '../../redux/SideNav';
 import Footer from '../../components/Footer';
 import CustomerModal from '../../components/CustomerModal';
+import { toggleSideNav } from '../../redux/SideNav';
 import { useDispatch } from "react-redux";
 
+
 const Customer = () => {
-    const dispatch = useDispatch();
-    const [modalOpen, setModalOpen] = useState(false);
     const REDUCE = "reduce";
+    const [modalOpen, setModalOpen] = useState(false);
     const [actionType, setActionType] = useState(REDUCE);
     const [customers, setCustomers]=useState([
         { id: 1, name: "Eugene", amount: 3500 },
         { id: 2, name: "Ncemeti", amount: 3400 }
     ]);
+    const { isNavOpen, openNav, closeNav } = useContext(NavigationContext);
 
     const handleModalOpen = (type) => {
         setActionType(type);
         setModalOpen((prev) => !prev);
-        dispatch(toggleSideNav());
+        isNavOpen ? closeNav : openNav;
     }
   return (
     <div>
