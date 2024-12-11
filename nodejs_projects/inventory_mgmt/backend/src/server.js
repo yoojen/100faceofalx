@@ -28,10 +28,11 @@ app.use(cookieParser());
 app.use(async (req, res, next) => {
     const connected = await connectDB();
     if (connected) {
+        console.log('DB connected');
         next();
     } else {
         throw new Error('Error while connecting')
-   }
+    }
 });
 
 app.get('/status', (req, res) => {
@@ -43,4 +44,6 @@ app.use(TransactionRouter);
 app.use(CategoryRouter);
 app.use(ProductRouter);
 app.use(SupplierRouter)
-app.listen(PORT);
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});

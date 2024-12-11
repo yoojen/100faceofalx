@@ -7,8 +7,10 @@ const {
     deleteTransaction,
     searchPriceLessOrGreater
 } = require('../Controllers/TransactionController');
+const verifyToken = require('../Midddlelware');
 
 
+Router.use(verifyToken);
 Router.get('/transactions', getTransactions);
 Router.post('/transactions', createTransaction);
 Router.get('/transactions/:id', getTransactionById);

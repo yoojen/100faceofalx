@@ -1,3 +1,5 @@
+const Router = require('express').Router()
+const verifyToken = require('../Midddlelware');
 const {
     getCategories, getCatgory,
     deleteCategory,
@@ -5,8 +7,8 @@ const {
     createCategory
 } = require('../Controllers/CategoryController')
 
-const Router = require('express').Router()
 
+Router.use(verifyToken);
 Router.get('/categories', getCategories);
 Router.get('/categories/:id', getCatgory);
 Router.post('/categories', createCategory);

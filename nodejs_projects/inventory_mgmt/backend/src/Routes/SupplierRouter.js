@@ -1,4 +1,5 @@
-const { 
+const Router = require('express').Router();
+const {
     createSupplier,
     deleteSupplier,
     updateSupplier,
@@ -6,8 +7,10 @@ const {
     getSupplierById,
     searchSupplier
 } = require('../Controllers/SupplierController');
-const Router = require('express').Router();
+const verifyToken = require('../Midddlelware');
 
+
+Router.use(verifyToken);
 Router.get('/suppliers', getSuppliers);
 Router.get('/suppliers/:id', getSupplierById);
 Router.get('/suppliers/q/search', searchSupplier);
