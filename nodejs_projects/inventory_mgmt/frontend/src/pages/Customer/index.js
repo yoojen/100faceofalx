@@ -1,8 +1,8 @@
 import { useState, useContext } from 'react';
-import NavigationContext from '../../redux/SideNav';
+import NavigationContext from '../../context/SideNav';
 import Footer from '../../components/Footer';
 import CustomerModal from '../../components/CustomerModal';
-import { toggleSideNav } from '../../redux/SideNav';
+import { toggleSideNav } from '../../context/SideNav';
 import { useDispatch } from "react-redux";
 
 

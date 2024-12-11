@@ -4,7 +4,7 @@ import Footer from "../../components/Footer";
 import Modal from "../../components/Modal";
 import UpdateModal from "../../components/UpdateModal";
 import Form from "../../components/Form";
-import NavigationContext from "../../redux/SideNav";
+import NavigationContext from "../../context/SideNav";
 
 function Stock() {
     const [products, setProducts] = useState([]);
