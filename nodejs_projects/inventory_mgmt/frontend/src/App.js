@@ -18,6 +18,7 @@ function App() {
         <Route path='/auth/login' element={<Login />} />
         <Route path='/auth/register' element={<Signup />} />
         <Route path='/home' element={<Homepage />} />
+
         <Route path='/' element={<RequireAuth />}>
           <Route path='/dashboard' element={<Dashboard />} />
           <Route path='/stock' element={<Stock />} />

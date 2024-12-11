@@ -1,10 +1,31 @@
+import Footer from "../../components/Footer";
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { BarChart } from "@mui/x-charts/BarChart";
 import InventoryOutlinedIcon from '@mui/icons-material/InventoryOutlined';
 import { FaRankingStar } from "react-icons/fa6";
-import Footer from "../../components/Footer";
+import { useEffect } from "react";
 
 
 function Dashboard() {
+    const axiosPrivate = useAxiosPrivate();
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            const controller = new AbortController();
+            try {
+                const users = await axiosPrivate.get('/users', {
+                    signal: controller.signal
+                });
+                console.log(users);
+                return users;
+            } catch (error) {
+                console.log(error.toString());
+                return;
+            }
+        }
+        fetchUsers();
+    }, []);
+
     return (
         <div className="px-5 bg-slate-200">
             <h1 className="text-2xl font-medium text-blue-500">AHABANZA</h1>
