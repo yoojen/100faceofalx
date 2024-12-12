@@ -24,7 +24,6 @@ const useAxiosPrivate = () => {
                 //check for 403
                 const prevRequest = error?.config;
                 if (error?.status === 403 && !prevRequest.sentAlready) {
-                    console.log('403 Error', error);
                     prevRequest.sentAlready = true;
                     const newAccessToken = await refresh();
                     prevRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;

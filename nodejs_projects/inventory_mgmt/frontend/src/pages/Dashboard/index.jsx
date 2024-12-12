@@ -29,8 +29,8 @@ function Dashboard() {
     return (
         <div className="px-5 bg-slate-200">
             <h1 className="text-2xl font-medium text-blue-500">AHABANZA</h1>
-            <div className="md:flex md:basis-3/4 md:space-x-3">
-                <div className="md:w-2/3 [&>*]:bg-white [&>*]:rounded-sm [&>*]:shadow-md [&>*]:p-2 space-y-3">
+            <div className="md:flex md:basis-3/4 md:space-x-3 mb-4">
+                <div className="md:w-2/4 [&>*]:bg-white [&>*]:rounded-sm [&>*]:shadow-md [&>*]:p-2 space-y-3">
                     <div>
                         <div className="px-2 text-blue-500 font-medium">
                             <h1>Incamake</h1>
@@ -71,7 +71,7 @@ function Dashboard() {
                             <InventoryOutlinedIcon />
                             <h1>Ibyo waguze (per week)</h1>
                         </div>
-                        <table className="table-auto mx-2  w-full">
+                        <table className="w-full">
                             <thead>
                                 <tr className="text-left">
                                     <th>Product</th>
@@ -108,13 +108,13 @@ function Dashboard() {
                             </tbody>
                         </table>
                     </div>
-                    <div style={{ marginBottom: "20px" }}>
+                    <div>
                         <div className="text-blue-500 px-2 font-medium">
                             <FaRankingStar />
                             <h1 className="capitalize">uko ibicuruzwa byagurishijwe (top 5)</h1>
                         </div>
-                        <div className="px-3 my-2">
-                            <table className="">
+                        <div className="my-2">
+                            <table className="w-full">
                                 <thead className="border-b-2">
                                     <tr>
                                         <th>igicuruzwa</th>
@@ -147,29 +147,39 @@ function Dashboard() {
                         </div>
                     </div>
                 </div>
-                <div className="md:basis-1/3 [&>*]:bg-white [&>*]:rounded-sm [&>*]:shadow-md space-y-3">
+                <div className="md:basis-2/4 [&>*]:bg-white [&>*]:rounded-sm [&>*]:shadow-md space-y-3">
                     <div className="p-2">
                         <div>
                             <div className="font-medium text-blue-500">
                                 <h1>Incamake ya stock (Ibisigaye)</h1>
                             </div>
-                            <div className="[&>*]:flex [&>*]:justify-between px-4 space-y-2">
-                                <div>
-                                    <p>Amasaka</p>
-                                    <p>2000kgs</p>
-                                </div>
-                                <div>
-                                    <p>Ibigori</p>
-                                    <p>2000kgs</p>
-                                </div>
-                                <div>
-                                    <p>Ingano</p>
-                                    <p>2000kgs</p>
-                                </div>
-                                <div>
-                                    <p>Uburo</p>
-                                    <p>2000kgs</p>
-                                </div>
+                            <div>
+                                <table className="w-full">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Quantity</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Amasaka</td>
+                                            <td>2000kgs</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Ibigori</td>
+                                            <td>2000kgs</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Ingano</td>
+                                            <td>2000kgs</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Uburo</td>
+                                            <td>2000kgs</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -195,8 +205,8 @@ function Dashboard() {
                                     grid={{ vertical: false, horizontal: true }}
                                     borderRadius={10}
                                     slotProps={{ legend: { hidden: false } }}
-                                    width={300}
-                                    height={270}
+                                    width={500}
+                                    height={300}
                                 />
                             </div>
                         </div>

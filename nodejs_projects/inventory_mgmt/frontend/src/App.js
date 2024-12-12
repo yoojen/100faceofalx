@@ -9,6 +9,7 @@ import Login from './pages/login';
 import Signup from './pages/signup';
 import Homepage from './pages/Homepage';
 import { RequireAuth } from './components/RequireAuth';
+import PersistAuth from './components/PersistAuth';
 
 
 function App() {
@@ -19,11 +20,13 @@ function App() {
         <Route path='/auth/register' element={<Signup />} />
         <Route path='/home' element={<Homepage />} />
 
-        <Route path='/' element={<RequireAuth />}>
-          <Route path='/dashboard' element={<Dashboard />} />
-          <Route path='/stock' element={<Stock />} />
-          <Route path='/customers' element={<Customer />} />
-          <Route path='/reports' element={<Report />} />
+        <Route element={<PersistAuth />}>
+          <Route path='/' element={<RequireAuth />}>
+            <Route path='/dashboard' element={<Dashboard />} />
+            <Route path='/stock' element={<Stock />} />
+            <Route path='/customers' element={<Customer />} />
+            <Route path='/reports' element={<Report />} />
+          </Route>
         </Route>
       </Routes>
     </div>

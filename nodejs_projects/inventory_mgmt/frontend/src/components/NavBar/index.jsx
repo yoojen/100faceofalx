@@ -29,7 +29,6 @@ function NavBar() {
 
   return (
     <div className="px-8 py-3 flex justify-between bg-white">
-      <span>{auth?.user}</span>
       <div className="relative basis-3/4">
         <input
           type="text"
@@ -42,16 +41,10 @@ function NavBar() {
         <IoSearchOutline className="absolute top-1/4 left-2 w-5 h-5" width={50} height={50} />
       </div>
 
-      <div className="flex basis-1/4 justify-end">
+      <div className="flex basis-1/4 justify-end items-center">
         <div className="cursor-pointer">
-          <div className="relative">
-            <IoMdNotificationsOutline className="h-10 w-10" onClick={toggleNotification} />
-            <span>
-              <small
-                className="absolute -top-3 left-1/2 bg-blue-400 text-white rounded-full p-1 font-medium">
-                3
-              </small>
-            </span>
+          <div className="italic">
+            <span>{auth?.user.email}</span>
           </div>
           {notificationOpen && (
             <div className="absolute z-10 top-14 right-2 w-3/4 md:w-1/4 bg-slate-300  px-2 shadow-md rounded-md content-center">

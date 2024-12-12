@@ -22,8 +22,8 @@ function Report() {
             <Form fields={ ['amount', 'year', 'weeks']} />
             <h1 className="text-2xl font-medium text-blue-500 mt-5">RAPORO</h1>
             <div className="[&>*]:rounded-sm [&>*]:shadow-sm space-y-3 mb-5">
-                <div className="[&>*]:bg-white [&>*]:rounded-sm [&>*]:shadow-sm space-y-3 md:flex md:item-center md:space-x-2">
-                    <div className="2/4 p-2">
+                <div className="flex justify-around">
+                    <div className="basis-2/4 bg-white rounded-sm shadow-sm p-2 mr-2">
                         <h1>Overview</h1>
                         <div className="flex justify-between">
                             <div className="px-2 flex flex-col items-center">
@@ -64,7 +64,7 @@ function Report() {
                             </div>
                         </div>
                     </div>
-                    <div className="2/4 p-2">
+                    <div className="basis-2/4 bg-white rounded-sm shadow-sm p-2">
                         <h1>Best selling category</h1>
                         <div className="my-2 font-light overflow-auto horizontal-custom-scrollbar">
                             <table className="table w-full text-left">

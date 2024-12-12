@@ -6,11 +6,8 @@ import Layout from '../Layout';
 export const RequireAuth = () => {
 
     const location = useLocation();
-    const { auth, isLoading } = useAuth();
+    const { auth } = useAuth();
 
-    if (auth?.user) {
-        console.log('from RequireAuth', auth);
-    }
     return auth?.user
         ? <div><Layout /></div>
         : <Navigate to={'/auth/login'} state={{ from: location }} replace />

@@ -16,6 +16,11 @@ export default function Login() {
   const location = useLocation()
   const navigate = useNavigate();
   const from = location?.state?.from?.pathname || '/dashboard';
+
+  useEffect(() => {
+    localStorage.setItem('rememberMe', userCredentials.rememberMe);
+  }, [userCredentials.rememberMe]);
+
   useEffect(() => {
     setError(null);
   }, [
@@ -56,7 +61,7 @@ export default function Login() {
   };
 
   return (
-    <div className="w-3/4 md:2/4 ml-[50%] -translate-x-[50%] mt-[7%] h-login-height flex rounded-sm shadow-lg border overflow-hidden">
+    <div className="w-3/4 md:2/4 ml-[50%] -translate-x-[50%] mt-20 h-login-height flex rounded-sm shadow-lg border overflow-hidden">
       <div className="w-1/2 h-full relative">
         <div className="absolute bg-slate-700 opacity-50 h-full w-full"></div>
         <div className="absolute -z-10 w-full h-full opacity-80">
