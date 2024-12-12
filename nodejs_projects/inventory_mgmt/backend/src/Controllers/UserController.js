@@ -7,10 +7,10 @@ const {
   sendPasswordResetEmail,
   admin,
 } = require("../Config/firebase.config");
-const models = require("../Models/models");
 const apiErrorHandler = require("../Helpers/errorHandler");
 const { default: axios } = require("axios");
 
+const PASSWORD_CHECK = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s])[a-zA-Z0-9^$*\.\[\]{}()?"!@#%&/\\,><':;|_~]+$/
 const auth = getAuth();
 
 module.exports.getUsers = async (req, res) => {
@@ -24,15 +24,23 @@ module.exports.getUsers = async (req, res) => {
 module.exports.createUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
+    if ((!email || !password) || (!PASSWORD_CHECK.test(password))) {
       return res
         .status(422)
         .send({ success: false, data: null, message: "Account not created" });
     }
     const user = await createUserWithEmailAndPassword(auth, email, password);
+    const accessToken = user._tokenResponse.idToken;
+    const refreshToken = user._tokenResponse.refreshToken;
+
+    res.cookie("signin", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None"
+    })
     return res.status(201).send({
       success: true,
-      data: user,
+      data: { user: user.email, accessToken },
       message: "Account created successfully",
     });
   } catch (error) {
@@ -43,7 +51,7 @@ module.exports.createUser = async (req, res) => {
 module.exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
+    if ((!email || !password) || (!PASSWORD_CHECK.test(password))) {
       return res.status(422).json({
         message: "Email or Password is required",
       });
@@ -96,7 +104,6 @@ module.exports.logoutUser = async (req, res) => {
 module.exports.resetPassword = async (req, res) => {
   try {
     const { email } = req.body;
-    await sendPasswordResetEmail(auth, email);
     if (!email) {
       return res.status(422).send({
         success: false,
@@ -104,6 +111,7 @@ module.exports.resetPassword = async (req, res) => {
         message: "Email is required",
       });
     }
+    await sendPasswordResetEmail(auth, email);
     res.status(200).send({
       success: true,
       data: "",

@@ -6,12 +6,11 @@ const cookieParser = require('cookie-parser');
 
 
 const connectDB = require('./Helpers/checkDB');
-const UserRouter = require('./Routes/UserRouter');
 const TransactionRouter = require('./Routes/TransactionRouter');
 const CategoryRouter = require('./Routes/CategoryRouter');
 const ProductRouter = require('./Routes/ProductRouter');
 const SupplierRouter = require('./Routes/SupplierRouter');
-const verifyToken = require('./Midddlelware');
+const AuthRouter = require('./Routes/UserRouter');
 
 dotenv.config();
 const corsConfig = { origin: 'http://localhost:3000', credentials: true, maxAge: 7 * 24 * 60 * 60 * 1000 };
@@ -39,7 +38,7 @@ app.get('/status', (req, res) => {
     return res.status(200).send({ status: 'OK', success: true });
 })
 
-app.use(UserRouter);
+app.use(AuthRouter);
 app.use(TransactionRouter);
 app.use(CategoryRouter);
 app.use(ProductRouter);

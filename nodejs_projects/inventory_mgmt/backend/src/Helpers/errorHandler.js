@@ -3,6 +3,9 @@ const apiErrorHandler = (res, error, text) => {
     if (error.code == 'auth/invalid-credential') {
         return res.status(400).send({ success: false, data: null, message: 'Incorrect email or password', model: text });
     }
+    if (error.code == 'auth/email-already-in-use') {
+        return res.status(409).send({ success: false, data: null, message: 'Email already registered', model: text });
+    }
     if (error.original) {
         const ERR_CODE_NUM = error.original.errno;
         if (ERR_CODE_NUM == 1452) {
