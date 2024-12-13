@@ -1,7 +1,7 @@
 const { DataTypes, Model } = require('sequelize')
 const sequelize = require('../Config/db.config')
 const crypto = require('crypto');
-const { v4:uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require('uuid');
 
 class User extends Model {
     hashPassword(value) {
@@ -9,8 +9,8 @@ class User extends Model {
         const hashedVersion = crypto.pbkdf2Sync(value, salt, 10000, 64, 'sha512').toString('hex');
         this.setDataValue('password', hashedVersion);
     }
- };
-class Product extends Model { 
+};
+class Product extends Model {
     async safeDecrement(field, by) {
         await this.reload();
         if (this[field] - by < 0) {
@@ -23,7 +23,7 @@ class Product extends Model {
 }
 class Supplier extends Model { }
 class Category extends Model { }
-class InventoryTransaction extends Model {}
+class InventoryTransaction extends Model { }
 
 
 User.init(
@@ -33,24 +33,6 @@ User.init(
             allowNull: false,
             primaryKey: true,
             defaultValue: DataTypes.UUIDV4
-        },
-        username: {
-            type: DataTypes.STRING,
-            unique: {
-                msg: 'Username already registered'
-            },
-            allowNull: true,
-            validate: {
-                is: {
-                    args: /^(?!.*\d).+$/,
-                    msg: 'Username must not contain numbers and can contain underscores.'
-                },
-                isLowercase: true,
-                len: {
-                    args: [5, 10],
-                    msg: 'Username must be between 5 and 10 characters long.'
-                }
-            }
         },
         email: {
             type: DataTypes.STRING,

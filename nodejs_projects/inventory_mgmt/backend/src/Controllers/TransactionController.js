@@ -1,5 +1,5 @@
 const { Op, } = require('sequelize')
-const  { InventoryTransaction, User, Product, Supplier } = require('../Models/models');
+const { InventoryTransaction, Product, Supplier } = require('../Models/models');
 const sequelize = require('../Config/db.config');
 const getTimeDifference = require('../Helpers/dateOperations');
 const apiErrorHandler = require('../Helpers/errorHandler');
@@ -13,7 +13,7 @@ module.exports.getTransactions = async (req, res) => {
             count,
             totalPages,
             currentPage
-        } = await paginate(req = req, model = InventoryTransaction, options = null, include = [{ model: User }, { model: Product }]);
+        } = await paginate(req = req, model = InventoryTransaction, options = null, include = [{ model: Product }]);
 
         res.status(200).send({
             success: true,
@@ -32,7 +32,7 @@ module.exports.getTransactions = async (req, res) => {
 module.exports.getTransactionById = async (req, res) => {
     try {
         const { id } = req.params;
-        const transaction = await InventoryTransaction.findByPk(id, {include: [User, Product]});
+        const transaction = await InventoryTransaction.findByPk(id, { include: [Product] });
         if (transaction) {
             res.status(200).send({ success: true, data: transaction, message: 'Retrieved successfully' });
         } else {
@@ -50,7 +50,7 @@ module.exports.searchTransaction = async (req, res) => {
             count,
             totalPages,
             currentPage
-        } = await paginate(req = req, model = InventoryTransaction, options = req.query, include = [User, Product]);
+        } = await paginate(req = req, model = InventoryTransaction, options = req.query, include = [Product]);
 
         res.status(200).send({
             success: true,
@@ -84,7 +84,7 @@ module.exports.searchPriceLessOrGreater = async (req, res) => {
                     }
                 ]
             };
-            
+
             var {
                 rows,
                 count,
@@ -112,7 +112,7 @@ module.exports.searchPriceLessOrGreater = async (req, res) => {
                 totalPages,
                 currentPage
             } = await paginate(req = req, model = InventoryTransaction, options = opts, include = [Supplier]);
-        } else if(pLess && pGreater){
+        } else if (pLess && pGreater) {
             //both are provided - consider other query params
             delete req.query.pLess, delete req.query.pGreater;
             const opts = {
@@ -120,7 +120,7 @@ module.exports.searchPriceLessOrGreater = async (req, res) => {
                     req.query,
                     {
                         [Op.or]: [
-                            { buying_price: { [Op.between]: [parseInt(pLess), parseInt(pGreater) ]} },
+                            { buying_price: { [Op.between]: [parseInt(pLess), parseInt(pGreater)] } },
                             { selling_price: { [Op.between]: [parseInt(pLess), parseInt(pGreater)] } },
                         ]
                     }
@@ -150,7 +150,7 @@ module.exports.searchPriceLessOrGreater = async (req, res) => {
             totalPages: totalPages,
             message: 'Retrieved successfully'
         });
-    
+
     } catch (error) {
         apiErrorHandler(res, error, 'products')
     }
@@ -168,7 +168,7 @@ module.exports.getTransactionByDate = async (req, res) => {
                 count,
                 totalPages,
                 currentPage
-            } = await paginate(req = req, model = InventoryTransaction, options = opts, include = [User, Product]);
+            } = await paginate(req = req, model = InventoryTransaction, options = opts, include = [Product]);
         } else if (!sDate && eDate) {
             opts = { updatedAt: { [Op.lte]: new Date(eDate) } };
             var {
@@ -176,7 +176,7 @@ module.exports.getTransactionByDate = async (req, res) => {
                 count,
                 totalPages,
                 currentPage
-            } = await paginate(req = req, model = InventoryTransaction, options = opts, include = [User, Product]);
+            } = await paginate(req = req, model = InventoryTransaction, options = opts, include = [Product]);
         } else {
             opts = { updatedAt: { [Op.between]: [new Date(sDate), new Date(eDate)] } };
             var {
@@ -184,9 +184,9 @@ module.exports.getTransactionByDate = async (req, res) => {
                 count,
                 totalPages,
                 currentPage
-            } = await paginate(req = req, model = InventoryTransaction, options = opts, include = [User, Product]);
+            } = await paginate(req = req, model = InventoryTransaction, options = opts, include = [Product]);
 
-        } 
+        }
         res.status(200).send({
             success: true,
             data: rows,
@@ -208,16 +208,21 @@ module.exports.getTransactionReport = async (req, res) => {
             res.status(400).send({ success: false, data: null, message: 'Please provide weeks' });
             return;
         }
-        const opts = { updatedAt: { [Op.gte]: ago } };
-        req.query.sort = 'updatedAt-DESC';
+        delete req.query.report
+        const opts = {
+            [Op.and]: [
+                req.query,
+                { updatedAt: { [Op.gte]: ago } }
+            ]
+        }
         const {
             rows,
             count,
             totalPages,
             currentPage
-        } = await paginate(req = req, model = InventoryTransaction, options=opts, include = [User, Product]);
+        } = await paginate(req = req, model = InventoryTransaction, options = opts, include = [Product]);
 
-        
+
         res.status(200).send({
             success: true,
             data: rows,
@@ -241,8 +246,8 @@ module.exports.getTransactionYearReport = async (req, res) => {
             count,
             totalPages,
             currentPage
-        } = await paginate(req = req, model = InventoryTransaction, options = opts, include = [User, Product]);
-        
+        } = await paginate(req = req, model = InventoryTransaction, options = opts, include = [Product]);
+
         res.status(200).send({
             success: true,
             data: rows,
@@ -260,8 +265,10 @@ module.exports.createTransaction = async (req, res) => {
     try {
         const formData = {
             quantity, selling_price, total_amount, transaction_type,
-            transaction_date, ProductId, UserId
+            transaction_date, ProductId
         } = req.body;
+        //to be checked
+        // formData.UserId = req.user.uid;
 
         if (!formData.ProductId) {
             res.status(400).send({ success: false, data: null, message: 'Please select product' });
@@ -303,9 +310,9 @@ module.exports.updateTransaction = async (req, res) => {
     const t = await sequelize.transaction();
     try {
         const { id } = req.params;
-        const transaction = await InventoryTransaction.findByPk(id, {include: [{model: Product, attributes: ['id']}]});
-        
-        if (!transaction){
+        const transaction = await InventoryTransaction.findByPk(id, { include: [{ model: Product, attributes: ['id'] }] });
+
+        if (!transaction) {
             res.status(404).send({ success: false, data: null, message: 'Transaction not found' });
             return;
         }
@@ -367,7 +374,7 @@ module.exports.updateTransaction = async (req, res) => {
         } else {
             res.status(400).send({ success: false, data: null, message: 'Something went wrong' });
         }
-       
+
         res.status(200).send({ success: true, data: updatedTransaction, message: 'Updated successfully' });
     } catch (error) {
         await t.rollback();
