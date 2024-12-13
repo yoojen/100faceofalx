@@ -1,4 +1,4 @@
-import { createContext, useState} from 'react';
+import { createContext, useState } from 'react';
 
 const NavigationContext = createContext(true);
 
@@ -14,7 +14,7 @@ export const NavigationProvider = ({ children }) => {
     }
 
     return (
-        <NavigationContext.Provider value={{ isNavOpen, openNav, closeNav}}>
+        <NavigationContext.Provider value={{ isNavOpen, openNav, closeNav }}>
             {children}
         </NavigationContext.Provider>
     )

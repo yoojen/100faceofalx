@@ -4,7 +4,6 @@ import Dashboard from './pages/Dashboard';
 import Stock from './pages/Stock';
 import Customer from './pages/Customer';
 import Report from './pages/Report';
-import Layout from './components/Layout';
 import Login from './pages/login';
 import Signup from './pages/signup';
 import Homepage from './pages/Homepage';
@@ -21,11 +20,11 @@ function App() {
         <Route path='/home' element={<Homepage />} />
 
         <Route element={<PersistAuth />}>
-          <Route path='/' element={<RequireAuth />}>
-            <Route path='/dashboard' element={<Dashboard />} />
-            <Route path='/stock' element={<Stock />} />
-            <Route path='/customers' element={<Customer />} />
-            <Route path='/reports' element={<Report />} />
+          <Route element={<RequireAuth />}>
+            <Route exact path='/dashboard' element={<Dashboard />} />
+            <Route exact path='/stock' element={<Stock />} />
+            <Route exact path='/customers' element={<Customer />} />
+            <Route exact path='/reports' element={<Report />} />
           </Route>
         </Route>
       </Routes>

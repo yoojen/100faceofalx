@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { ToLoginOnly } from "../../components/Footer";
 import { publicAxios } from "../../api/axios";
 import useAuth from '../../hooks/useAuth';
+import { FaRegEyeSlash } from "react-icons/fa6";
+import { FaRegEye } from "react-icons/fa";
+import { useState, useEffect, useRef } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 
 export default function Login() {
   const [userCredentials, setUserCredentials] = useState({
@@ -11,7 +13,10 @@ export default function Login() {
     rememberMe: false,
   });
   const [error, setError] = useState(null);
-  const { auth, setAuth, isLoading, setIsLoading } = useAuth();
+  const { setAuth, isLoading, setIsLoading } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+
+  const pwdRef = useRef();
 
   const location = useLocation()
   const navigate = useNavigate();
@@ -29,12 +34,22 @@ export default function Login() {
     userCredentials.rememberMe,
   ]);
 
+  const handleShowPassword = () => {
+    if (pwdRef.current.type === 'password') {
+      setShowPassword(true);
+      pwdRef.current.type = 'text';
+    } else {
+      setShowPassword(false);
+      pwdRef.current.type = 'password';
+    }
+  }
+
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       setIsLoading(true);
-      const response = await publicAxios.post(
-        "/users/auth/login",
+      const response = await publicAxios.post("/users/auth/login",
         {
           email: userCredentials.email,
           password: userCredentials.password,
@@ -48,13 +63,13 @@ export default function Login() {
         accessToken: response.data.data.accessToken,
       });
       setError(null);
-      setIsLoading(false);
-
       navigate(from, { replace: true });
     } catch (error) {
-      setError(error?.response?.data.message || "Login failed");
-      console.error(error);
-      setIsLoading(false);
+      if (error?.response?.data.message === 'Firebase') {
+        setError('Failed to Login')
+      } else {
+        setError(error?.response?.data.message || "Login failed");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +96,7 @@ export default function Login() {
           </p>
         </div>
       </div>
-      <div className="w-1/2 h-full flex flex-col items-center p-5 bg-white">
+      <div className="w-1/2 h-full flex flex-col items-center p-5 bg-white overflow-auto custom-scrollbar">
         <img src="/assets/logo_.png" alt="" width={100} height={100} />
         <h1 className="uppercase font-medium">injira muri system yawe</h1>
         <small className="capitalize">ikaze nanone! injizamo ibikuranga.</small>
@@ -128,10 +143,16 @@ export default function Login() {
             </label>
           </div>
           <div className="relative w-2/3 mx-auto">
+            {showPassword
+              ? <FaRegEyeSlash className='absolute right-3 top-3 text-20  cursor-pointer' onClick={handleShowPassword} />
+              : <FaRegEye className='absolute right-3 top-3 text-20  cursor-pointer' onClick={handleShowPassword} />
+            }
+
             <input
               type="password"
               id="password"
               name="password"
+              ref={pwdRef}
               className="peer/password w-full rounded-sm border border-sky-400 px-3 py-2"
               onChange={(e) =>
                 setUserCredentials({

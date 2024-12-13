@@ -1,30 +1,29 @@
 import Footer from "../../components/Footer";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
-import { BarChart } from "@mui/x-charts/BarChart";
 import InventoryOutlinedIcon from '@mui/icons-material/InventoryOutlined';
+import useGetFetch from "../../hooks/useGetFetch";
 import { FaRankingStar } from "react-icons/fa6";
+import { BarChart } from "@mui/x-charts/BarChart";
 import { useEffect } from "react";
 
 
 function Dashboard() {
-    const axiosPrivate = useAxiosPrivate();
+    let outSum = 0;
+    const OUT_URI = '/transactions/q/week';
+    const OUT_TRANSACTION_TYPE = 'OUT';
+    const outData = useGetFetch({ url: `${OUT_URI}?report=4&transaction_type=${OUT_TRANSACTION_TYPE}` });
+    for (let i = 0; i < outData.data.length; i++) {
+        outSum += outData.data[i].total_amount;
+    }
 
-    useEffect(() => {
-        const fetchUsers = async () => {
-            const controller = new AbortController();
-            try {
-                const users = await axiosPrivate.get('/users', {
-                    signal: controller.signal
-                });
-                console.log(users);
-                return users;
-            } catch (error) {
-                console.log(error.toString());
-                return;
-            }
-        }
-        fetchUsers();
-    }, []);
+    let inSum = 0;
+    const IN_URI = '/transactions/q/week';
+    const IN_TRANSACTION_TYPE = 'IN';
+    const inData = useGetFetch({ url: `${IN_URI}?report=4&transaction_type=${IN_TRANSACTION_TYPE}` });
+    for (let i = 0; i < inData.data.length; i++) {
+        inSum += inData.data[i].total_amount;
+    }
+
 
     return (
         <div className="px-5 bg-slate-200">
@@ -35,32 +34,25 @@ function Dashboard() {
                         <div className="px-2 text-blue-500 font-medium">
                             <h1>Incamake</h1>
                         </div>
-                        <div className="flex justify-around [&>*]:flex [&>*]:flex-col [&>*]:justify-around [&>*]:items-center [&>*]:-space-y-2">
-                            <div className="text-yellow-500 px-2">
+                        <div className="flex justify-around [&>*]:flex [&>*]:flex-col [&>*]:justify-around [&>*]:items-center">
+                            <div className="px-2">
                                 <p className="space-x-3">
-                                    &euro;
-                                    <span>500</span>
+                                    RF&nbsp;
+                                    <span>{outSum.toLocaleString()}</span>
                                 </p>
                                 <small>Ibyagurishijwe</small>
                             </div>
                             <div className="text-blue-500 px-2">
                                 <p className="space-x-3">
-                                    &euro;
-                                    <span>500</span>
+                                    RF&nbsp;
+                                    <span>{inSum.toLocaleString()}</span>
                                 </p>
-                                <small>ayinjiye</small>
-                            </div>
-                            <div className="text-red-600 px-2">
-                                <p className="space-x-3">
-                                    &euro;
-                                    <span>500</span>
-                                </p>
-                                <small>Ibyasohotse</small>
+                                <small>Ibyinjiye</small>
                             </div>
                             <div className="text-green-500">
                                 <p className="space-x-3">
-                                    &euro;
-                                    <span>500</span>
+                                    RF&nbsp;
+                                    <span>{(outSum - inSum).toLocaleString()}</span>
                                 </p>
                                 <small>Inyungu</small>
                             </div>

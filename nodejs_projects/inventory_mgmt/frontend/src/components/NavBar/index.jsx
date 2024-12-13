@@ -1,11 +1,9 @@
 import DropDown from "../DropDown";
 import { IoSearchOutline } from "react-icons/io5";
-import { IoMdNotificationsOutline } from "react-icons/io";
 import { useState } from "react";
 import useAuth from '../../hooks/useAuth';
 
 function NavBar() {
-  const [notificationOpen, setNofiticationOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const { auth } = useAuth();
 
@@ -13,17 +11,8 @@ function NavBar() {
     console.log("Typing complete!");
   }
 
-  const toggleNotification = () => {
-    if (profileOpen) {
-      setProfileOpen(prev => !prev);
-    }
-    setNofiticationOpen((prev) => !prev);
-  }
 
   const toggleProfile = () => {
-    if (notificationOpen) {
-      setNofiticationOpen(prev => !prev);
-    }
     setProfileOpen((prev) => !prev);
   }
 
@@ -46,18 +35,12 @@ function NavBar() {
           <div className="italic">
             <span>{auth?.user.email}</span>
           </div>
-          {notificationOpen && (
-            <div className="absolute z-10 top-14 right-2 w-3/4 md:w-1/4 bg-slate-300  px-2 shadow-md rounded-md content-center">
-              <DropDown type='Notification' />
-            </div>
-          )
-          }
         </div>
         <div>
           <img src="/assets/wa2024.jpg" alt="" className="rounded-full h-10 cursor-pointer" onClick={toggleProfile} />
           {profileOpen && (
             <div className="absolute z-10 top-14 right-2 w-2/4 md:w-1/4 bg-slate-300  px-4 py-4 shadow-md rounded-md content-center">
-              <DropDown type='Profile' />
+              <DropDown />
             </div>
           )
           }
