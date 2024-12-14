@@ -1,4 +1,4 @@
-async function paginate(req, model, options, include){
+async function paginate(req, model, options, include) {
     try {
         var page = parseInt(req.query.page) || 1;
         var pageSize = parseInt(req.query.pageSize) || 10;
@@ -7,7 +7,8 @@ async function paginate(req, model, options, include){
         //exempting query no to pass page to where clause
         delete req.query.page
         delete req.query.pageSize;
-        console.log(options, include);
+        delete req.query.sort
+
         var { count, rows } = await model.findAndCountAll({
             where: options,
             include,
@@ -16,7 +17,7 @@ async function paginate(req, model, options, include){
             order: [[sort[0], sort[1]]]
         });
     } catch (error) {
-        console.log(error);
+        // console.log(error);
         throw new Error('Error while fetching data');
     }
     return { rows, count, totalPages: Math.ceil(count / pageSize), currentPage: page };
