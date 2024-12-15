@@ -38,11 +38,11 @@ app.get('/status', (req, res) => {
     return res.status(200).send({ status: 'OK', success: true });
 })
 
-app.use(AuthRouter);
+// app.use(AuthRouter);
 app.use(TransactionRouter);
-app.use(CategoryRouter);
+// app.use(CategoryRouter);
 app.use(ProductRouter);
-app.use(SupplierRouter)
+// app.use(SupplierRouter)
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

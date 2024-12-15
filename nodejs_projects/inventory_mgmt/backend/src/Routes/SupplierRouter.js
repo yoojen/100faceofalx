@@ -10,7 +10,7 @@ const {
 const verifyToken = require('../Midddlelware');
 
 
-Router.use(verifyToken);
+// Router.use(verifyToken);
 Router.get('/suppliers', getSuppliers);
 Router.get('/suppliers/:id', getSupplierById);
 Router.get('/suppliers/q/search', searchSupplier);

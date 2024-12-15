@@ -1,11 +1,11 @@
 const Router = require('express').Router()
-const verifyToken = require('../Midddlelware');
 const {
     getCategories, getCatgory,
     deleteCategory,
     updateCategory,
     createCategory
 } = require('../Controllers/CategoryController')
+const verifyToken = require('../Midddlelware');
 
 
 Router.use(verifyToken);

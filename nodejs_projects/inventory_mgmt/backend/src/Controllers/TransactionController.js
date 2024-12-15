@@ -2,46 +2,92 @@ const { InventoryTransaction, Product, Supplier } = require('../Models/models');
 const sequelize = require('../Config/db.config');
 const apiErrorHandler = require('../Helpers/errorHandler');
 const paginate = require('../Helpers/paginate');
-const priceSearch = require('../Helpers/priceSearch');
-const dateSearch = require('../Helpers/dateSearch');
-const weekReport = require('../Helpers/weekReport');
-const yearSearch = require('../Helpers/yearSearch');
 const getTimeDifference = require('../Helpers/dateOperations');
 const { Op } = require('sequelize');
 require('dotenv').config()
 
+
 module.exports.getTransactions = async (req, res) => {
     try {
-        const {
-            rows,
-            count,
-            totalPages,
-            currentPage
-        } = await paginate(req = req, model = InventoryTransaction, options = null, include = [{ model: Product }]);
+        const { rows, count, totalPages, currentPage } = await paginate(
+            req = req, model = InventoryTransaction, options = null, include = [{ model: Supplier }, { model: Product }]
+        );
 
         res.status(200).send({
-            success: true,
-            data: rows,
-            totalItems: count,
-            currentPage: currentPage,
-            totalPages: totalPages,
-            message: 'Retrieved successfully'
+            success: true, data: rows, totalItems: count, currentPage: currentPage,
+            totalPages: totalPages, message: 'Retrieved successfully'
         });
     } catch (error) {
         apiErrorHandler(res, error, 'transactions');
     }
 }
 
+module.exports.getAggregatedQuantity = async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
+    const offset = (page - 1) * pageSize;
+    const month = getTimeDifference(4);
+
+    try {
+        var { count, rows } = await InventoryTransaction.findAndCountAll({
+            attributes: ['ProductId', 'Product.name',
+                [sequelize.fn('SUM', sequelize.col('quantity')), 'totalQuantity'],
+                [sequelize.fn('SUM', sequelize.col('total_amount')), 'totalAmount']
+            ],
+            where: {
+                [Op.and]: [
+                    { updatedAt: { [Op.gte]: month } },
+                    { transaction_type: req.query.transaction_type }
+                ]
+            },
+            include: [{ model: Product, required: true, }],
+            order: ['ProductId'],
+            offset,
+            limit: pageSize,
+            group: ['ProductId']
+        });
+
+        res.status(200).send({
+            success: true, data: rows, totalItems: count.length, currentPage: page,
+            totalPages: Math.ceil(count.length / pageSize), message: 'Retrieved successfully'
+        });
+    } catch (error) {
+        console.error(error)
+        apiErrorHandler(res, error, 'transaction')
+    }
+}
 
 module.exports.getTransactionById = async (req, res) => {
     try {
         const { id } = req.params;
-        const transaction = await InventoryTransaction.findByPk(id, { include: [Product] });
+        const transaction = await InventoryTransaction.findByPk(id, { include: [{ model: Supplier }, { model: Product }] });
         if (transaction) {
             res.status(200).send({ success: true, data: transaction, message: 'Retrieved successfully' });
         } else {
             res.status(400).send({ success: false, data: null, message: 'No transaction found' });
         }
+    } catch (error) {
+        apiErrorHandler(res, error, 'transaction')
+    }
+}
+
+module.exports.getTransactionSummary = async (req, res) => {
+    try {
+        let revenue = await InventoryTransaction.findAll({
+            attributes: [
+                [sequelize.fn('SUM', sequelize.col('total_amount')), 'totalRevenue'],
+            ],
+            where: { transaction_type: 'OUT' }
+        })
+        let cost = await InventoryTransaction.findAll({
+            attributes: [
+                [sequelize.fn('SUM', sequelize.col('total_amount')), 'totalCost']],
+            where: { transaction_type: 'IN' }
+        })
+        revenue = revenue[0].dataValues.totalRevenue;
+        cost = cost[0].dataValues.totalCost;
+
+        return res.status(200).send({ data: { revenue, cost: cost, profit: revenue - cost } });
     } catch (error) {
         apiErrorHandler(res, error, 'transaction')
     }
@@ -109,26 +155,20 @@ module.exports.searchTransaction = async (req, res) => {
                 [Op.between]: [startDate, endDate]
             };
         }
+
         opts = {
             [Op.and]: [
                 opts, req.query
             ]
         }
-        console.log(opts)
-        var {
-            rows,
-            count,
-            totalPages,
-            currentPage
-        } = await paginate(req = req, model = InventoryTransaction, options = opts, include = [Product]);
+
+        var { rows, count, totalPages, currentPage } = await paginate(
+            req = req, model = InventoryTransaction, options = opts, include = [{ model: Supplier }, { model: Product }]
+        );
 
         res.status(200).send({
-            success: true,
-            data: rows,
-            totalItems: count,
-            currentPage: currentPage,
-            totalPages: totalPages,
-            message: 'Retrieved successfully'
+            success: true, data: rows, totalItems: count, currentPage: currentPage,
+            totalPages: totalPages, message: 'Retrieved successfully'
         });
     } catch (error) {
         apiErrorHandler(res, error, 'transaction')
@@ -138,10 +178,7 @@ module.exports.searchTransaction = async (req, res) => {
 
 module.exports.createTransaction = async (req, res) => {
     try {
-        const formData = {
-            quantity, selling_price, total_amount, transaction_type,
-            transaction_date, ProductId
-        } = req.body;
+        const formData = { quantity, selling_price, total_amount, transaction_type, transaction_date, ProductId } = req.body;
         //to be checked
         // formData.UserId = req.user.uid;
 
