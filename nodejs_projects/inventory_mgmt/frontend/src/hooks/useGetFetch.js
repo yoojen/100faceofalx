@@ -19,7 +19,6 @@ const useGetFetch = ({ url }) => {
                 const data = response.data;
                 setData(data)
             } catch (err) {
-                console.log(err);
                 setError(err.toString())
             } finally {
                 setIsLoading(false);

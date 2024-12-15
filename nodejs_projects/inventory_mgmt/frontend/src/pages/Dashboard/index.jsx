@@ -9,12 +9,14 @@ import { useEffect, useState } from "react";
 function Dashboard() {
     const [inUrl, setInUrl] = useState(null);
     const [outUrl, setOutUrl] = useState(null);
+    const [stockSummaryUrl, setStockSummaryUrl] = useState(null);
     // const [transactionSummary, setTransactionSummary] = useState();
     const [isLoading, setIsLoading] = useState(true)
 
     var transactionSummary = useGetFetch({ url: '/transactions/summary' });
     var inTransactions = useGetFetch({ url: inUrl });
     var outTransactions = useGetFetch({ url: outUrl });
+    var products = useGetFetch({ url: stockSummaryUrl || '/products?pageSize=1&page=1' });
 
     const handleInTransaction = (page) => {
         console.log('in-->', page)
@@ -24,6 +26,11 @@ function Dashboard() {
         console.log(page)
         setOutUrl(`/transactions/agg/quantity?transaction_type=OUT&pageSize=1&page=${page}`);
     }
+    const handleStockSummary = (page) => {
+        setStockSummaryUrl(`/products?pageSize=1&page=${page}`);
+
+    }
+
     return (
         <div className="px-5 bg-slate-200">
             <h1 className="text-2xl font-medium text-blue-500">AHABANZA</h1>
@@ -185,24 +192,44 @@ function Dashboard() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>Amasaka</td>
-                                            <td>2000kgs</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Ibigori</td>
-                                            <td>2000kgs</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Ingano</td>
-                                            <td>2000kgs</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Uburo</td>
-                                            <td>2000kgs</td>
-                                        </tr>
+                                        {!products.isLoading && (products.data?.data?.map((p, i) => {
+                                            return <tr key={i}>
+                                                <td>{p.name}</td>
+                                                <td>{parseInt(p.quantity_in_stock).toLocaleString()} Kgs</td>
+                                            </tr>
+
+                                        }))}
                                     </tbody>
                                 </table>
+                                <div className="my-2 flex space-x-2">
+                                    {!products.isLoading && products.data?.totalPages > 1
+                                        ? products.data?.currentPage != 1
+                                            ? <button
+                                                className="border rounded-sm px-5 py-1 hover:bg-sky-400"
+                                                onClick={(e) => handleStockSummary(products.data?.currentPage - 1)}>
+                                                Previous
+                                            </button>
+                                            : ''
+                                        :
+                                        ''
+                                    }
+                                    <button
+                                        className={`bg-blue-400 text-white font-medium border rounded-sm px-5 py-1 hover:bg-sky-400`}
+                                        onClick={(e) => handleStockSummary(parseInt(e.target.textContent))}>
+                                        {products.data?.currentPage}
+                                    </button>
+                                    {!products.isLoading && products.data?.totalPages > 1
+                                        ? products.data?.currentPage != products.data?.totalPages
+                                            ? <button
+                                                className="border rounded-sm px-5 py-1 hover:bg-sky-400"
+                                                onClick={(e) => handleStockSummary(products.data?.currentPage + 1)}>
+                                                Next
+                                            </button>
+                                            : ''
+                                        :
+                                        ''
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>
