@@ -2,35 +2,82 @@ import Footer from "../../components/Footer";
 import InventoryOutlinedIcon from '@mui/icons-material/InventoryOutlined';
 import useGetFetch from "../../hooks/useGetFetch";
 import { FaRankingStar } from "react-icons/fa6";
-import { BarChart } from "@mui/x-charts/BarChart";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+} from 'chart.js'
+import { Bar } from "react-chartjs-2";
 
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+)
 
 function Dashboard() {
     const [inUrl, setInUrl] = useState(null);
     const [outUrl, setOutUrl] = useState(null);
     const [stockSummaryUrl, setStockSummaryUrl] = useState(null);
-    // const [transactionSummary, setTransactionSummary] = useState();
-    const [isLoading, setIsLoading] = useState(true)
 
     var transactionSummary = useGetFetch({ url: '/transactions/summary' });
     var inTransactions = useGetFetch({ url: inUrl });
     var outTransactions = useGetFetch({ url: outUrl });
     var products = useGetFetch({ url: stockSummaryUrl || '/products?pageSize=1&page=1' });
+    var barData = useGetFetch({ url: '/transactions/bar' })
+
 
     const handleInTransaction = (page) => {
-        console.log('in-->', page)
         setInUrl(`/transactions/agg/quantity?transaction_type=IN&pageSize=1&page=${page}`);
     }
     const handleOutTransaction = (page) => {
-        console.log(page)
         setOutUrl(`/transactions/agg/quantity?transaction_type=OUT&pageSize=1&page=${page}`);
     }
     const handleStockSummary = (page) => {
         setStockSummaryUrl(`/products?pageSize=1&page=${page}`);
-
     }
 
+    const options = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: 'Total Cost vs. Total Revenue Per Month',
+            },
+        },
+    };
+
+    const labels = !barData.isLoading && barData.data?.data.map((m) => m.month);
+    const costDataset = !barData.isLoading && barData.data?.data.map((c) => c.totalCost);
+    const revenueDataset = !barData.isLoading && barData.data?.data.map((r) => r.totalRevenue);
+
+    const data = {
+        labels,
+        datasets: [
+            {
+                label: 'Total Cost',
+                data: costDataset,
+                backgroundColor: 'rgba(200, 30, 50, 0.7)',
+            },
+            {
+                label: 'Total Revenue',
+                data: revenueDataset,
+                backgroundColor: 'rgba(53, 162, 235, 0.9)',
+            },
+        ],
+    };
     return (
         <div className="px-5 bg-slate-200">
             <h1 className="text-2xl font-medium text-blue-500">AHABANZA</h1>
@@ -238,26 +285,8 @@ function Dashboard() {
                             <div className="font-medium text-blue-500">
                                 <h1>Uko wacuruje (Ibyumweru 4)</h1>
                             </div>
-                            <div className="px-3 overflow-auto flex [&>*]:shrink-0 horizontal-custom-scrollbar">
-                                <BarChart
-                                    xAxis={[
-                                        {
-                                            scaleType: 'band',
-                                            data: [1, 2, 4],
-                                            label: "Months",
-                                            categoryGapRatio: 0.2,
-                                            barGapRatio: 0.2
-                                        }
-                                    ]}
-                                    series={[{ data: [4, 5, 3], label: "Sales" }, { data: [1, 3, 2], label: "Purchase" }]}
-                                    barLabel={'value'}
-                                    yAxis={[{ label: "Total (FRW) " }]}
-                                    grid={{ vertical: false, horizontal: true }}
-                                    borderRadius={10}
-                                    slotProps={{ legend: { hidden: false } }}
-                                    width={500}
-                                    height={300}
-                                />
+                            <div className="px-3 mx-auto  overflow-auto horizontal-custom-scrollbar">
+                                <Bar options={options} data={data} />
                             </div>
                         </div>
                     </div>
