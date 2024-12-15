@@ -1,33 +1,34 @@
 import Footer from "../../components/Footer";
-import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import InventoryOutlinedIcon from '@mui/icons-material/InventoryOutlined';
 import useGetFetch from "../../hooks/useGetFetch";
 import { FaRankingStar } from "react-icons/fa6";
 import { BarChart } from "@mui/x-charts/BarChart";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 
 function Dashboard() {
-    let outSum = 0;
-    const OUT_URI = '/transactions/q/week';
-    const OUT_TRANSACTION_TYPE = 'OUT';
-    const outData = useGetFetch({ url: `${OUT_URI}?report=4&transaction_type=${OUT_TRANSACTION_TYPE}` });
-    for (let i = 0; i < outData.data.length; i++) {
-        outSum += outData.data[i].total_amount;
+    const [inUrl, setInUrl] = useState(null);
+    const [outUrl, setOutUrl] = useState(null);
+    // const [transactionSummary, setTransactionSummary] = useState();
+    const [isLoading, setIsLoading] = useState(true)
+
+    var transactionSummary = useGetFetch({ url: '/transactions/summary' });
+    var inTransactions = useGetFetch({ url: inUrl });
+    var outTransactions = useGetFetch({ url: outUrl });
+
+    const handleInTransaction = (page) => {
+        console.log('in-->', page)
+        setInUrl(`/transactions/agg/quantity?transaction_type=IN&pageSize=1&page=${page}`);
     }
-
-    let inSum = 0;
-    const IN_URI = '/transactions/q/week';
-    const IN_TRANSACTION_TYPE = 'IN';
-    const inData = useGetFetch({ url: `${IN_URI}?report=4&transaction_type=${IN_TRANSACTION_TYPE}` });
-    for (let i = 0; i < inData.data.length; i++) {
-        inSum += inData.data[i].total_amount;
+    const handleOutTransaction = (page) => {
+        console.log(page)
+        setOutUrl(`/transactions/agg/quantity?transaction_type=OUT&pageSize=1&page=${page}`);
     }
-
-
     return (
         <div className="px-5 bg-slate-200">
             <h1 className="text-2xl font-medium text-blue-500">AHABANZA</h1>
+            <button onClick={() => handleInTransaction(1)}>Test Button</button>
+            <button onClick={() => handleOutTransaction(1)}>Test 2 Button</button>
             <div className="md:flex md:basis-3/4 md:space-x-3 mb-4">
                 <div className="md:w-2/4 [&>*]:bg-white [&>*]:rounded-sm [&>*]:shadow-md [&>*]:p-2 space-y-3">
                     <div>
@@ -38,21 +39,21 @@ function Dashboard() {
                             <div className="px-2">
                                 <p className="space-x-3">
                                     RF&nbsp;
-                                    <span>{outSum.toLocaleString()}</span>
+                                    <span>{!transactionSummary.isLoading && parseInt(transactionSummary.data.data?.revenue).toLocaleString()}</span>
                                 </p>
                                 <small>Ibyagurishijwe</small>
                             </div>
                             <div className="text-blue-500 px-2">
                                 <p className="space-x-3">
                                     RF&nbsp;
-                                    <span>{inSum.toLocaleString()}</span>
+                                    <span>{!transactionSummary.isLoading && parseInt(transactionSummary.data.data?.cost).toLocaleString()}</span>
                                 </p>
                                 <small>Ibyinjiye</small>
                             </div>
                             <div className="text-green-500">
                                 <p className="space-x-3">
                                     RF&nbsp;
-                                    <span>{(outSum - inSum).toLocaleString()}</span>
+                                    <span>{!transactionSummary.isLoading && parseInt(transactionSummary.data.data?.profit).toLocaleString()}</span>
                                 </p>
                                 <small>Inyungu</small>
                             </div>
@@ -72,33 +73,45 @@ function Dashboard() {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>amasaka</td>
-                                    <td>200kgs</td>
-                                    <td>frw 250, 500</td>
-                                </tr>
-                                <tr>
-                                    <td>ibigori</td>
-                                    <td>200kgs</td>
-                                    <td>frw 250, 500</td>
-                                </tr>
-                                <tr>
-                                    <td>ingano</td>
-                                    <td>200kgs</td>
-                                    <td>frw 250, 500</td>
-                                </tr>
-                                <tr>
-                                    <td>uburo</td>
-                                    <td>200kgs</td>
-                                    <td>frw 250, 500</td>
-                                </tr>
-                                <tr>
-                                    <td>amamera</td>
-                                    <td>200kgs</td>
-                                    <td>frw 250, 500</td>
-                                </tr>
+                                {!inTransactions.isLoading && (inTransactions.data?.data?.map((p, i) => {
+                                    return <tr key={i}>
+                                        <td>{p.Product.name}</td>
+                                        <td>{parseInt(p.totalQuantity).toLocaleString()} Kgs</td>
+                                        <td>RF {parseInt(p.totalAmount).toLocaleString()}</td>
+                                    </tr>
+
+                                }))}
                             </tbody>
                         </table>
+                        <div className="my-2 flex space-x-2">
+                            {!inTransactions.isLoading && inTransactions.data?.totalPages > 1
+                                ? inTransactions.data?.currentPage != 1
+                                    ? <button
+                                        className="border rounded-sm px-5 py-1 hover:bg-sky-400"
+                                        onClick={(e) => handleInTransaction(inTransactions.data?.currentPage - 1)}>
+                                        Previous
+                                    </button>
+                                    : ''
+                                :
+                                ''
+                            }
+                            <button
+                                className={`bg-blue-400 text-white font-medium border rounded-sm px-5 py-1 hover:bg-sky-400`}
+                                onClick={(e) => handleInTransaction(inTransactions.data?.currentPage)}>
+                                {inTransactions.data?.currentPage}
+                            </button>
+                            {!inTransactions.isLoading && inTransactions.data?.totalPages > 1
+                                ? inTransactions.data?.currentPage != inTransactions.data?.totalPages
+                                    ? <button
+                                        className="border rounded-sm px-5 py-1 hover:bg-sky-400"
+                                        onClick={(e) => handleInTransaction(inTransactions.data?.currentPage + 1)}>
+                                        Next
+                                    </button>
+                                    : ''
+                                :
+                                ''
+                            }
+                        </div>
                     </div>
                     <div>
                         <div className="text-blue-500 px-2 font-medium">
@@ -108,34 +121,52 @@ function Dashboard() {
                         <div className="my-2">
                             <table className="w-full">
                                 <thead className="border-b-2">
-                                    <tr>
-                                        <th>igicuruzwa</th>
-                                        <th>Kgs</th>
-                                        <th>Ibisigaye</th>
-                                        <th>Igiciro</th>
+                                    <tr className="text-left">
+                                        <th>Product</th>
+                                        <th>Qty</th>
+                                        <th>Total Revenue</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>The Sliding Mr. Bones</td>
-                                        <td>Malcolm Lockyer</td>
-                                        <td>1961</td>
-                                        <td>1961</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Witchy Woman</td>
-                                        <td>The Eagles</td>
-                                        <td>1972</td>
-                                        <td>1972</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Shining Star</td>
-                                        <td>Earth, Wind, and Fire</td>
-                                        <td>1975</td>
-                                        <td>1975</td>
-                                    </tr>
+                                    {!outTransactions.isLoading && (outTransactions.data?.data?.map((p, i) => {
+                                        return <tr key={i}>
+                                            <td>{p.Product.name}</td>
+                                            <td>{parseInt(p.totalQuantity).toLocaleString()} Kgs</td>
+                                            <td>RF {parseInt(p.totalAmount).toLocaleString()}</td>
+                                        </tr>
+
+                                    }))}
                                 </tbody>
                             </table>
+                            <div className="my-2 flex space-x-2">
+                                {!outTransactions.isLoading && outTransactions.data?.totalPages > 1
+                                    ? outTransactions.data?.currentPage != 1
+                                        ? <button
+                                            className="border rounded-sm px-5 py-1 hover:bg-sky-400"
+                                            onClick={(e) => handleOutTransaction(outTransactions.data?.currentPage - 1)}>
+                                            Previous
+                                        </button>
+                                        : ''
+                                    :
+                                    ''
+                                }
+                                <button
+                                    className={`bg-blue-400 text-white font-medium border rounded-sm px-5 py-1 hover:bg-sky-400`}
+                                    onClick={(e) => handleOutTransaction(parseInt(e.target.textContent))}>
+                                    {outTransactions.data?.currentPage}
+                                </button>
+                                {!outTransactions.isLoading && outTransactions.data?.totalPages > 1
+                                    ? outTransactions.data?.currentPage != outTransactions.data?.totalPages
+                                        ? <button
+                                            className="border rounded-sm px-5 py-1 hover:bg-sky-400"
+                                            onClick={(e) => handleOutTransaction(outTransactions.data?.currentPage + 1)}>
+                                            Next
+                                        </button>
+                                        : ''
+                                    :
+                                    ''
+                                }
+                            </div>
                         </div>
                     </div>
                 </div>

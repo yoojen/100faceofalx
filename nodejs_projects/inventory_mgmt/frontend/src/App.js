@@ -17,16 +17,16 @@ function App() {
       <Routes>
         <Route path='/auth/login' element={<Login />} />
         <Route path='/auth/register' element={<Signup />} />
-        <Route path='/home' element={<Homepage />} />
+        <Route path='/' element={<Homepage />} />
 
-        <Route element={<PersistAuth />}>
-          <Route element={<RequireAuth />}>
-            <Route exact path='/dashboard' element={<Dashboard />} />
-            <Route exact path='/stock' element={<Stock />} />
-            <Route exact path='/customers' element={<Customer />} />
-            <Route exact path='/reports' element={<Report />} />
-          </Route>
-        </Route>
+        {/* <Route element={<PersistAuth />}>
+          <Route element={<RequireAuth />}> */}
+        <Route exact path='/dashboard' element={<Dashboard />} />
+        <Route exact path='/stock' element={<Stock />} />
+        <Route exact path='/customers' element={<Customer />} />
+        <Route exact path='/reports' element={<Report />} />
+        {/* </Route>
+        </Route> */}
       </Routes>
     </div>
   );
