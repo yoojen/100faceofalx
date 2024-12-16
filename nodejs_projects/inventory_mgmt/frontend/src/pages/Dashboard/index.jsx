@@ -2,7 +2,7 @@ import Footer from "../../components/Footer";
 import InventoryOutlinedIcon from '@mui/icons-material/InventoryOutlined';
 import useGetFetch from "../../hooks/useGetFetch";
 import { FaRankingStar } from "react-icons/fa6";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -32,18 +32,40 @@ function Dashboard() {
     var transactionSummary = useGetFetch({ url: '/transactions/summary' });
     var inTransactions = useGetFetch({ url: inUrl });
     var outTransactions = useGetFetch({ url: outUrl });
-    var products = useGetFetch({ url: stockSummaryUrl || '/products?pageSize=1&page=1' });
+    var products = useGetFetch({ url: stockSummaryUrl || '/products?pageSize=2&page=1' });
     var barData = useGetFetch({ url: '/transactions/bar' })
 
+    useEffect(() => {
+        const getData = async () => {
+            await transactionSummary.fetchData();
+            await products.fetchData();
+            await barData.fetchData();
+        }
+        getData();
+    }, []);
+
+    useEffect(() => {
+        const getData = async () => {
+            inUrl !== null && await inTransactions.fetchData();
+        }
+        getData();
+    }, [inUrl]);
+
+    useEffect(() => {
+        const getData = async () => {
+            outUrl !== null && await outTransactions.fetchData();
+        }
+        getData();
+    }, [outUrl]);
 
     const handleInTransaction = (page) => {
-        setInUrl(`/transactions/agg/quantity?transaction_type=IN&pageSize=1&page=${page}`);
+        setInUrl(`/transactions/agg/quantity?transaction_type=IN&pageSize=2&page=${page}`);
     }
     const handleOutTransaction = (page) => {
-        setOutUrl(`/transactions/agg/quantity?transaction_type=OUT&pageSize=1&page=${page}`);
+        setOutUrl(`/transactions/agg/quantity?transaction_type=OUT&pageSize=2&page=${page}`);
     }
     const handleStockSummary = (page) => {
-        setStockSummaryUrl(`/products?pageSize=1&page=${page}`);
+        setStockSummaryUrl(`/products?pageSize=2&page=${page}`);
     }
 
     const options = {
