@@ -14,7 +14,6 @@ module.exports.getProducts = async (req, res) => {
             totalPages,
             currentPage
         } = await paginate(req, Product, options = null, include = [Category]);
-
         res.status(200).send({
             success: true,
             data: rows,
@@ -113,37 +112,39 @@ module.exports.searchQuantityLessOrGreater = async (req, res) => {
 module.exports.createProduct = async (req, res) => {
     const t = await sequelize.transaction();
     try {
-        const formData = {
-            name, description, price, quantity_in_stock, CategoryId, categoryName
+        const {
+            name, description, quantity_in_stock, CategoryId, categoryName
         } = req.body;
         //If product exists
-        if (await Product.findOne({ where: { name: formData.name.strip() } })) {
+        if (await Product.findOne({ where: { name: name.trim() } })) {
             res.status(400).send({ success: false, data: null, message: 'Product already exists' });
             return;
         }
 
         //Creation of category
-        if (!formData.CategoryId && !formData.categoryName) {
+        if (!CategoryId && !categoryName) {
             res.status(400).send({ success: false, data: null, message: 'Please select category or create one' });
             return;
         }
-        if (formData.CategoryId) {
-            const category = await Category.findByPk(formData.CategoryId);
+        if (CategoryId) {
+            const category = await Category.findByPk(CategoryId);
             if (!category) {
                 res.status(400).send({ success: false, data: null, message: 'Category doesn\'t exist. Please create category' });
                 return;
             }
         }
-        else if (formData.categoryName) {
+        else if (categoryName) {
             try {
-                const category = await Category.create({ name: formData.categoryName });
-                formData.CategoryId = category.id;
+                const category = await Category.create({ name: categoryName, });
+                CategoryId = category.id;
             } catch (error) {
                 apiErrorHandler(res, error, 'category');
             }
         }
 
-        var product = await Product.create(formData, { transaction: t });
+        var product = await Product.create({ name, CategoryId, quantity_in_stock, description }, {
+            transaction: t
+        });
         if (product) {
             await t.commit();
             res.status(200).send({ success: true, data: product, message: 'Product added successfully' });
@@ -152,6 +153,7 @@ module.exports.createProduct = async (req, res) => {
             res.status(400).send({ success: false, data: null, message: 'Invalid input' });
         }
     } catch (error) {
+        console.log(error)
         await t.rollback();
         apiErrorHandler(res, error, 'product')
     }
