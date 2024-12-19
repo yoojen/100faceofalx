@@ -7,7 +7,7 @@ import useSupplier from '../../hooks/useSupplier';
 const IS_SPECIAL = ["Yes", "No"];
 function Modal({ products, setProducts, setTempProducts, type }) {
   // States
-  const [productDetail, setProductDetail] = useState({ name: "", CategoryId: '', description: '' });
+  const [productDetail, setProductDetail] = useState({ name: "", CategoryId: '', categoryName: '', description: '' });
   const [supplierDetails, setSupplierDetails] = useState({ name: "", isSpecial: "false", balance: 0, });
   const [transactionDetails, setTransactionDetails] = useState({
     SupplierId: '', ProductId: '', transaction_type: '',
@@ -20,7 +20,7 @@ function Modal({ products, setProducts, setTempProducts, type }) {
   const category = useCategory();
   const product = useProduct()
   const supplier = useSupplier()
-
+  console.log(product)
 
   transactionDetails.total_amount = transactionDetails.buying_price || transactionDetails.selling_price && transactionDetails?.quantity
     ? transactionDetails.buying_price || transactionDetails.selling_price * transactionDetails?.quantity : 0
@@ -66,16 +66,14 @@ function Modal({ products, setProducts, setTempProducts, type }) {
     }
     try {
       const response = await publicAxios.post('/products', {
-        name: productDetail.name, category: productDetail.category
+        name: productDetail.name, CategoryId: productDetail.CategoryId,
+        categoryName: productDetail.categoryName
       }, {
         withCredentials: true
       })
       if (response.status = 200) {
-        setMessage({ category: "blue", message: "Transaction successfully added!", });
-        setProductDetail({
-          id: products.length + 1, name: "", customer: "", buyingPrice: "",
-          quantity: "", date: "", transactionType: "",
-        });
+        setMessage({ category: "blue", message: "Product successfully added!", });
+        setProductDetail({ name: "", CategoryId: '', categoryName: '', description: '' });
         handleShowMessage();
       }
     } catch (error) {
@@ -89,7 +87,7 @@ function Modal({ products, setProducts, setTempProducts, type }) {
   };
   const handleAddTransaction = (e) => {
     e.preventDefault()
-    console.log('Hey')
+    console.log('Hey', productDetail)
   }
 
   const handleShowMessage = () => {
@@ -148,28 +146,25 @@ function Modal({ products, setProducts, setTempProducts, type }) {
         </label>
         {!categoryType
           ? <select
-            name="category"
+            name='category'
             id="category"
-            value={productDetail.CategoryId}
             className="border border-black px-4 py-1 basis-1/2"
-            onChange={(e) => { setProductDetail({ ...productDetail, category: e.target.value }) }}
+            onChange={(e) => setProductDetail({ ...productDetail, CategoryId: e.target.value })}
           >
-            <option value="" className="text-slate-300">
-              ...
-            </option>
+            <option value="" className="text-slate-300">...</option>
             {category.categories.map((c) => {
-              return (<option key={c.id}>{c.name}</option>)
+              return (<option key={c.id} value={c.id}>{c.name}</option>)
             })}
           </select>
           : <input
             type="text"
             id="description"
-            value=""
             autoComplete="price"
             placeholder='Type something'
             aria-placeholder="type something"
             className="border border-black px-4 py-1 basis-1/2"
-            onChange={(e) => { }}
+            value={productDetail.categoryName}
+            onChange={(e) => setProductDetail({ ...productDetail, categoryName: e.target.value })}
           />
         }
       </div>
@@ -197,13 +192,7 @@ function Modal({ products, setProducts, setTempProducts, type }) {
           id="name"
           value={supplierDetails.name}
           className="border px-4 py-1"
-          onChange={(e) => {
-            console.log(e.target.value);
-            setSupplierDetails({
-              ...supplierDetails,
-              name: e.target.value,
-            });
-          }}
+          onChange={(e) => { setSupplierDetails({ ...supplierDetails, name: e.target.value }); }}
           required
         />
       </div>
@@ -214,12 +203,7 @@ function Modal({ products, setProducts, setTempProducts, type }) {
           id="is_special"
           className="border px-4 py-1 bg-white"
           value={supplierDetails.isSpecial}
-          onChange={(e) =>
-            setSupplierDetails({
-              ...supplierDetails,
-              isSpecial: e.target.value,
-            })
-          }
+          onChange={(e) => setSupplierDetails({ ...supplierDetails, isSpecial: e.target.value })}
         >
           <option value="true">{IS_SPECIAL[0]}</option>
           <option value="false">{IS_SPECIAL[1]}</option>
@@ -233,18 +217,13 @@ function Modal({ products, setProducts, setTempProducts, type }) {
             value={supplierDetails.balance}
             className="border px-4 py-1 bg-white"
             required
-            onChange={(e) =>
-              handleCreateSupplier({
-                setSupplierDetails,
-                ...supplierDetails,
-                balance: e.target.value,
-              })
-            }
+            onChange={(e) => setSupplierDetails({ ...supplierDetails, balance: e.target.value })}
           />
         </div>
       )}
     </div>
   );
+
   const formElements = (
     <div className="[&>*]:flex [&>*]:flex-col [&>*]:justify-between [&>*]:p-2 mt-5">
       <div>
@@ -255,6 +234,7 @@ function Modal({ products, setProducts, setTempProducts, type }) {
           value={transactionDetails.SupplierId}
           className="border px-4 py-1"
           onChange={(e) => { setTransactionDetails({ ...transactionDetails, SupplierId: e.target.value }); }}
+          required
         >
           <option value="">...</option>
           {supplier.suppliers.map((s) => <option key={s.id}>{s.name}</option>)}
@@ -268,6 +248,7 @@ function Modal({ products, setProducts, setTempProducts, type }) {
           value={transactionDetails.ProductId}
           className="border px-4 py-1"
           onChange={(e) => { setTransactionDetails({ ...transactionDetails, ProductId: e.target.value }); }}
+          required
         >
           <option value="" className="text-slate-300">...</option>
           {product.products.map((p) => <option value={p.id} key={p.id}>{p.name}</option>)}
@@ -281,6 +262,7 @@ function Modal({ products, setProducts, setTempProducts, type }) {
           value={productDetail.transactionType}
           className="border px-4 py-1"
           onChange={(e) => { setTransactionDetails({ ...transactionDetails, transaction_type: e.target.value, }); }}
+          required
         >
           <option value="" className="text-slate-300">
             ...
@@ -298,10 +280,10 @@ function Modal({ products, setProducts, setTempProducts, type }) {
           autoComplete="quantity"
           className="border px-4 py-1"
           onChange={(e) => { setTransactionDetails({ ...transactionDetails, quantity: e.target.value }) }}
+          required
         />
       </div>
       <div>
-        {/* Needed check for either in or out transaction to determine the price type */}
         <label htmlFor="price">Igiciro</label>
         <input
           type="text"
@@ -316,6 +298,7 @@ function Modal({ products, setProducts, setTempProducts, type }) {
               setTransactionDetails({ ...transactionDetails, selling_price: e.target.value });
             }
           }}
+          required
         />
       </div>
       <div>
@@ -342,7 +325,13 @@ function Modal({ products, setProducts, setTempProducts, type }) {
       >
         {showMessage ? message.message : ""}
       </div>
-      <form>
+      <form onSubmit={
+        type === "transaction"
+          ? handleAddTransaction
+          : type === "supplier"
+            ? handleCreateSupplier
+            : handleAddProduct
+      }>
         {type === "transaction"
           ? formElements
           : type === "supplier"
@@ -351,13 +340,6 @@ function Modal({ products, setProducts, setTempProducts, type }) {
         <button
           className="mt-3 border-0 rounded-sm py-1 px-2 bg-blue-600 text-white"
           type="submit"
-          onClick={
-            type === "transaction"
-              ? handleAddTransaction
-              : type === "supplier"
-                ? handleCreateSupplier
-                : handleAddProduct
-          }
         >
           Add {type}
         </button>

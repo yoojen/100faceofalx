@@ -5,7 +5,7 @@ import useGetFetch from '../hooks/useGetFetch';
 export const categoryContext = createContext([]);
 export const productContext = createContext([]);
 export const supplierContext = createContext([]);
-const transactionContext = createContext([]);
+export const transactionContext = createContext([]);
 
 export const CategoryProvider = ({ children }) => {
     const categories = useGetFetch({ url: '/categories' })
@@ -16,7 +16,7 @@ export const CategoryProvider = ({ children }) => {
         }
         getData();
     }, [])
-    return <categoryContext.Provider value={{ categories: !categories.isLoading && categories.data?.data }}>
+    return <categoryContext.Provider value={{ categories: !categories.isLoading && !categories.error && categories.data?.data }}>
         {children}
     </categoryContext.Provider>
 
@@ -30,7 +30,7 @@ export const ProductProvider = ({ children }) => {
         }
         getData();
     }, [])
-    return <productContext.Provider value={{ products: !products.isLoading && products.data?.data }}>
+    return <productContext.Provider value={{ products: !products.isLoading && !products.error && products.data?.data }}>
         {children}
     </productContext.Provider>
 }
@@ -43,7 +43,32 @@ export const SupplierProvider = ({ children }) => {
         }
         getData();
     }, [])
-    return <supplierContext.Provider value={{ suppliers: !suppliers.isLoading && suppliers.data?.data }}>
+    return <supplierContext.Provider value={{
+        suppliers: !suppliers.isLoading
+            && !suppliers.error && suppliers.data?.data
+    }}>
         {children}
     </supplierContext.Provider>
+}
+
+export const TransactionProvider = ({ children }) => {
+    const transactions = useGetFetch({ url: '/transactions' });
+    useEffect(() => {
+        async function getData() {
+            await transactions.fetchData();
+        }
+        getData();
+    }, [])
+
+    return <transactionContext.Provider value={{
+        transaction: !transactions.isLoading
+            ? !transactions.error
+                ? transactions.data?.data
+                : []
+            : []
+    }}
+    >
+        {children}
+    </transactionContext.Provider>
+
 }

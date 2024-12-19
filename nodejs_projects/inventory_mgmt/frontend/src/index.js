@@ -5,7 +5,10 @@ import "./index.css";
 import { NavigationProvider } from "./context/SideNav.js";
 import { AuthProvider } from "./context/AuthProvider.js";
 import { BrowserRouter } from "react-router-dom";
-import { CategoryProvider, ProductProvider, SupplierProvider } from "./context/GeneralAssets.js";
+import {
+  CategoryProvider, ProductProvider,
+  SupplierProvider, TransactionProvider
+} from "./context/GeneralAssets.js";
 
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -16,9 +19,11 @@ root.render(
         <CategoryProvider>
           <ProductProvider>
             <SupplierProvider>
-              <NavigationProvider>
-                <App />
-              </NavigationProvider>
+              <TransactionProvider>
+                <NavigationProvider>
+                  <App />
+                </NavigationProvider>
+              </TransactionProvider>
             </SupplierProvider>
           </ProductProvider>
         </CategoryProvider>

@@ -1,10 +1,12 @@
-import { useRef, useState, useContext } from "react";
+import { useRef, useState, useContext, useEffect } from "react";
 import { MdFilterList } from "react-icons/md";
 import Footer from "../../components/Footer";
 import Modal from "../../components/Modal";
 import UpdateModal from "../../components/UpdateModal";
 import Form from "../../components/Form";
 import NavigationContext from "../../context/SideNav";
+import useGetFetch from "../../hooks/useGetFetch";
+import useTransaction from "../../hooks/useTransaction";
 
 
 const UPDATE_MODAL_PLACEHOLDER = "updateModal";
@@ -20,6 +22,7 @@ function Stock() {
     const [filterOpen, setFilterOpen] = useState(false);
     const { isNavOpen, openNav, closeNav } = useContext(NavigationContext);
     const navRef = useRef(null);
+    const transactions = useTransaction();
 
     const handleModalOpen = (modal) => {
         let modalToUse, dispatchFn;
@@ -154,31 +157,29 @@ function Stock() {
                             </tr>
                         </thead>
                         <tbody>
-                            {tempProducts.map((product, index) => {
-                                let totalPrice = parseFloat(product.quantity) * parseFloat(product.buyingPrice)
-                                return (
-                                    <tr key={index}>
-                                        <td>{product.name}</td>
-                                        <td>{product.customer}</td>
-                                        <td>{product.buyingPrice} Frw</td>
-                                        <td>{product.transactionType}</td>
-                                        <td>{product.quantity} Kgs</td>
-                                        <td>{product.date}</td>
-                                        <td>{totalPrice.toLocaleString()} Frw</td>
-                                        <td className="space-x-2 cursor-pointer">
-                                            <span className="text-blue-500 underline decoration-blue-500" onClick={() => handleProductUpdate(product.id, 'updateModal')}>Edit</span>
-                                            <span className="text-red-500 underline decoration-red-500" onClick={() => handleDeleteProduct(product.id)}>Delete</span>
-                                        </td>
-                                        {updateModalOpen && (
-                                            <div className="">
-                                                <div className="bg-black opacity-50 absolute -top-20 left-0 z-30 h-screen w-full"
-                                                    onClick={() => handleProductUpdate(product.id, UPDATE_MODAL_PLACEHOLDER)}
-                                                ></div>
-                                                <UpdateModal product={selectedProduct} products={products} setTempProducts={setTempProducts} />
-                                            </div>
-                                        )}
-                                    </tr>
-                                )
+
+                            {transactions.transaction.map((t) => {
+                                return <tr key={t.id}>
+                                    <td>{t?.Product?.name}</td>
+                                    <td>{t?.Supplier?.name}</td>
+                                    <td>RF {parseFloat(t.buying_price || t.selling_price).toLocaleString()}</td>
+                                    <td>{t.transaction_type}</td>
+                                    <td>{parseFloat(t.quantity).toLocaleString()}</td>
+                                    <td>{t.updatedAt}</td>
+                                    <td>RF {parseFloat(t.total_amount).toLocaleString()}</td>
+                                    <td className="space-x-2 cursor-pointer">
+                                        <span className="text-blue-500 underline decoration-blue-500" onClick={() => handleProductUpdate(product.id, 'updateModal')}>Edit</span>
+                                        <span className="text-red-500 underline decoration-red-500" onClick={() => handleDeleteProduct(product.id)}>Delete</span>
+                                    </td>
+                                    {updateModalOpen && (
+                                        <div className="">
+                                            <div className="bg-black opacity-50 absolute -top-20 left-0 z-30 h-screen w-full"
+                                                onClick={() => handleProductUpdate(t.id, UPDATE_MODAL_PLACEHOLDER)}
+                                            ></div>
+                                            <UpdateModal product={selectedProduct} products={products} setTempProducts={setTempProducts} />
+                                        </div>
+                                    )}
+                                </tr>
                             })}
                         </tbody>
                     </table>
