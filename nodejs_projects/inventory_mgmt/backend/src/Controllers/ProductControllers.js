@@ -12,8 +12,8 @@ module.exports.getProducts = async (req, res) => {
             rows,
             count,
             totalPages,
-            currentPage 
-        } = await paginate(req, Product, options=null, include=[Category]);
+            currentPage
+        } = await paginate(req, Product, options = null, include = [Category]);
 
         res.status(200).send({
             success: true,
@@ -104,7 +104,7 @@ module.exports.searchQuantityLessOrGreater = async (req, res) => {
             totalPages: totalPages,
             message: 'Retrieved successfully'
         });
-    
+
     } catch (error) {
         apiErrorHandler(res, error, 'products')
     }
@@ -117,7 +117,7 @@ module.exports.createProduct = async (req, res) => {
             name, description, price, quantity_in_stock, CategoryId, categoryName
         } = req.body;
         //If product exists
-        if (await Product.findOne({ where: { name: formData.name } })) {
+        if (await Product.findOne({ where: { name: formData.name.strip() } })) {
             res.status(400).send({ success: false, data: null, message: 'Product already exists' });
             return;
         }
@@ -143,7 +143,7 @@ module.exports.createProduct = async (req, res) => {
             }
         }
 
-        var product = await Product.create(formData, {transaction: t});
+        var product = await Product.create(formData, { transaction: t });
         if (product) {
             await t.commit();
             res.status(200).send({ success: true, data: product, message: 'Product added successfully' });
@@ -170,7 +170,7 @@ module.exports.updateProduct = async (req, res) => {
             res.status(400).send({ success: false, data: null, message: 'No product found' });
         }
         const affectedRows = await Product.update(req.body, { where: { id: id }, transaction: t });
-        if (affectedRows[0] > 0){
+        if (affectedRows[0] > 0) {
             await t.commit();
             res.status(200).send({ success: true, data: product, message: 'Updated successfully' });
         } else {
@@ -190,7 +190,7 @@ module.exports.deleteProduct = async (req, res) => {
         const { id } = req.params;
         const product = await Product.findByPk(id);
         if (product) {
-            await product.destroy({transaction: t});
+            await product.destroy({ transaction: t });
             res.status(204).send();
         } else {
             res.status(404).send({ success: false, message: 'No product found' });

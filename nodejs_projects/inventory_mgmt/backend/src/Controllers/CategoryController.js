@@ -35,7 +35,7 @@ module.exports.getCatgory = async (req, res) => {
             res.status(200).send({ success: false, data: null, message: 'No category found' });
         }
     } catch (error) {
-        apiErrorHandler(res, error, 'category')   
+        apiErrorHandler(res, error, 'category')
     }
 }
 
@@ -85,6 +85,6 @@ module.exports.deleteCategory = async (req, res) => {
             res.status(400).send({ success: false, data: null, message: 'No category found' });
         }
     } catch (error) {
-        apiErrorHandler(res, error, 'category')   
+        apiErrorHandler(res, error, 'category')
     }
 }

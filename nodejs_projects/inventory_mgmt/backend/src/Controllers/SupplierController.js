@@ -7,8 +7,8 @@ const paginate = require('../Helpers/paginate');
 
 module.exports.getSuppliers = async (req, res) => {
     try {
-        const { 
-            rows, 
+        const {
+            rows,
             count,
             totalPages,
             currentPage
@@ -34,7 +34,7 @@ module.exports.getSupplierById = async (req, res) => {
         if (supplier) {
             res.status(200).send({ success: true, data: supplier, message: 'Retrieved successfully' });
         } else {
-            res.status(400).send({ success: false, data: null, message: 'No supplier found' });
+            res.status(400).send({ success: false, data: null, error: 'No supplier found' });
         }
     } catch (error) {
         apiErrorHandler(res, error, 'transaction')
@@ -67,16 +67,22 @@ module.exports.searchSupplier = async (req, res) => {
 module.exports.createSupplier = async (req, res) => {
     const t = await sequelize.transaction();
     try {
-        const formData = { name, isSpecial, balance } = req.body;
-        const found = await models.Supplier.findOne({ where: { name: formData.name } });
+        const { isSpecial, name, balance } = req.body;
+        console.log(req.body)
+        if (!name || (isSpecial && !balance)) {
+            return res.status(400).send({ success: false, error: 'Provide required entries', model: 'Supplier' });
+        }
+
+        const found = await Supplier.findOne({ where: { name: req.body.name, isSpecial: req.body.isSpecial } });
         if (found) {
-            res.status(400).send({ success: false, supplier: null, message: 'Supplier already exists' });
+            res.status(400).send({ success: false, supplier: null, error: 'Supplier already exists' });
             return;
         }
-        const supplier = await models.Supplier.create(formData, { transaction: t });
+        const supplier = await Supplier.create(req.body, { transaction: t });
         await t.commit();
         res.status(201).send({ success: true, data: supplier, message: 'Supplier created successfully' });
     } catch (error) {
+        console.log(error)
         await t.rollback();
         apiErrorHandler(res, error, 'supplier');
     }
@@ -87,20 +93,20 @@ module.exports.updateSupplier = async (req, res) => {
     const t = await sequelize.transaction();
     try {
         const { id } = req.params;
-        const supplier = await models.Supplier.findByPk(id);
+        const supplier = await Supplier.findByPk(id);
         if (!supplier) {
             res.status(404).send({ success: false, data: null, message: 'Supplier is not found' });
             return;
         }
-        const affectedRows = await models.Supplier.update(req.body, { where: { id: id }, transaction: t });
+        const affectedRows = await Supplier.update(req.body, { where: { id: id }, transaction: t });
         if (affectedRows[0] > 0) {
             await t.commit();
-            const updatedSupplier = await models.Supplier.findByPk(id);
+            const updatedSupplier = await Supplier.findByPk(id);
             res.status(200).send({ success: true, data: updatedSupplier, message: 'Updated successfully' });
             return;
         } else {
             await t.rollback();
-            res.status(400).send({ success: false, data: null, message: 'Failed to update supplier' });
+            res.status(400).send({ success: false, data: null, error: 'Failed to update supplier' });
             return;
         }
     } catch (error) {
@@ -113,7 +119,7 @@ module.exports.deleteSupplier = async (req, res) => {
     const t = await sequelize.transaction();
     try {
         const { id } = req.params;
-        const supplier = await models.Supplier.findByPk(id);
+        const supplier = await Supplier.findByPk(id);
         if (!supplier) {
             res.status(404).send({ success: false, data: null, message: 'Supplier is not found' });
             return;

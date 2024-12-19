@@ -8,7 +8,7 @@ const {
 const verifyToken = require('../Midddlelware');
 
 
-Router.use(verifyToken);
+// Router.use(verifyToken);
 Router.get('/categories', getCategories);
 Router.get('/categories/:id', getCatgory);
 Router.post('/categories', createCategory);
