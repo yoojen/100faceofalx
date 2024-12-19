@@ -88,10 +88,9 @@ function Stock() {
             <Form fields={['product', 'quantity', 'amount', 'year', 'weeks', 'supplier']} />
             <h1 className="text-2xl font-medium text-blue-500 mt-4">STOCK TRANSACTIONS</h1>
             <div className="bg-white rounded-sm shadow-sm p-4 mb-5">
-                <div className="flex justify-between">
-                    <div className="basis-2/4 font-medium">Product</div>
-                    <div className="space-x-4 flex basis-2/4">
-                        <button className="basis-1/3 capitalize border-0 rounded-sm py-1 px-2 bg-blue-600 text-white"
+                <div className="flex justify-end">
+                    <div className="space-x-4 flex basis-2//3">
+                        <button className="border-0 rounded-sm py-1 px-2 bg-sky-600 text-white font-medium capitalize"
                             onClick={() => {
                                 setType('supplier');
                                 handleModalOpen();
@@ -99,7 +98,7 @@ function Stock() {
                         >
                             add Supplier
                         </button>
-                        <button className="basis-1/3 capitalize border-0 rounded-sm py-1 px-2 bg-blue-600 text-white"
+                        <button className="border-0 rounded-sm py-1 px-2 bg-sky-600 text-white font-medium capitalize"
                             onClick={() => {
                                 setType('product');
                                 handleModalOpen();
@@ -107,7 +106,7 @@ function Stock() {
                         >
                             add Product
                         </button>
-                        <button className="basis-1/3 capitalize border-0 rounded-sm py-1 px-2 bg-blue-600 text-white"
+                        <button className="border-0 rounded-sm py-1 px-2 bg-sky-600 text-white font-medium capitalize"
                             onClick={() => {
                                 setType('transaction');
                                 handleModalOpen();
@@ -115,7 +114,7 @@ function Stock() {
                         >
                             add transaction
                         </button>
-                        <div className="basis-2/3 relative flex items-center border rounded-sm justify-center cursor-pointer px-2 hover:text-white hover:bg-blue-600 transition-all duration-300"
+                        <div className="relative flex items-center border rounded-sm justify-center cursor-pointer px-2 hover:text-white hover:bg-blue-600 transition-all duration-300"
                             onClick={() => setFilterOpen((prev) => !prev)}
                         >
                             <MdFilterList />
@@ -143,9 +142,9 @@ function Stock() {
                 <div className="my-2 font-light overflow-auto horizontal-custom-scrollbar">
                     <table className="w-full">
                         <thead>
-                            <tr>
-                                <th className="lg:text-left">Igicuruzwa</th>
-                                <th className="lg:text-left">Umukiriya</th>
+                            <tr className="uppercase">
+                                <th>Igicuruzwa</th>
+                                <th>Umukiriya</th>
                                 <th>Igiciro</th>
                                 <th>Transaction</th>
                                 <th>Ingano</th>

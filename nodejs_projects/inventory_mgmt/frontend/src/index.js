@@ -5,15 +5,23 @@ import "./index.css";
 import { NavigationProvider } from "./context/SideNav.js";
 import { AuthProvider } from "./context/AuthProvider.js";
 import { BrowserRouter } from "react-router-dom";
+import { CategoryProvider, ProductProvider, SupplierProvider } from "./context/GeneralAssets.js";
+
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} >
       <AuthProvider>
-        <NavigationProvider>
-          <App />
-        </NavigationProvider>
+        <CategoryProvider>
+          <ProductProvider>
+            <SupplierProvider>
+              <NavigationProvider>
+                <App />
+              </NavigationProvider>
+            </SupplierProvider>
+          </ProductProvider>
+        </CategoryProvider>
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>

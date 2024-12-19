@@ -10,14 +10,14 @@ const useGetFetch = ({ url }) => {
 
 
     const fetchData = useCallback(async () => {
-        setIsLoading(true);
         const controller = new AbortController();
         try {
             const response = await publicAxios.get(url, {
                 withCredentials: true,
                 signal: controller.signal,
             });
-            const data = response.data; setData(data);
+            const data = response.data;
+            setData(data);
         } catch (err) {
             setError(err.toString());
         } finally {
