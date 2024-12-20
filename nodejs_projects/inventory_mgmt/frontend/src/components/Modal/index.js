@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import useCategory from "../../hooks/useCategory";
 import useProduct from "../../hooks/useProduct";
 import useSupplier from '../../hooks/useSupplier';
+import useTransaction from "../../hooks/useTransaction";
 
 const IS_SPECIAL = ["Yes", "No"];
 function Modal({ products, setProducts, setTempProducts, type }) {
@@ -20,14 +21,15 @@ function Modal({ products, setProducts, setTempProducts, type }) {
   const category = useCategory();
   const product = useProduct()
   const supplier = useSupplier()
-  console.log(product)
+  const transaction = useTransaction();
 
-  transactionDetails.total_amount = transactionDetails.buying_price || transactionDetails.selling_price && transactionDetails?.quantity
-    ? transactionDetails.buying_price || transactionDetails.selling_price * transactionDetails?.quantity : 0
+
+
+  transactionDetails.total_amount = (transactionDetails.buying_price || transactionDetails.selling_price) * transactionDetails?.quantity
   // Handlers
   const handleCreateSupplier = async (e) => {
     e.preventDefault();
-    if (supplierDetails.name === "") {
+    if (!supplierDetails.name) {
       setMessage({ category: "red", message: "Fill all required info" });
       handleShowMessage();
       return;
@@ -46,6 +48,7 @@ function Modal({ products, setProducts, setTempProducts, type }) {
       setSupplierDetails({ name: "", isSpecial: false, balance: 0 });
       setMessage({ category: "blue", message: data.message });
       handleShowMessage();
+      supplier.changeReFetch();
     } catch (error) {
       if (error.response?.data) {
         setMessage({ category: "red", message: error.response.data.error });
@@ -58,8 +61,8 @@ function Modal({ products, setProducts, setTempProducts, type }) {
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
-    console.log(productDetail)
-    if (productDetail.name === "" || productDetail.category === "") {
+
+    if (!productDetail.name || (!productDetail.CategoryId && !productDetail.categoryName)) {
       setMessage({ category: "red", message: "Please fill required info." });
       handleShowMessage();
       return;
@@ -71,28 +74,72 @@ function Modal({ products, setProducts, setTempProducts, type }) {
       }, {
         withCredentials: true
       })
-      if (response.status = 200) {
-        setMessage({ category: "blue", message: "Product successfully added!", });
+      if (response.status = 201) {
+        setMessage({ category: "blue", message: response.data.message });
         setProductDetail({ name: "", CategoryId: '', categoryName: '', description: '' });
         handleShowMessage();
+        product.changeReFetch()
+        return;
       }
     } catch (error) {
       if (error.response?.data) {
         setMessage({ category: "red", message: error.response.data.error });
+        handleShowMessage();
+        return;
       }
       setMessage({ category: "red", message: "Something went wrong" });
       handleShowMessage();
-      return;
     }
   };
-  const handleAddTransaction = (e) => {
+  const handleAddTransaction = async (e) => {
     e.preventDefault()
-    console.log('Hey', productDetail)
+    if (!transactionDetails.SupplierId || !transactionDetails.ProductId ||
+      !transactionDetails.transaction_type || !transactionDetails.quantity || !transactionDetails.total_amount ||
+      (!transactionDetails.buying_price && !transactionDetails.selling_price)) {
+      setMessage({ category: "red", message: "Please fill required info." });
+      handleShowMessage();
+      return;
+    }
+    try {
+      if (transactionDetails.transaction_type == 'IN') {
+        transactionDetails.buying_price = transactionDetails.selling_price ? transactionDetails.selling_price : transactionDetails.buying_price
+        transactionDetails.selling_price = null
+      } else {
+        transactionDetails.selling_price = transactionDetails.buying_price ? transactionDetails.buying_price : transactionDetails.selling_price
+        transactionDetails.buying_price = null
+      }
+      console.log(transactionDetails)
+      const response = await publicAxios.post('/transactions', {
+        SupplierId: transactionDetails.SupplierId,
+        ProductId: transactionDetails.ProductId,
+        transaction_type: transactionDetails.transaction_type,
+        quantity: parseInt(transactionDetails.quantity),
+        total_amount: parseInt(transactionDetails.total_amount),
+        buying_price: parseInt(transactionDetails.buying_price),
+        selling_price: parseInt(transactionDetails.selling_price)
+      }, {
+        withCredentials: true
+      })
+      if (response.status = 201) {
+        setMessage({ category: "blue", message: response.data.message });
+        setProductDetail({ name: "", CategoryId: '', categoryName: '', description: '' });
+        handleShowMessage();
+        transaction.changeReFetch()
+        return;
+      }
+    } catch (error) {
+      if (error.response?.data) {
+        setMessage({ category: "red", message: error.response.data.error });
+        handleShowMessage();
+        return;
+      }
+      setMessage({ category: "red", message: "Something went wrong" });
+      handleShowMessage();
+    }
   }
 
   const handleShowMessage = () => {
     setShowMessage(true);
-
     setTimeout(() => {
       setShowMessage(false);
     }, 4000);
@@ -129,15 +176,15 @@ function Modal({ products, setProducts, setTempProducts, type }) {
       <hr />
       <div>
         <label htmlFor="name" className="basis-1/2">
-          Izina{" "}
+          Izina
         </label>
         <input
           type="text"
           id="name"
           value={productDetail.name}
-          autoComplete="quantity"
           className="border border-black px-4 py-1 basis-1/2"
           onChange={(e) => { setProductDetail({ ...productDetail, name: e.target.value }) }}
+          required
         />
       </div>
       <div>
@@ -150,6 +197,7 @@ function Modal({ products, setProducts, setTempProducts, type }) {
             id="category"
             className="border border-black px-4 py-1 basis-1/2"
             onChange={(e) => setProductDetail({ ...productDetail, CategoryId: e.target.value })}
+            required
           >
             <option value="" className="text-slate-300">...</option>
             {category.categories.map((c) => {
@@ -159,12 +207,12 @@ function Modal({ products, setProducts, setTempProducts, type }) {
           : <input
             type="text"
             id="description"
-            autoComplete="price"
             placeholder='Type something'
             aria-placeholder="type something"
             className="border border-black px-4 py-1 basis-1/2"
             value={productDetail.categoryName}
             onChange={(e) => setProductDetail({ ...productDetail, categoryName: e.target.value })}
+            required
           />
         }
       </div>
@@ -231,13 +279,12 @@ function Modal({ products, setProducts, setTempProducts, type }) {
         <select
           name="customer_id"
           id="customer_id"
-          value={transactionDetails.SupplierId}
           className="border px-4 py-1"
           onChange={(e) => { setTransactionDetails({ ...transactionDetails, SupplierId: e.target.value }); }}
           required
         >
           <option value="">...</option>
-          {supplier.suppliers.map((s) => <option key={s.id}>{s.name}</option>)}
+          {supplier.suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
       </div>
       <div>
@@ -272,9 +319,9 @@ function Modal({ products, setProducts, setTempProducts, type }) {
         </select>
       </div>
       <div>
-        <label htmlFor="quantity">Ibiro waguze</label>
+        <label htmlFor="quantity">Ibiro waguze/wagurishije</label>
         <input
-          type="text"
+          type="number"
           id="quantity"
           value={transactionDetails.quantity}
           autoComplete="quantity"
@@ -286,7 +333,7 @@ function Modal({ products, setProducts, setTempProducts, type }) {
       <div>
         <label htmlFor="price">Igiciro</label>
         <input
-          type="text"
+          type="number"
           id="price"
           value={transactionDetails.buying_price || transactionDetails.selling_price}
           autoComplete="price"

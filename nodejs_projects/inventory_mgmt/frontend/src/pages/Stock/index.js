@@ -58,7 +58,8 @@ function Stock() {
     }
     const handleFilter = (e) => {
         const value = e.target.textContent;
-        const filteredProducts = products.filter((product) => product.name === value)
+        const filteredProducts = transactions.transactions.filter((t) => t.transaction_type === value)
+        console.log(value, filteredProducts)
         setTempProducts(filteredProducts);
     }
 
@@ -124,21 +125,19 @@ function Stock() {
                             <span>Filter</span>
                             {
                                 filterOpen ?
-                                    <div className="absolute top-full w-full left-1/2 -translate-x-1/2 rounded-sm shadow-sm bg-slate-200 p-1 py-3 text-black">
-                                        {products.map((p, i) => {
-                                            return (
-                                                <div className="hover:bg-blue-500 hover:text-white" key={i} onClick={handleFilter}>
-                                                    {p.name}
-                                                </div>
-                                            )
-                                        })}
-                                        <div className="hover:bg-blue-500 hover:text-white" onClick={() => setTempProducts(products)}>
+                                    <div className="absolute top-full w-full left-1/2 -translate-x-1/2 rounded-sm shadow-sm bg-slate-200 space-y-3 mt-1 text-black">
+                                        <div className="hover:bg-blue-500 hover:text-white" onClick={handleFilter}>
+                                            IN
+                                        </div>
+                                        <div className="hover:bg-blue-500 hover:text-white" onClick={handleFilter}>
+                                            OUT
+                                        </div>
+                                        <div className="hover:bg-blue-500 hover:text-white" onClick={() => setTempProducts([])}>
                                             Reset filter
                                         </div>
                                     </div>
                                     : ''
                             }
-                            { }
                         </div>
                     </div>
                 </div>
@@ -157,9 +156,29 @@ function Stock() {
                             </tr>
                         </thead>
                         <tbody>
-
-                            {transactions.transaction.map((t) => {
-                                return <tr key={t.id}>
+                            {tempProducts.length > 0
+                                ? tempProducts.map((t) => <tr key={t.id}>
+                                    <td>{t?.Product?.name}</td>
+                                    <td>{t?.Supplier?.name}</td>
+                                    <td>RF {parseFloat(t.buying_price || t.selling_price).toLocaleString()}</td>
+                                    <td>{t.transaction_type}</td>
+                                    <td>{parseFloat(t.quantity).toLocaleString()}</td>
+                                    <td>{t.updatedAt}</td>
+                                    <td>RF {parseFloat(t.total_amount).toLocaleString()}</td>
+                                    <td className="space-x-2 cursor-pointer">
+                                        <span className="text-blue-500 underline decoration-blue-500" onClick={() => handleProductUpdate(product.id, 'updateModal')}>Edit</span>
+                                        <span className="text-red-500 underline decoration-red-500" onClick={() => handleDeleteProduct(product.id)}>Delete</span>
+                                    </td>
+                                    {updateModalOpen && (
+                                        <div className="">
+                                            <div className="bg-black opacity-50 absolute -top-20 left-0 z-30 h-screen w-full"
+                                                onClick={() => handleProductUpdate(t.id, UPDATE_MODAL_PLACEHOLDER)}
+                                            ></div>
+                                            <UpdateModal product={selectedProduct} products={products} setTempProducts={setTempProducts} />
+                                        </div>
+                                    )}
+                                </tr>)
+                                : transactions.transactions.map((t) => <tr key={t.id}>
                                     <td>{t?.Product?.name}</td>
                                     <td>{t?.Supplier?.name}</td>
                                     <td>RF {parseFloat(t.buying_price || t.selling_price).toLocaleString()}</td>
@@ -180,7 +199,7 @@ function Stock() {
                                         </div>
                                     )}
                                 </tr>
-                            })}
+                                )}
                         </tbody>
                     </table>
                 </div>

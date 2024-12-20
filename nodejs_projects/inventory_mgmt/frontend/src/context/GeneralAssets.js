@@ -16,7 +16,7 @@ export const CategoryProvider = ({ children }) => {
         }
         getData();
     }, [])
-    return <categoryContext.Provider value={{ categories: !categories.isLoading && !categories.error && categories.data?.data }}>
+    return <categoryContext.Provider value={{ categories: !categories.isLoading && !categories.error ? categories.data?.data : [] }}>
         {children}
     </categoryContext.Provider>
 
@@ -24,28 +24,40 @@ export const CategoryProvider = ({ children }) => {
 
 export const ProductProvider = ({ children }) => {
     const products = useGetFetch({ url: '/products' });
+    const [reFetch, setReFetch] = useState(false);
+    const changeReFetch = () => { setReFetch(prev => !prev) };
+
     useEffect(() => {
         async function getData() {
             await products.fetchData()
         }
         getData();
-    }, [])
-    return <productContext.Provider value={{ products: !products.isLoading && !products.error && products.data?.data }}>
+    }, [reFetch])
+    return <productContext.Provider value={{
+        products: !products.isLoading && !products.error
+            ? products.data?.data : [],
+        changeReFetch
+    }}>
         {children}
     </productContext.Provider>
 }
 
 export const SupplierProvider = ({ children }) => {
     const suppliers = useGetFetch({ url: '/suppliers' });
+    const [reFetch, setReFetch] = useState(false);
+    const changeReFetch = () => { setReFetch(prev => !prev) };
+
     useEffect(() => {
         async function getData() {
             await suppliers.fetchData()
         }
         getData();
-    }, [])
+    }, [reFetch])
+
     return <supplierContext.Provider value={{
         suppliers: !suppliers.isLoading
-            && !suppliers.error && suppliers.data?.data
+            && !suppliers.error ? suppliers.data?.data : [],
+        changeReFetch
     }}>
         {children}
     </supplierContext.Provider>
@@ -53,19 +65,23 @@ export const SupplierProvider = ({ children }) => {
 
 export const TransactionProvider = ({ children }) => {
     const transactions = useGetFetch({ url: '/transactions' });
+    const [reFetch, setReFetch] = useState(false);
+    const changeReFetch = () => { setReFetch(prev => !prev) };
+
     useEffect(() => {
         async function getData() {
             await transactions.fetchData();
         }
         getData();
-    }, [])
+    }, [reFetch])
 
     return <transactionContext.Provider value={{
-        transaction: !transactions.isLoading
+        transactions: !transactions.isLoading
             ? !transactions.error
                 ? transactions.data?.data
                 : []
-            : []
+            : [],
+        changeReFetch
     }}
     >
         {children}
