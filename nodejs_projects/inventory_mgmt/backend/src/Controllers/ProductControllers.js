@@ -116,20 +116,21 @@ module.exports.createProduct = async (req, res) => {
             name, description, quantity_in_stock, CategoryId, categoryName
         } = req.body;
         //If product exists
+        console.log('Requested reached')
         if (await Product.findOne({ where: { name: name.trim() } })) {
-            res.status(400).send({ success: false, data: null, message: 'Product already exists' });
+            res.status(400).send({ success: false, error: 'Product already exists' });
             return;
         }
 
         //Creation of category
         if (!CategoryId && !categoryName) {
-            res.status(400).send({ success: false, data: null, message: 'Please select category or create one' });
+            res.status(400).send({ success: false, error: 'Please select category or create one' });
             return;
         }
         if (CategoryId) {
             const category = await Category.findByPk(CategoryId);
             if (!category) {
-                res.status(400).send({ success: false, data: null, message: 'Category doesn\'t exist. Please create category' });
+                res.status(400).send({ success: false, error: 'Category doesn\'t exist. Please create category' });
                 return;
             }
         }
@@ -147,10 +148,10 @@ module.exports.createProduct = async (req, res) => {
         });
         if (product) {
             await t.commit();
-            res.status(200).send({ success: true, data: product, message: 'Product added successfully' });
+            res.status(201).send({ success: true, data: product, message: 'Product added successfully' });
         } else {
             await t.rollback();
-            res.status(400).send({ success: false, data: null, message: 'Invalid input' });
+            res.status(400).send({ success: false, error: 'Invalid input' });
         }
     } catch (error) {
         console.log(error)
@@ -164,12 +165,12 @@ module.exports.updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
         if (Object.keys(req.body).length < 1) {
-            res.status(400).send({ success: false, data: null, message: 'Update parameters missing' });
+            res.status(400).send({ success: false, error: 'Update parameters missing' });
             return;
         }
         const product = await Product.findOne({ where: { id: id } });
         if (!product) {
-            res.status(400).send({ success: false, data: null, message: 'No product found' });
+            res.status(400).send({ success: false, error: 'No product found' });
         }
         const affectedRows = await Product.update(req.body, { where: { id: id }, transaction: t });
         if (affectedRows[0] > 0) {
@@ -177,7 +178,7 @@ module.exports.updateProduct = async (req, res) => {
             res.status(200).send({ success: true, data: product, message: 'Updated successfully' });
         } else {
             await t.rollback();
-            res.status(400).send({ success: false, data: null, message: 'Failed to update' });
+            res.status(400).send({ success: false, error: 'Failed to update' });
         }
     } catch (error) {
         await t.rollback()
@@ -195,7 +196,7 @@ module.exports.deleteProduct = async (req, res) => {
             await product.destroy({ transaction: t });
             res.status(204).send();
         } else {
-            res.status(404).send({ success: false, message: 'No product found' });
+            res.status(404).send({ success: false, error: 'No product found' });
         }
     } catch (error) {
         apiErrorHandler(res, error, 'product');
