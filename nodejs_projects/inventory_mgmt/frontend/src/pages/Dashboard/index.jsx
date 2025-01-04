@@ -27,22 +27,28 @@ ChartJS.register(
 function Dashboard() {
     const [inUrl, setInUrl] = useState(null);
     const [outUrl, setOutUrl] = useState(null);
-    const [stockSummaryUrl, setStockSummaryUrl] = useState(null);
+    const [stockSummaryUrl, setStockSummaryUrl] = useState('/products?pageSize=5&page=1');
 
     var transactionSummary = useGetFetch({ url: '/transactions/summary' });
     var inTransactions = useGetFetch({ url: inUrl });
     var outTransactions = useGetFetch({ url: outUrl });
-    var products = useGetFetch({ url: stockSummaryUrl || '/products?pageSize=2&page=1' });
+    var products = useGetFetch({ url: stockSummaryUrl || '/products?pageSize=5&page=1' });
     var barData = useGetFetch({ url: '/transactions/bar' })
 
     useEffect(() => {
         const getData = async () => {
             await transactionSummary.fetchData();
-            await products.fetchData();
             await barData.fetchData();
         }
         getData();
     }, []);
+
+    useEffect(() => {
+        const getData = async () => {
+            stockSummaryUrl !== null && await products.fetchData();
+        }
+        getData();
+    }, [stockSummaryUrl]);
 
     useEffect(() => {
         const getData = async () => {
@@ -59,13 +65,13 @@ function Dashboard() {
     }, [outUrl]);
 
     const handleInTransaction = (page) => {
-        setInUrl(`/transactions/agg/quantity?transaction_type=IN&pageSize=2&page=${page}`);
+        setInUrl(`/transactions/agg/quantity?transaction_type=IN&pageSize=5&page=${page}`);
     }
     const handleOutTransaction = (page) => {
-        setOutUrl(`/transactions/agg/quantity?transaction_type=OUT&pageSize=2&page=${page}`);
+        setOutUrl(`/transactions/agg/quantity?transaction_type=OUT&pageSize=5&page=${page}`);
     }
     const handleStockSummary = (page) => {
-        setStockSummaryUrl(`/products?pageSize=2&page=${page}`);
+        setStockSummaryUrl(`/products?pageSize=5&page=${page}`);
     }
 
     const options = {
@@ -81,9 +87,9 @@ function Dashboard() {
         },
     };
 
-    const labels = !barData.isLoading && barData.data?.data.map((m) => m.month);
-    const costDataset = !barData.isLoading && barData.data?.data.map((c) => c.totalCost);
-    const revenueDataset = !barData.isLoading && barData.data?.data.map((r) => r.totalRevenue);
+    const labels = !barData.isLoading && barData.data?.data?.map((m) => m.month);
+    const costDataset = !barData.isLoading && barData.data?.data?.map((c) => c.totalCost);
+    const revenueDataset = !barData.isLoading && barData.data?.data?.map((r) => r.totalRevenue);
 
     const data = {
         labels,
