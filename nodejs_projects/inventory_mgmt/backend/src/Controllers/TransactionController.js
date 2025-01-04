@@ -254,7 +254,7 @@ module.exports.updateTransaction = async (req, res) => {
         const product = await Product.findByPk(transaction.Product.id);
         if (req.body.transaction_type == process.env.IN_TRANSACTION) {
             if (transaction.transaction_type == process.env.IN_TRANSACTION) {//previous transaction was IN - to be updated with IN again
-                if ((transaction.quantity == req.body.quantity) || (req.body.quantity == null)) {
+                if ((transaction.quantity == req.body.quantity && transaction.buying_price == req.body.buying_price) || !req.body.quantity || !req.body.buying_price) {
                     res.status(400).send({ success: false, error: 'Update values can not be the same' })
                     return;
                 }
@@ -291,7 +291,7 @@ module.exports.updateTransaction = async (req, res) => {
                 var updatedTransaction = await InventoryTransaction.update(req.body, { where: { id: id }, transaction: t });
                 await t.commit()
             } else {//previous transaction was OUT - to be updated with OUT again
-                if ((transaction.quantity == req.body.quantity) || (req.body.quantity == null)) {
+                if ((transaction.quantity == req.body.quantity && transaction.selling_price == req.body.selling_price) || !req.body.quantity || !req.body.selling_price) {
                     res.status(400).send({ success: false, error: 'Update values can not be the same' })
                     return;
                 }
@@ -313,6 +313,7 @@ module.exports.updateTransaction = async (req, res) => {
         res.status(200).send({ success: true, data: updatedTransaction, message: 'Updated successfully' });
     } catch (error) {
         await t.rollback();
+        console.log(error)
         apiErrorHandler(res, error, 'transaction');
     }
 }
