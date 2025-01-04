@@ -107,9 +107,8 @@ function Stock() {
 
   return (
     <div
-      className={`${
-        updateModalOpen || modalOpen ? "h-screen overflow-hidden" : ""
-      } px-5 bg-slate-200`}
+      className={`${updateModalOpen || modalOpen ? "h-screen overflow-hidden" : ""
+        } px-5 bg-slate-200`}
     >
       {modalOpen && (
         <div className="">
@@ -131,11 +130,7 @@ function Stock() {
             className="bg-black opacity-50 absolute top-0 left-0 z-30 h-screen w-full"
             onClick={() => handleModalOpen(UPDATE_MODAL_PLACEHOLDER)}
           ></span>
-          <UpdateModal
-            transaction={selectedProduct}
-            setTempProducts={setTempProducts}
-            type="Transaction"
-          />
+          <UpdateModal transaction={selectedProduct} transactions={transactions} type="Transaction" />
         </span>
       )}
       <Form

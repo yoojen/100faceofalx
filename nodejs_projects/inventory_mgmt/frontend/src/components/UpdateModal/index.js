@@ -3,14 +3,13 @@ import useSupplier from "../../hooks/useSupplier";
 import useProduct from "../../hooks/useProduct";
 import { publicAxios } from "../../api/axios";
 
-function UpdateModal({ transaction, setTempProducts, type }) {
+function UpdateModal({ transaction, transactions, type }) {
     const [trans, setTrans] = useState({
-        name: transaction?.Product?.name,
-        customer: transaction?.Supplier?.name,
+        name: transaction?.Product?.id,
+        customer: transaction?.Supplier?.id,
         price: transaction.buying_price || transaction.selling_price,
         transaction_type: transaction.transaction_type,
         quantity: transaction.quantity,
-        date: new Date(transaction.updatedAt).toDateString(),
         total_amount: function () {
             return parseFloat(this.price) * parseFloat(this.quantity)
         }
@@ -21,25 +20,45 @@ function UpdateModal({ transaction, setTempProducts, type }) {
     const product = useProduct();
 
     // Handlers
-    const handleUpdateProduct = () => {
-        if (!trans.name || !trans.customer || trans.transaction_type || !trans.price || !trans.quantity || trans.total_amount()) {
+    const handleUpdateProduct = async () => {
+        if (!trans.name || !trans.transaction_type || !trans.price || !trans.quantity || !trans.total_amount()) {
             setMessage({ category: 'red', message: 'Fill all required info' });
             handleShowMessage();
             return;
         }
-
+        console.log(trans.name)
         //Make actual update
-        //publicAxios.post('/transactions', {})
-        setMessage({ category: "blue", message: "Product updated successfully!" });
-        handleShowMessage();
-        setTrans({
-            name: "",
-            customer: "",
-            transaction_type: "",
-            price: "",
-            quantity: "",
-            date: "",
-        });
+        try {
+            const response = await publicAxios.put(`/transactions/modify/${transaction.id}`, {
+                ProductId: trans.name, SupplierId: trans.customer, transaction_type: trans.transaction_type,
+                buying_price: trans.transaction_type === 'IN'
+                    ? trans.price : null,
+                selling_price: trans.transaction_type === 'OUT'
+                    ? trans.price : null,
+                quantity: trans.quantity,
+                total_amount: trans.total_amount()
+            })
+            console.log(response.data)
+            if (response.status === 200) {
+                setMessage({ category: 'blue', message: 'Transaction updated successfully' });
+                handleShowMessage();
+                setTrans({
+                    name: "",
+                    customer: "",
+                    transaction_type: "",
+                    price: "",
+                    quantity: "",
+                    total_amount: () => 0
+                });
+            }
+        } catch (error) {
+            console.log(error);
+            setMessage({ category: 'red', message: String(error) });
+            handleShowMessage();
+        } finally {
+            transactions.fetchAgain();
+        }
+
     };
 
 
@@ -73,11 +92,11 @@ function UpdateModal({ transaction, setTempProducts, type }) {
                         }}
                         required
                     >
-                        <option value={transaction.Product.name}>
+                        <option value={transaction.Product.id}>
                             {transaction.Product.name}
                         </option>
                         {product?.products?.map((p) => (
-                            <option value={p.name} key={p.id}>
+                            <option value={p.id} key={p.id}>
                                 {p.name}
                             </option>
                         ))}
@@ -95,11 +114,11 @@ function UpdateModal({ transaction, setTempProducts, type }) {
                         }}
                         required
                     >
-                        <option value={transaction?.supplier?.name}>
+                        <option value={transaction?.supplier?.id}>
                             {transaction?.Supplier?.name}
                         </option>
-                        {supplier?.suppliers.map((t) => (
-                            <option value={t.name} key={t.id}>{t.name}</option>
+                        {supplier?.suppliers.map((s) => (
+                            <option value={s.id} key={s.id}>{s.name}</option>
                         ))}
                     </select>
                 </div>
@@ -156,18 +175,6 @@ function UpdateModal({ transaction, setTempProducts, type }) {
                         value={trans.total_amount() || transaction.total_amount}
                         className="border px-4 py-1"
                         disabled
-                    />
-                </div>
-                <div>
-                    <label htmlFor="date">Italiki wabiguriye</label>
-                    <input
-                        type="date"
-                        id="date"
-                        value={trans.date || new Date(transaction.date).toDateString()}
-                        className="border px-4 py-1"
-                        onChange={(e) => {
-                            setTrans({ ...trans, date: e.target.value });
-                        }}
                     />
                 </div>
                 <button
