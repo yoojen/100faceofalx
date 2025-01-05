@@ -168,7 +168,7 @@ module.exports.searchTransaction = async (req, res) => {
             const startDate = new Date(`${parseInt(year)}-01-01`);
             const endDate = new Date(`${parseInt(year)}-12-31`);
 
-            opts.createdAt = {
+            opts.updatedAt = {
                 [Op.between]: [startDate, endDate]
             };
         }
@@ -178,7 +178,6 @@ module.exports.searchTransaction = async (req, res) => {
                 opts, req.query
             ]
         }
-
         var { rows, count, totalPages, currentPage } = await paginate(
             req = req, model = InventoryTransaction, options = opts, include = [{ model: Supplier }, { model: Product }]
         );
