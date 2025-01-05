@@ -1,31 +1,52 @@
-import { useRef, useState, useContext, useEffect } from "react";
+import { useRef, useState, useContext, useEffect, useCallback } from "react";
 import { MdFilterList } from "react-icons/md";
 import Footer from "../../components/Footer";
 import Modal from "../../components/Modal";
 import UpdateModal from "../../components/UpdateModal";
 import Form from "../../components/Form";
 import NavigationContext from "../../context/SideNav";
+import { publicAxios } from "../../api/axios";
 import useGetFetch from "../../hooks/useGetFetch";
 import useTransaction from "../../hooks/useTransaction";
-import { publicAxios } from "../../api/axios";
 
 const UPDATE_MODAL_PLACEHOLDER = "updateModal";
 const NORMAL_MODAL_PLACEHOLDER = "normalModal";
 
 function Stock() {
   const [products, setProducts] = useState([]);
-  const [tempProducts, setTempProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState({});
   const [type, setType] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
-  const { isNavOpen, openNav, closeNav } = useContext(NavigationContext);
   const [message, setMessage] = useState({ category: "", message: "" });
   const [showMessage, setShowMessage] = useState(false);
+  const [transUrl, setTransUrl] = useState('/transactions/?pageSize=10&page=1');
 
+  const { isNavOpen, openNav, closeNav } = useContext(NavigationContext);
   const navRef = useRef(null);
-  const transactions = useTransaction();
+  const transactions = useGetFetch({ url: transUrl });
+  const transacts = useTransaction();
+
+  useEffect(() => {
+    const getData = async () => {
+      transUrl && await transactions.fetchData();
+    }
+    getData();
+    console.log('time to fetch', transUrl)
+  }, [transUrl]);
+
+  const handleGetTransactions = (page) => {
+    // if there are query param that is not pageSize or page
+    // I have to let them remain in query
+    //tomorrow I'll find a way to retain other values in query
+    // I am thinking of spliting the URI by '?'
+    // and then split by &
+    //then by =
+    // after check if there is special value there
+    setTransUrl(`/transactions/?pageSize=10&page=${page}`);
+  }
+
 
   const handleShowMessage = () => {
     setShowMessage(true);
@@ -67,17 +88,13 @@ function Stock() {
       }
     }
   };
+
   const handleFilter = (e) => {
-    const value = e.target.textContent;
-    const filteredProducts = transactions.transactions.filter(
-      (t) => t.transaction_type === value
-    );
-    setTempProducts(filteredProducts);
+
   };
 
   const handleProductUpdate = (id, modal) => {
-    const transaction = transactions?.transactions?.find((t) => t.id === id);
-    console.log("Attempted to update the transaction", transaction, id, modal);
+    const transaction = transactions.data?.data?.find((t) => t.id === id);
     setSelectedProduct(transaction);
     handleModalOpen(modal);
   };
@@ -101,7 +118,7 @@ function Stock() {
       handleShowMessage();
       console.log(error);
     } finally {
-      transactions.fetchAgain();
+      transacts.fetchAgain();
     }
   };
 
@@ -120,7 +137,6 @@ function Stock() {
             type={type}
             setProducts={setProducts}
             products={products}
-            setTempProducts={setTempProducts}
           />
         </div>
       )}
@@ -130,11 +146,15 @@ function Stock() {
             className="bg-black opacity-50 absolute top-0 left-0 z-30 h-screen w-full"
             onClick={() => handleModalOpen(UPDATE_MODAL_PLACEHOLDER)}
           ></span>
-          <UpdateModal transaction={selectedProduct} transactions={transactions} type="Transaction" />
+          <UpdateModal transaction={selectedProduct} type="Transaction" />
         </span>
       )}
       <Form
-        fields={["product", "quantity", "amount", "year", "weeks", "supplier"]}
+        fields={["ProductId", "quantity", "year", "SupplierId"]}
+        where='transaction'
+        transactions={transactions}
+        setTransUrl={setTransUrl}
+        httpMethod='get'
       />
       <h1 className="text-2xl font-medium text-blue-500 mt-4">
         STOCK TRANSACTIONS
@@ -220,7 +240,7 @@ function Stock() {
               </tr>
             </thead>
             <tbody>
-              {transactions?.transactions?.map((t) => (
+              {!transactions.isLoading && transactions?.data?.data?.map((t) => (
                 <tr key={t.id}>
                   <td>{t?.Product?.name}</td>
                   <td>{t?.Supplier?.name}</td>
@@ -252,6 +272,37 @@ function Stock() {
               ))}
             </tbody>
           </table>
+          <div className="flex justify-end">
+            {
+              !transactions.isLoading
+              && transactions?.data?.totalPages > 1
+              && transactions.data?.currentPage !== 1
+              && <button
+                className={`bg-blue-400 text-white font-medium border rounded-sm px-5 py-1 hover:bg-sky-400`}
+                onClick={() => handleGetTransactions(transactions.data?.currentPage - 1)}
+              >
+                Prev
+              </button>
+
+            }
+
+            <button
+              className={`bg-blue-700 text-white font-medium border rounded-sm px-5 py-1 hover:bg-sky-500`}>
+              {transactions.data?.currentPage}
+            </button>
+
+            {
+              !transactions.isLoading
+              && transactions.data?.totalPages > 1
+              && transactions.data?.currentPage !== transactions.data?.totalPages
+              && <button
+                className={`bg-blue-400 text-white font-medium border rounded-sm px-5 py-1 hover:bg-sky-400`}
+                onClick={() => handleGetTransactions(transactions.data?.currentPage + 1)}
+              >
+                Next
+              </button>
+            }
+          </div>
         </div>
       </div>
       <Footer />

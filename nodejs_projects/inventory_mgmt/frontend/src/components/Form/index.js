@@ -1,8 +1,32 @@
-const Form = ({ fields }) => {
-  const handleSubmit = (e) => {
+import { useState } from "react";
+import { publicAxios } from "../../api/axios";
+import useGetFetch from "../../hooks/useGetFetch";
+
+const Form = ({ fields, where, transactions, setTransUrl, httpMethod }) => {
+  const newObj = {};
+  const [query, setQuery] = useState({
+    ProductId: '',
+    quantity: 0,
+    year: 0,
+    SupplierId: ''
+  });
+  // const transactions = useGetFetch({ url: transUrl });
+
+  const buildQuery = (params) => {
+    return Object.keys(params)
+      .filter((k) => params[k])
+      .map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`)
+      .join('&')
+  }
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert("attempted to search");
-  };
+    const completeQuery = buildQuery(query);
+    setTransUrl(`/transactions/q/search?${completeQuery}&pageSize=10`)
+    // transactions.fetchData()
+    // console.log(transUrl, transactions)
+  }
+
+
 
   return (
     <div>
@@ -15,7 +39,7 @@ const Form = ({ fields }) => {
           return (
             <div key={index} className="flex flex-col  [&>*]:capitalize w-full">
               <label htmlFor={field}>{field}</label>
-              {field === "product" ? (
+              {field === "ProductId" ? (
                 <select
                   name={field}
                   id={`id_${field}`}
@@ -34,7 +58,15 @@ const Form = ({ fields }) => {
                   <option value="1">John</option>
                 </select>
               ) : (
-                <input type="text" className="border px-4 py-1 w-50 sm:w-1/2" />
+                <input
+                  type="text"
+                  className="border px-4 py-1 w-50 sm:w-1/2"
+                  value={query[`${field}`]}
+                  onChange={(e) => {
+                    console.log([field])
+                    setQuery((prev) => ({ ...prev, [field]: e.target.value }))
+                  }}
+                />
               )}
             </div>
           );

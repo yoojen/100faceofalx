@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import useSupplier from "../../hooks/useSupplier";
+import useTransaction from "../../hooks/useTransaction";
 import useProduct from "../../hooks/useProduct";
 import { publicAxios } from "../../api/axios";
 
-function UpdateModal({ transaction, transactions, type }) {
+function UpdateModal({ transaction, type }) {
     const [trans, setTrans] = useState({
         name: transaction?.Product?.id,
         customer: transaction?.Supplier?.id,
@@ -18,6 +19,7 @@ function UpdateModal({ transaction, transactions, type }) {
     const [showMessage, setShowMessage] = useState(false);
     const supplier = useSupplier();
     const product = useProduct();
+    const transacts = useTransaction();
 
     // Handlers
     const handleUpdateProduct = async () => {
@@ -26,7 +28,6 @@ function UpdateModal({ transaction, transactions, type }) {
             handleShowMessage();
             return;
         }
-        console.log(trans.name)
         //Make actual update
         try {
             const response = await publicAxios.put(`/transactions/modify/${transaction.id}`, {
@@ -38,7 +39,7 @@ function UpdateModal({ transaction, transactions, type }) {
                 quantity: trans.quantity,
                 total_amount: trans.total_amount()
             })
-            console.log(response.data)
+
             if (response.status === 200) {
                 setMessage({ category: 'blue', message: 'Transaction updated successfully' });
                 handleShowMessage();
@@ -56,7 +57,7 @@ function UpdateModal({ transaction, transactions, type }) {
             setMessage({ category: 'red', message: String(error) });
             handleShowMessage();
         } finally {
-            transactions.fetchAgain();
+            transacts.fetchAgain();
         }
 
     };

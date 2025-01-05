@@ -22,9 +22,9 @@ const useGetFetch = ({ url }) => {
             setError(err.toString());
         } finally {
             setIsLoading(false);
-        } return () => {
+        }
+        return () => {
             controller.abort();
-
         };
     }, [url]);
 

@@ -48,7 +48,7 @@ function Modal({ products, setProducts, setTempProducts, type }) {
       setSupplierDetails({ name: "", isSpecial: false, balance: 0 });
       setMessage({ category: "blue", message: data.message });
       handleShowMessage();
-      supplier.changeReFetch();
+      supplier.fetchAgain();
     } catch (error) {
       if (error.response?.data) {
         setMessage({ category: "red", message: error.response.data.error });
@@ -78,7 +78,7 @@ function Modal({ products, setProducts, setTempProducts, type }) {
         setMessage({ category: "blue", message: response.data.message });
         setProductDetail({ name: "", CategoryId: '', categoryName: '', description: '' });
         handleShowMessage();
-        product.changeReFetch()
+        product.fetchAgain()
         return;
       }
     } catch (error) {
@@ -120,14 +120,16 @@ function Modal({ products, setProducts, setTempProducts, type }) {
       }, {
         withCredentials: true
       })
+
       if (response.status = 201) {
         setMessage({ category: "blue", message: response.data.message });
         setProductDetail({ name: "", CategoryId: '', categoryName: '', description: '' });
         handleShowMessage();
-        transaction.changeReFetch()
+        transaction.fetchAgain()
         return;
       }
     } catch (error) {
+      console.log(error)
       if (error.response?.data) {
         setMessage({ category: "red", message: error.response.data.error });
         handleShowMessage();
