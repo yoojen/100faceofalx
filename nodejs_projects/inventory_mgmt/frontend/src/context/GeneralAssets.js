@@ -102,6 +102,7 @@ export const TransactionProvider = ({ children }) => {
             ? transactions.data?.data
             : []
           : [],
+        reFetch: reFetch,
         fetchAgain: changeReFetch,
       }}
     >

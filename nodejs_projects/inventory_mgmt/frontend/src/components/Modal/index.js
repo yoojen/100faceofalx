@@ -108,7 +108,7 @@ function Modal({ products, setProducts, setTempProducts, type }) {
         transactionDetails.selling_price = transactionDetails.buying_price ? transactionDetails.buying_price : transactionDetails.selling_price
         transactionDetails.buying_price = null
       }
-      console.log(transactionDetails)
+
       const response = await publicAxios.post('/transactions', {
         SupplierId: transactionDetails.SupplierId,
         ProductId: transactionDetails.ProductId,

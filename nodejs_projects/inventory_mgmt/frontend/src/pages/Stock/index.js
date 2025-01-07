@@ -29,22 +29,17 @@ function Stock() {
   const transacts = useTransaction();
 
   useEffect(() => {
+    console.log('Fetching again', transacts.reFetch)
     const getData = async () => {
       transUrl && await transactions.fetchData();
     }
     getData();
-    console.log('time to fetch', transUrl)
-  }, [transUrl]);
+    !transactions.isLoading && console.log('time to fetch', transUrl, transactions)
+  }, [transUrl, transacts.reFetch]);
 
-  const handleGetTransactions = (page) => {
-    // if there are query param that is not pageSize or page
-    // I have to let them remain in query
-    //tomorrow I'll find a way to retain other values in query
-    // I am thinking of spliting the URI by '?'
-    // and then split by &
-    //then by =
-    // after check if there is special value there
-    setTransUrl(`/transactions/?pageSize=10&page=${page}`);
+  const handleGetTransactions = (page, currentURL) => {
+    const leftURLside = currentURL.substr(0, currentURL.lastIndexOf('page'));
+    setTransUrl(leftURLside.concat(`page=${page}`));
   }
 
 
@@ -279,7 +274,7 @@ function Stock() {
               && transactions.data?.currentPage !== 1
               && <button
                 className={`bg-blue-400 text-white font-medium border rounded-sm px-5 py-1 hover:bg-sky-400`}
-                onClick={() => handleGetTransactions(transactions.data?.currentPage - 1)}
+                onClick={() => handleGetTransactions(transactions.data?.currentPage - 1, transUrl)}
               >
                 Prev
               </button>
@@ -297,7 +292,7 @@ function Stock() {
               && transactions.data?.currentPage !== transactions.data?.totalPages
               && <button
                 className={`bg-blue-400 text-white font-medium border rounded-sm px-5 py-1 hover:bg-sky-400`}
-                onClick={() => handleGetTransactions(transactions.data?.currentPage + 1)}
+                onClick={() => handleGetTransactions(transactions.data?.currentPage + 1, transUrl)}
               >
                 Next
               </button>

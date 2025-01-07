@@ -63,7 +63,6 @@ const Form = ({ fields, where, transactions, setTransUrl, httpMethod }) => {
                   className="border px-4 py-1 w-50 sm:w-1/2"
                   value={query[`${field}`]}
                   onChange={(e) => {
-                    console.log([field])
                     setQuery((prev) => ({ ...prev, [field]: e.target.value }))
                   }}
                 />
