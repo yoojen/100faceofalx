@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { publicAxios } from "../../api/axios";
 import useGetFetch from "../../hooks/useGetFetch";
+import useProduct from "../../hooks/useProduct";
+import useSupplier from "../../hooks/useSupplier";
 
 const Form = ({ fields, where, transactions, setTransUrl, httpMethod }) => {
   const newObj = {};
@@ -10,6 +12,8 @@ const Form = ({ fields, where, transactions, setTransUrl, httpMethod }) => {
     year: 0,
     SupplierId: ''
   });
+  const product = useProduct()
+  const supplier = useSupplier()
   // const transactions = useGetFetch({ url: transUrl });
 
   const buildQuery = (params) => {
@@ -21,9 +25,7 @@ const Form = ({ fields, where, transactions, setTransUrl, httpMethod }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const completeQuery = buildQuery(query);
-    setTransUrl(`/transactions/q/search?${completeQuery}&pageSize=10`)
-    // transactions.fetchData()
-    // console.log(transUrl, transactions)
+    setTransUrl(`/transactions/q/search?${completeQuery}&pageSize=10&page=1`)
   }
 
 
@@ -44,18 +46,25 @@ const Form = ({ fields, where, transactions, setTransUrl, httpMethod }) => {
                   name={field}
                   id={`id_${field}`}
                   className="border px-4 py-1 w-50 sm:w-1/2"
+                  value={query['ProductId']}
+                  onChange={(e) => { setQuery({ ...query, [field]: e.target.value }) }}
+                  onClick={(e) => handleSubmit(e)}
                 >
-                  <option value="">----</option>
-                  <option value="1">Amasaka</option>
+                  <option value=''>...</option>
+                  {product.products.map((p) => <option value={p.id}>{p.name}</option>)}
+
                 </select>
-              ) : field === "supplier" ? (
+              ) : field === "SupplierId" ? (
                 <select
                   name={field}
                   id={`id_${field}`}
                   className="border px-4 py-1 w-50 sm:w-1/2"
+                  value={query['SupplierId']}
+                  onChange={(e) => { setQuery({ ...query, [field]: e.target.value }) }}
+                  onClick={(e) => handleSubmit(e)}
                 >
-                  <option value="">----</option>
-                  <option value="1">John</option>
+                  <option value=''>...</option>
+                  {supplier.suppliers.map((s) => <option value={s.id}>{s.name}</option>)}
                 </select>
               ) : (
                 <input
@@ -65,6 +74,7 @@ const Form = ({ fields, where, transactions, setTransUrl, httpMethod }) => {
                   onChange={(e) => {
                     setQuery((prev) => ({ ...prev, [field]: e.target.value }))
                   }}
+                  onKeyUp={(e) => handleSubmit(e)}
                 />
               )}
             </div>

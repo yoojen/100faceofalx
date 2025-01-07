@@ -29,16 +29,16 @@ function Stock() {
   const transacts = useTransaction();
 
   useEffect(() => {
-    console.log('Fetching again', transacts.reFetch)
     const getData = async () => {
       transUrl && await transactions.fetchData();
     }
     getData();
-    !transactions.isLoading && console.log('time to fetch', transUrl, transactions)
+    console.log('Trans URL', transUrl)
   }, [transUrl, transacts.reFetch]);
 
   const handleGetTransactions = (page, currentURL) => {
     const leftURLside = currentURL.substr(0, currentURL.lastIndexOf('page'));
+    console.log('left side', leftURLside)
     setTransUrl(leftURLside.concat(`page=${page}`));
   }
 
