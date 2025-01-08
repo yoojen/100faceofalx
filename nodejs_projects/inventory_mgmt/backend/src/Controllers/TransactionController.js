@@ -147,28 +147,28 @@ module.exports.searchTransaction = async (req, res) => {
             delete req.query.eDate
             delete req.query.sDate
             if (sDate && !eDate) {
-                opts.updatedAt = { [Op.gte]: new Date(sDate) };
+                opts.createdAt = { [Op.gte]: new Date(sDate) };
             }
             if (!sDate && eDate) {
-                opts.updatedAt = { [Op.lte]: new Date(eDate) };
+                opts.createdAt = { [Op.lte]: new Date(eDate) };
 
             }
             if (sDate && eDate) {
-                opts.updatedAt = { [Op.between]: [new Date(sDate), new Date(eDate)] };
+                opts.createdAt = { [Op.between]: [new Date(sDate), new Date(eDate)] };
             }
             // var { rows, count, totalPages, currentPage } = await dateSearch(req, sDate, eDate);
         }
         if (report) {
             const ago = getTimeDifference(parseInt(report));
             delete req.query.report
-            opts.updatedAt = { [Op.gte]: ago }
+            opts.createdAt = { [Op.gte]: ago }
         }
         if (year) {
             delete req.query.year
             const startDate = new Date(`${parseInt(year)}-01-01`);
             const endDate = new Date(`${parseInt(year)}-12-31`);
 
-            opts.updatedAt = {
+            opts.createdAt = {
                 [Op.between]: [startDate, endDate]
             };
         }
@@ -178,6 +178,7 @@ module.exports.searchTransaction = async (req, res) => {
                 opts, req.query
             ]
         }
+
         var { rows, count, totalPages, currentPage } = await paginate(
             req = req, model = InventoryTransaction, options = opts, include = [{ model: Supplier }, { model: Product }]
         );
