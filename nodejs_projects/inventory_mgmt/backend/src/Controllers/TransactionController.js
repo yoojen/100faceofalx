@@ -22,6 +22,23 @@ module.exports.getTransactions = async (req, res) => {
     }
 }
 
+module.exports.serveRevenueCostBarGraph = async (req, res) => {
+    try {
+        const data = await InventoryTransaction.findAll({
+            attributes: [
+                [sequelize.fn('date_format', sequelize.col('createdAt'), '%Y-%m'), 'month'],
+                [sequelize.fn('SUM', sequelize.literal('CASE WHEN transaction_type="IN" THEN total_amount ELSE 0 END')), 'totalCost'],
+                [sequelize.fn('SUM', sequelize.literal('CASE WHEN transaction_type="OUT" THEN total_amount ELSE 0 END')), 'totalRevenue']
+            ],
+            group: ['month'],
+            order: ['month']
+        })
+        res.send({ success: true, data: data, message: 'Retrieved successfully', model: 'transaction' });
+    } catch (error) {
+        console.log(error)
+        apiErrorHandler(res, error, 'transaction');
+    }
+}
 module.exports.getAggregatedQuantity = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const pageSize = parseInt(req.query.pageSize) || 10;

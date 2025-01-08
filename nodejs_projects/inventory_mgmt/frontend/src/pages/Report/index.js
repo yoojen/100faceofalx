@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { LineChart } from "@mui/x-charts/LineChart";
 import Form from '../../components/Form';
 import Footer from "../../components/Footer";
 import SideWindow from "../../components/SideWindow";
@@ -8,18 +7,18 @@ function Report() {
     const [year, setYear] = useState(null);
     const [openSideWindow, setOpenSideWindow] = useState(false);
     const [tempProducts, setTempProducts] = useState([
-        {id:1, category: "amasaka", turnOver: 12000, rate: 10},
-        {id:2, category: "amamera", turnOver: 23000, rate: 15},
+        { id: 1, category: "amasaka", turnOver: 12000, rate: 10 },
+        { id: 2, category: "amamera", turnOver: 23000, rate: 15 },
     ])
 
     useEffect(() => {
         setYear(new Date().getFullYear())
     }, [])
-    
+
     return (
         <div className="px-5 bg-slate-200">
-            {openSideWindow && (<SideWindow />) }
-            <Form fields={ ['amount', 'year', 'weeks']} />
+            {openSideWindow && (<SideWindow />)}
+            <Form fields={['amount', 'year', 'weeks']} />
             <h1 className="text-2xl font-medium text-blue-500 mt-5">RAPORO</h1>
             <div className="[&>*]:rounded-sm [&>*]:shadow-sm space-y-3 mb-5">
                 <div className="flex justify-around">
@@ -93,19 +92,7 @@ function Report() {
                 <div className="bg-white p-2">
                     <div><h1>Profit & Revenue</h1></div>
                     <div className="w-full flex [&>*]:shrink-0 overflow-auto [&>*]:w-full horizontal-custom-scrollbar">
-                        <LineChart 
-                            xAxis={[
-                                { data: [1, 2, 3, 4, 5, 6, 7], id: 1, label: "X label"},
-                                { data: [3, 1, 6, 4.3, 6, 4, 8], id: 2, }
-                            ]}
-                            series={[
-                                { data: [1, 2, 3, 4, 5, 6, 7], label:"First One" },
-                                { data: [1, 3, 2, 4, 3, 5, 6], label: "Second one"}
-                            ]}
-                            grid={{ vertical: false, horizontal: true }}
-                            width={1000}
-                            height={300}
-                        />
+                        {/* LINE CHART */}
                     </div>
                 </div>
                 <div className="bg-white p-2">
