@@ -14,7 +14,6 @@ const Form = ({ fields, where, transactions, setTransUrl, httpMethod }) => {
   });
   const product = useProduct()
   const supplier = useSupplier()
-  // const transactions = useGetFetch({ url: transUrl });
 
   const buildQuery = (params) => {
     return Object.keys(params)
@@ -80,15 +79,6 @@ const Form = ({ fields, where, transactions, setTransUrl, httpMethod }) => {
             </div>
           );
         })}
-        <div>
-          <p className="italic text-sky-500">kanda hano</p>
-          <button
-            type="submit"
-            className="px-5 py-1 bg-sky-500 border-0 text-white font-medium"
-          >
-            Submit
-          </button>
-        </div>
       </form>
     </div>
   );
