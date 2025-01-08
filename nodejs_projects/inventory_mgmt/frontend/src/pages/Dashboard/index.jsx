@@ -27,18 +27,17 @@ ChartJS.register(
 function Dashboard() {
     const [inUrl, setInUrl] = useState(null);
     const [outUrl, setOutUrl] = useState(null);
-    const [stockSummaryUrl, setStockSummaryUrl] = useState(null);
+    const [stockSummaryUrl, setStockSummaryUrl] = useState('/products?pageSize=5&page=1');
 
     var transactionSummary = useGetFetch({ url: '/transactions/summary' });
     var inTransactions = useGetFetch({ url: inUrl });
     var outTransactions = useGetFetch({ url: outUrl });
-    var products = useGetFetch({ url: stockSummaryUrl || '/products?pageSize=2&page=1' });
+    var products = useGetFetch({ url: stockSummaryUrl || '/products?pageSize=5&page=1' });
     var barData = useGetFetch({ url: '/transactions/bar' })
 
     useEffect(() => {
         const getData = async () => {
             await transactionSummary.fetchData();
-            await products.fetchData();
             await barData.fetchData();
         }
         getData();
@@ -46,26 +45,33 @@ function Dashboard() {
 
     useEffect(() => {
         const getData = async () => {
-            inUrl !== null && await inTransactions.fetchData();
+            stockSummaryUrl && await products.fetchData();
+        }
+        getData();
+    }, [stockSummaryUrl]);
+
+    useEffect(() => {
+        const getData = async () => {
+            inUrl && await inTransactions.fetchData();
         }
         getData();
     }, [inUrl]);
 
     useEffect(() => {
         const getData = async () => {
-            outUrl !== null && await outTransactions.fetchData();
+            outUrl && await outTransactions.fetchData();
         }
         getData();
     }, [outUrl]);
 
     const handleInTransaction = (page) => {
-        setInUrl(`/transactions/agg/quantity?transaction_type=IN&pageSize=2&page=${page}`);
+        setInUrl(`/transactions/agg/quantity?transaction_type=IN&pageSize=5&page=${page}`);
     }
     const handleOutTransaction = (page) => {
-        setOutUrl(`/transactions/agg/quantity?transaction_type=OUT&pageSize=2&page=${page}`);
+        setOutUrl(`/transactions/agg/quantity?transaction_type=OUT&pageSize=5&page=${page}`);
     }
     const handleStockSummary = (page) => {
-        setStockSummaryUrl(`/products?pageSize=2&page=${page}`);
+        setStockSummaryUrl(`/products?pageSize=5&page=${page}`);
     }
 
     const options = {
@@ -81,9 +87,9 @@ function Dashboard() {
         },
     };
 
-    const labels = !barData.isLoading && barData.data?.data.map((m) => m.month);
-    const costDataset = !barData.isLoading && barData.data?.data.map((c) => c.totalCost);
-    const revenueDataset = !barData.isLoading && barData.data?.data.map((r) => r.totalRevenue);
+    const labels = !barData.isLoading && barData.data?.data?.map((m) => m.month);
+    const costDataset = !barData.isLoading && barData.data?.data?.map((c) => c.totalCost);
+    const revenueDataset = !barData.isLoading && barData.data?.data?.map((r) => r.totalRevenue);
 
     const data = {
         labels,
@@ -160,32 +166,30 @@ function Dashboard() {
                             </tbody>
                         </table>
                         <div className="my-2 flex space-x-2">
-                            {!inTransactions.isLoading && inTransactions.data?.totalPages > 1
-                                ? inTransactions.data?.currentPage != 1
-                                    ? <button
-                                        className="border rounded-sm px-5 py-1 hover:bg-sky-400"
-                                        onClick={(e) => handleInTransaction(inTransactions.data?.currentPage - 1)}>
-                                        Previous
-                                    </button>
-                                    : ''
-                                :
-                                ''
+                            {
+                                !inTransactions.isLoading
+                                && inTransactions.data?.totalPages > 1
+                                && inTransactions.data?.currentPage != 1
+                                && <button
+                                    className="border rounded-sm px-5 py-1 hover:bg-sky-400"
+                                    onClick={(e) => handleInTransaction(inTransactions.data?.currentPage - 1)}>
+                                    Previous
+                                </button>
                             }
                             <button
-                                className={`bg-blue-400 text-white font-medium border rounded-sm px-5 py-1 hover:bg-sky-400`}
+                                className={`bg-blue-700 text-white font-medium border rounded-sm px-5 py-1 hover:bg-sky-400`}
                                 onClick={(e) => handleInTransaction(inTransactions.data?.currentPage)}>
                                 {inTransactions.data?.currentPage}
                             </button>
-                            {!inTransactions.isLoading && inTransactions.data?.totalPages > 1
-                                ? inTransactions.data?.currentPage != inTransactions.data?.totalPages
-                                    ? <button
-                                        className="border rounded-sm px-5 py-1 hover:bg-sky-400"
-                                        onClick={(e) => handleInTransaction(inTransactions.data?.currentPage + 1)}>
-                                        Next
-                                    </button>
-                                    : ''
-                                :
-                                ''
+                            {
+                                !inTransactions.isLoading
+                                && inTransactions.data?.totalPages > 1
+                                && inTransactions.data?.currentPage != inTransactions.data?.totalPages
+                                && <button
+                                    className="border rounded-sm px-5 py-1 hover:bg-sky-400"
+                                    onClick={(e) => handleInTransaction(inTransactions.data?.currentPage + 1)}>
+                                    Next
+                                </button>
                             }
                         </div>
                     </div>
@@ -215,32 +219,30 @@ function Dashboard() {
                                 </tbody>
                             </table>
                             <div className="my-2 flex space-x-2">
-                                {!outTransactions.isLoading && outTransactions.data?.totalPages > 1
-                                    ? outTransactions.data?.currentPage != 1
-                                        ? <button
-                                            className="border rounded-sm px-5 py-1 hover:bg-sky-400"
-                                            onClick={(e) => handleOutTransaction(outTransactions.data?.currentPage - 1)}>
-                                            Previous
-                                        </button>
-                                        : ''
-                                    :
-                                    ''
+                                {
+                                    !outTransactions.isLoading
+                                    && outTransactions.data?.totalPages > 1
+                                    && outTransactions.data?.currentPage != 1
+                                    && <button
+                                        className="border rounded-sm px-5 py-1 hover:bg-sky-400"
+                                        onClick={(e) => handleOutTransaction(outTransactions.data?.currentPage - 1)}>
+                                        Previous
+                                    </button>
                                 }
                                 <button
                                     className={`bg-blue-400 text-white font-medium border rounded-sm px-5 py-1 hover:bg-sky-400`}
                                     onClick={(e) => handleOutTransaction(parseInt(e.target.textContent))}>
                                     {outTransactions.data?.currentPage}
                                 </button>
-                                {!outTransactions.isLoading && outTransactions.data?.totalPages > 1
-                                    ? outTransactions.data?.currentPage != outTransactions.data?.totalPages
-                                        ? <button
-                                            className="border rounded-sm px-5 py-1 hover:bg-sky-400"
-                                            onClick={(e) => handleOutTransaction(outTransactions.data?.currentPage + 1)}>
-                                            Next
-                                        </button>
-                                        : ''
-                                    :
-                                    ''
+                                {
+                                    !outTransactions.isLoading
+                                    && outTransactions.data?.totalPages > 1
+                                    && outTransactions.data?.currentPage != outTransactions.data?.totalPages
+                                    && <button
+                                        className="border rounded-sm px-5 py-1 hover:bg-sky-400"
+                                        onClick={(e) => handleOutTransaction(outTransactions.data?.currentPage + 1)}>
+                                        Next
+                                    </button>
                                 }
                             </div>
                         </div>
@@ -271,32 +273,30 @@ function Dashboard() {
                                     </tbody>
                                 </table>
                                 <div className="my-2 flex space-x-2">
-                                    {!products.isLoading && products.data?.totalPages > 1
-                                        ? products.data?.currentPage != 1
-                                            ? <button
-                                                className="border rounded-sm px-5 py-1 hover:bg-sky-400"
-                                                onClick={(e) => handleStockSummary(products.data?.currentPage - 1)}>
-                                                Previous
-                                            </button>
-                                            : ''
-                                        :
-                                        ''
+                                    {
+                                        !products.isLoading
+                                        && products.data?.totalPages > 1
+                                        && products.data?.currentPage != 1
+                                        && <button
+                                            className="border rounded-sm px-5 py-1 hover:bg-sky-400"
+                                            onClick={(e) => handleStockSummary(products.data?.currentPage - 1)}>
+                                            Previous
+                                        </button>
                                     }
                                     <button
                                         className={`bg-blue-400 text-white font-medium border rounded-sm px-5 py-1 hover:bg-sky-400`}
                                         onClick={(e) => handleStockSummary(parseInt(e.target.textContent))}>
                                         {products.data?.currentPage}
                                     </button>
-                                    {!products.isLoading && products.data?.totalPages > 1
-                                        ? products.data?.currentPage != products.data?.totalPages
-                                            ? <button
-                                                className="border rounded-sm px-5 py-1 hover:bg-sky-400"
-                                                onClick={(e) => handleStockSummary(products.data?.currentPage + 1)}>
-                                                Next
-                                            </button>
-                                            : ''
-                                        :
-                                        ''
+                                    {
+                                        !products.isLoading
+                                        && products.data?.totalPages > 1
+                                        && products.data?.currentPage != products.data?.totalPages
+                                        && <button
+                                            className="border rounded-sm px-5 py-1 hover:bg-sky-400"
+                                            onClick={(e) => handleStockSummary(products.data?.currentPage + 1)}>
+                                            Next
+                                        </button>
                                     }
                                 </div>
                             </div>

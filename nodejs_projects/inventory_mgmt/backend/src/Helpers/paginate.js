@@ -1,9 +1,9 @@
 async function paginate(req, model, options, include) {
     try {
         var page = parseInt(req.query.page) || 1;
-        var pageSize = parseInt(req.query.pageSize) || 10;
+        var pageSize = parseInt(req.query.pageSize) || 1000;
         var offset = (page - 1) * pageSize;
-        var sort = (req.query.sort || 'updatedAt-ASC').split('-');
+        var sort = (req.query.sort || 'updatedAt-DESC').split('-');
         //exempting query no to pass page to where clause
         delete req.query.page
         delete req.query.pageSize;

@@ -114,10 +114,8 @@ Supplier.init(
             type: DataTypes.INTEGER,
             validate: {
                 checkSpecial(value) {
-                    if (this.isSpecial) {
-                        if (!value) {
-                            throw new Error('Supplier can\'t be special and has no balance');
-                        }
+                    if (this.isSpecial == 'Yes' && !value) {
+                        throw new Error('Supplier can\'t be special and has no balance');
                     }
                 }
             }

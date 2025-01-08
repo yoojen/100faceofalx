@@ -81,7 +81,7 @@ module.exports.getTransactionById = async (req, res) => {
         if (transaction) {
             res.status(200).send({ success: true, data: transaction, message: 'Retrieved successfully' });
         } else {
-            res.status(400).send({ success: false, data: null, message: 'No transaction found' });
+            res.status(400).send({ success: false, error: 'No transaction found' });
         }
     } catch (error) {
         apiErrorHandler(res, error, 'transaction')
@@ -168,7 +168,7 @@ module.exports.searchTransaction = async (req, res) => {
             const startDate = new Date(`${parseInt(year)}-01-01`);
             const endDate = new Date(`${parseInt(year)}-12-31`);
 
-            opts.createdAt = {
+            opts.updatedAt = {
                 [Op.between]: [startDate, endDate]
             };
         }
@@ -178,7 +178,6 @@ module.exports.searchTransaction = async (req, res) => {
                 opts, req.query
             ]
         }
-
         var { rows, count, totalPages, currentPage } = await paginate(
             req = req, model = InventoryTransaction, options = opts, include = [{ model: Supplier }, { model: Product }]
         );
@@ -200,29 +199,34 @@ module.exports.createTransaction = async (req, res) => {
         // formData.UserId = req.user.uid;
 
         if (!formData.ProductId) {
-            res.status(400).send({ success: false, data: null, message: 'Please select product' });
-            return;
+            return res.status(400).send({ success: false, error: 'Please select product' });
         }
+        console.log(formData)
         if ((formData.buying_price && formData.transaction_type == 'OUT')
             || (formData.selling_price && formData.transaction_type == 'IN')
         ) {
-            res.status(400).send({ success: false, data: null, message: 'Select correct transaction type' });
-            return;
+            return res.status(400).send({ success: false, error: 'Select correct transaction type' });
         }
 
         const product = await Product.findOne({ where: { id: formData.ProductId } });
-
+        if ((product.quantity_in_stock < formData.quantity) && formData.transaction_type == 'OUT') {
+            return res.status(400).send({ success: false, error: `Only ${product.quantity_in_stock} Remains in stock` });
+        }
         if (formData.transaction_type == 'IN') {
+            //replacing frontend zero (0) with null (acceptable by db)
+            formData.selling_price = null;
             if (!(formData.quantity * formData.buying_price == formData.total_amount) || !product) {
-                res.status(400).send({ success: false, data: null, message: 'Check input' });
+                res.status(400).send({ success: false, error: 'Check input' });
                 return;
             }
             var transaction = InventoryTransaction.build(formData);
             await product.increment('quantity_in_stock', { by: transaction.quantity });
             await transaction.save();
         } else {
+            //replacing frontend zero (0) with null (acceptable by db)
+            formData.buying_price = null;
             if (!(formData.quantity * formData.selling_price == formData.total_amount) || !product) {
-                res.status(400).send({ success: false, data: null, message: 'Check input' });
+                res.status(400).send({ success: false, error: 'Check input' });
                 return;
             }
             var transaction = InventoryTransaction.build(formData);
@@ -231,6 +235,7 @@ module.exports.createTransaction = async (req, res) => {
         }
         res.status(201).send({ success: true, data: transaction, message: 'Transaction recorded successfully' });
     } catch (error) {
+        console.log(error)
         apiErrorHandler(res, error, 'transaction')
     }
 }
@@ -242,14 +247,14 @@ module.exports.updateTransaction = async (req, res) => {
         const transaction = await InventoryTransaction.findByPk(id, { include: [{ model: Product, attributes: ['id'] }] });
 
         if (!transaction) {
-            res.status(404).send({ success: false, data: null, message: 'Transaction not found' });
+            res.status(404).send({ success: false, error: 'Transaction not found' });
             return;
         }
         const product = await Product.findByPk(transaction.Product.id);
         if (req.body.transaction_type == process.env.IN_TRANSACTION) {
             if (transaction.transaction_type == process.env.IN_TRANSACTION) {//previous transaction was IN - to be updated with IN again
-                if ((transaction.quantity == req.body.quantity) || (req.body.quantity == null)) {
-                    res.status(400).send({ success: false, data: null, message: 'Update values can not be the same' })
+                if ((transaction.quantity == req.body.quantity && transaction.buying_price == req.body.buying_price) || !req.body.quantity || !req.body.buying_price) {
+                    res.status(400).send({ success: false, error: 'Update values can not be the same' })
                     return;
                 }
                 req.body.buying_price = req.body.buying_price || transaction.buying_price;
@@ -285,8 +290,8 @@ module.exports.updateTransaction = async (req, res) => {
                 var updatedTransaction = await InventoryTransaction.update(req.body, { where: { id: id }, transaction: t });
                 await t.commit()
             } else {//previous transaction was OUT - to be updated with OUT again
-                if ((transaction.quantity == req.body.quantity) || (req.body.quantity == null)) {
-                    res.status(400).send({ success: false, data: null, message: 'Update values can not be the same' })
+                if ((transaction.quantity == req.body.quantity && transaction.selling_price == req.body.selling_price) || !req.body.quantity || !req.body.selling_price) {
+                    res.status(400).send({ success: false, error: 'Update values can not be the same' })
                     return;
                 }
                 const previous = product.quantity_in_stock + transaction.quantity;
@@ -301,12 +306,13 @@ module.exports.updateTransaction = async (req, res) => {
                 await t.commit();
             }
         } else {
-            res.status(400).send({ success: false, data: null, message: 'Something went wrong' });
+            res.status(400).send({ success: false, error: 'Something went wrong' });
         }
 
         res.status(200).send({ success: true, data: updatedTransaction, message: 'Updated successfully' });
     } catch (error) {
         await t.rollback();
+        console.log(error)
         apiErrorHandler(res, error, 'transaction');
     }
 }

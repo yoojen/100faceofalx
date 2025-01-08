@@ -12,9 +12,8 @@ module.exports.getProducts = async (req, res) => {
             rows,
             count,
             totalPages,
-            currentPage 
-        } = await paginate(req, Product, options=null, include=[Category]);
-
+            currentPage
+        } = await paginate(req, Product, options = null, include = [Category]);
         res.status(200).send({
             success: true,
             data: rows,
@@ -104,7 +103,7 @@ module.exports.searchQuantityLessOrGreater = async (req, res) => {
             totalPages: totalPages,
             message: 'Retrieved successfully'
         });
-    
+
     } catch (error) {
         apiErrorHandler(res, error, 'products')
     }
@@ -113,45 +112,49 @@ module.exports.searchQuantityLessOrGreater = async (req, res) => {
 module.exports.createProduct = async (req, res) => {
     const t = await sequelize.transaction();
     try {
-        const formData = {
-            name, description, price, quantity_in_stock, CategoryId, categoryName
+        const {
+            name, description, quantity_in_stock, CategoryId, categoryName
         } = req.body;
         //If product exists
-        if (await Product.findOne({ where: { name: formData.name } })) {
-            res.status(400).send({ success: false, data: null, message: 'Product already exists' });
+        console.log('Requested reached')
+        if (await Product.findOne({ where: { name: name.trim() } })) {
+            res.status(400).send({ success: false, error: 'Product already exists' });
             return;
         }
 
         //Creation of category
-        if (!formData.CategoryId && !formData.categoryName) {
-            res.status(400).send({ success: false, data: null, message: 'Please select category or create one' });
+        if (!CategoryId && !categoryName) {
+            res.status(400).send({ success: false, error: 'Please select category or create one' });
             return;
         }
-        if (formData.CategoryId) {
-            const category = await Category.findByPk(formData.CategoryId);
+        if (CategoryId) {
+            const category = await Category.findByPk(CategoryId);
             if (!category) {
-                res.status(400).send({ success: false, data: null, message: 'Category doesn\'t exist. Please create category' });
+                res.status(400).send({ success: false, error: 'Category doesn\'t exist. Please create category' });
                 return;
             }
         }
-        else if (formData.categoryName) {
+        else if (categoryName) {
             try {
-                const category = await Category.create({ name: formData.categoryName });
-                formData.CategoryId = category.id;
+                const category = await Category.create({ name: categoryName, });
+                CategoryId = category.id;
             } catch (error) {
                 apiErrorHandler(res, error, 'category');
             }
         }
 
-        var product = await Product.create(formData, {transaction: t});
+        var product = await Product.create({ name, CategoryId, quantity_in_stock, description }, {
+            transaction: t
+        });
         if (product) {
             await t.commit();
-            res.status(200).send({ success: true, data: product, message: 'Product added successfully' });
+            res.status(201).send({ success: true, data: product, message: 'Product added successfully' });
         } else {
             await t.rollback();
-            res.status(400).send({ success: false, data: null, message: 'Invalid input' });
+            res.status(400).send({ success: false, error: 'Invalid input' });
         }
     } catch (error) {
+        console.log(error)
         await t.rollback();
         apiErrorHandler(res, error, 'product')
     }
@@ -162,20 +165,20 @@ module.exports.updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
         if (Object.keys(req.body).length < 1) {
-            res.status(400).send({ success: false, data: null, message: 'Update parameters missing' });
+            res.status(400).send({ success: false, error: 'Update parameters missing' });
             return;
         }
         const product = await Product.findOne({ where: { id: id } });
         if (!product) {
-            res.status(400).send({ success: false, data: null, message: 'No product found' });
+            res.status(400).send({ success: false, error: 'No product found' });
         }
         const affectedRows = await Product.update(req.body, { where: { id: id }, transaction: t });
-        if (affectedRows[0] > 0){
+        if (affectedRows[0] > 0) {
             await t.commit();
             res.status(200).send({ success: true, data: product, message: 'Updated successfully' });
         } else {
             await t.rollback();
-            res.status(400).send({ success: false, data: null, message: 'Failed to update' });
+            res.status(400).send({ success: false, error: 'Failed to update' });
         }
     } catch (error) {
         await t.rollback()
@@ -190,10 +193,10 @@ module.exports.deleteProduct = async (req, res) => {
         const { id } = req.params;
         const product = await Product.findByPk(id);
         if (product) {
-            await product.destroy({transaction: t});
+            await product.destroy({ transaction: t });
             res.status(204).send();
         } else {
-            res.status(404).send({ success: false, message: 'No product found' });
+            res.status(404).send({ success: false, error: 'No product found' });
         }
     } catch (error) {
         apiErrorHandler(res, error, 'product');
