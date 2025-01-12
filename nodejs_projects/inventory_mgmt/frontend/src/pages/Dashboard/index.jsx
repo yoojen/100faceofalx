@@ -25,8 +25,8 @@ ChartJS.register(
 )
 
 function Dashboard() {
-    const [inUrl, setInUrl] = useState(null);
-    const [outUrl, setOutUrl] = useState(null);
+    const [inUrl, setInUrl] = useState('/transactions/agg/quantity?transaction_type=IN&pageSize=5&page=1');
+    const [outUrl, setOutUrl] = useState('/transactions/agg/quantity?transaction_type=OUT&pageSize=5&page=1');
     const [stockSummaryUrl, setStockSummaryUrl] = useState('/products?pageSize=5&page=1');
 
     var transactionSummary = useGetFetch({ url: '/transactions/summary' });
@@ -42,7 +42,6 @@ function Dashboard() {
         }
         getData();
     }, []);
-
     useEffect(() => {
         const getData = async () => {
             stockSummaryUrl && await products.fetchData();
@@ -109,8 +108,6 @@ function Dashboard() {
     return (
         <div className="px-5 bg-slate-200">
             <h1 className="text-2xl font-medium text-blue-500">AHABANZA</h1>
-            <button onClick={() => handleInTransaction(1)}>Test Button</button>
-            <button onClick={() => handleOutTransaction(1)}>Test 2 Button</button>
             <div className="md:flex md:basis-3/4 md:space-x-3 mb-4">
                 <div className="md:w-2/4 [&>*]:bg-white [&>*]:rounded-sm [&>*]:shadow-md [&>*]:p-2 space-y-3">
                     <div>
