@@ -4,7 +4,8 @@ const {
     searchTransaction, updateTransaction, deleteTransaction,
     getAggregatedQuantity,
     getTransactionSummary,
-    serveRevenueCostBarGraph
+    serveRevenueCostBarGraph,
+    getPurchaseReport
 } = require('../Controllers/TransactionController');
 const verifyToken = require('../Midddlelware');
 
@@ -14,6 +15,7 @@ Router.get('/transactions', getTransactions);
 Router.get('/transactions/summary', getTransactionSummary);
 Router.get('/transactions/bar', serveRevenueCostBarGraph);
 Router.get('/transactions/agg/quantity', getAggregatedQuantity);
+Router.get('/transactions/agg/report', getPurchaseReport);
 Router.get('/transactions/:id', getTransactionById);
 Router.get('/transactions/q/search', searchTransaction);
 Router.post('/transactions', createTransaction);

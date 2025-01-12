@@ -1,4 +1,4 @@
-const { InventoryTransaction, Product, Supplier } = require('../Models/models');
+const { InventoryTransaction, Product, Supplier, Category } = require('../Models/models');
 const sequelize = require('../Config/db.config');
 const apiErrorHandler = require('../Helpers/errorHandler');
 const paginate = require('../Helpers/paginate');
@@ -41,13 +41,13 @@ module.exports.serveRevenueCostBarGraph = async (req, res) => {
 }
 module.exports.getAggregatedQuantity = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
-    const pageSize = parseInt(req.query.pageSize) || 10;
+    const pageSize = parseInt(req.query.pageSize) || 100;
     const offset = (page - 1) * pageSize;
     const month = getTimeDifference(4);
 
     try {
         var { count, rows } = await InventoryTransaction.findAndCountAll({
-            attributes: ['ProductId', 'Product.name',
+            attributes: ['Product.CategoryId',
                 [sequelize.fn('SUM', sequelize.col('quantity')), 'totalQuantity'],
                 [sequelize.fn('SUM', sequelize.col('total_amount')), 'totalAmount']
             ],
@@ -58,7 +58,7 @@ module.exports.getAggregatedQuantity = async (req, res) => {
                 ]
             },
             include: [{ model: Product, required: true, }],
-            order: ['ProductId'],
+            order: [['totalAmount', 'DESC']],
             offset,
             limit: pageSize,
             group: ['ProductId']
@@ -71,6 +71,40 @@ module.exports.getAggregatedQuantity = async (req, res) => {
     } catch (error) {
         console.error(error)
         apiErrorHandler(res, error, 'transaction')
+    }
+}
+
+module.exports.getPurchaseReport = async (req, res) => {
+    const transaction_type = req.query.transaction_type;
+    const month = getTimeDifference(4);
+    try {
+        var rows = await InventoryTransaction.findAll({
+            attributes: [
+
+                [sequelize.fn('SUM', sequelize.col('total_amount')), 'totalAmount']
+            ],
+            where: {
+                [Op.and]: [
+                    // { createdAt: { [Op.gte]: month } },
+                    { transaction_type: transaction_type }
+                ]
+            },
+            include: {
+                model: Product,
+                attributes: ['name'],
+                required: true,
+                include: {
+                    model: Category,
+                    attributes: ['id', 'name']
+                }
+            },
+            group: ['ProductId'],
+            order: [['totalAmount', 'DESC']]
+        })
+
+        res.status(200).send({ success: true, data: rows, message: 'Retrieved successfully' });
+    } catch (error) {
+        apiErrorHandler(res, error, 'transaction');
     }
 }
 
@@ -180,7 +214,7 @@ module.exports.searchTransaction = async (req, res) => {
         }
 
         var { rows, count, totalPages, currentPage } = await paginate(
-            req = req, model = InventoryTransaction, options = opts, include = [{ model: Supplier }, { model: Product }]
+            req = req, model = InventoryTransaction, options = opts, include = [{ model: Supplier }, { model: Product, }]
         );
 
         res.status(200).send({

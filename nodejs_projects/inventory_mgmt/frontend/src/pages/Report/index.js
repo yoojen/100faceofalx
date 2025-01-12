@@ -56,7 +56,8 @@ function Report() {
         setYear(new Date().getFullYear())
     }, [])
 
-    !purchaseData.isLoading && !purchaseData.isLoading && purchaseData.data?.data?.forEach((p) => {
+    !salesPerCategory.isLoading && console.log(salesPerCategory.data)
+    purchaseData.data?.data?.forEach((p) => {
         if (Object.keys(PURCHASE_UNIQUE_CATEGORIES).includes(p.Product.Category.name)) {
             PURCHASE_UNIQUE_CATEGORIES[p.Product.Category.name] += parseFloat(p.totalAmount);
         } else {
@@ -64,7 +65,7 @@ function Report() {
         }
     })
 
-    !salesPerCategory.isLoading && !salesPerCategory.isLoading && salesPerCategory.data?.data?.slice(0, 4).forEach((p) => {
+    !salesPerCategory.isLoading && salesPerCategory.data?.data?.forEach((p) => {
         if (Object.keys(SALES_UNIQUE_CATEGORIES).includes(p.Product.Category.name)) {
             SALES_UNIQUE_CATEGORIES[p.Product.Category.name] += parseFloat(p.totalAmount);
         } else {
@@ -205,12 +206,12 @@ function Report() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {[1, 2, 3].map((product, index) => {
-                                            return (
-                                                <tr key={index} className="[&>*]:px-2">
-                                                    <td>Umuceri</td>
-                                                    <td>Food</td>
-                                                    <td className="text-right">50,000</td>
+                                        {!salesPerCategory.isLoading && salesPerCategory.data?.data?.map((p, i) => {
+                                            if (i < 3) return (
+                                                <tr key={i} className="[&>*]:px-2">
+                                                    <td>{p.Product.name}</td>
+                                                    <td>{p.Product.Category.name}</td>
+                                                    <td className="text-right">{parseFloat(p.totalAmount).toLocaleString()}</td>
                                                 </tr>
                                             )
                                         })}
@@ -219,7 +220,7 @@ function Report() {
                             </div>
                         </div>
                         <div>
-                            <h1 className="mx-2">Sales by Category</h1>
+                            <h1 className="mx-2">Top 3 Performing Categories</h1>
                             <div className="my-2 font-light overflow-auto horizontal-custom-scrollbar">
                                 <table className="table w-full text-left">
                                     <thead>
@@ -229,12 +230,14 @@ function Report() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {Object.entries(SALES_UNIQUE_CATEGORIES).map((v, i) =>
-                                            <tr key={i} className="w-full">
-                                                <td className="w-1/3">{v[0]}</td>
-                                                <td className="w-1/3 text-right">{v[1].toLocaleString()}</td>
-                                            </tr>
-                                        )}
+                                        {Object.entries(SALES_UNIQUE_CATEGORIES).map((v, i) => {
+                                            if (i < 3) {
+                                                return <tr key={i} className="w-full">
+                                                    <td className="w-1/3">{v[0]}</td>
+                                                    <td className="w-1/3 text-right">{v[1].toLocaleString()}</td>
+                                                </tr>
+                                            }
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
