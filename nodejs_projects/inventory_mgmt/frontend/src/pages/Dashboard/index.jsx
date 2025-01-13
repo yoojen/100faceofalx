@@ -25,8 +25,8 @@ ChartJS.register(
 )
 
 function Dashboard() {
-    const [inUrl, setInUrl] = useState('/transactions/agg/quantity?transaction_type=IN&pageSize=5&page=1');
-    const [outUrl, setOutUrl] = useState('/transactions/agg/quantity?transaction_type=OUT&pageSize=5&page=1');
+    const [inUrl, setInUrl] = useState('/transactions/agg/report?transaction_type=IN&pageSize=5&page=1');
+    const [outUrl, setOutUrl] = useState('/transactions/agg/report?transaction_type=OUT&pageSize=5&page=1');
     const [stockSummaryUrl, setStockSummaryUrl] = useState('/products?pageSize=5&page=1');
 
     var transactionSummary = useGetFetch({ url: '/transactions/summary' });
@@ -34,6 +34,7 @@ function Dashboard() {
     var outTransactions = useGetFetch({ url: outUrl });
     var products = useGetFetch({ url: stockSummaryUrl || '/products?pageSize=5&page=1' });
     var barData = useGetFetch({ url: '/transactions/bar' })
+
 
     useEffect(() => {
         const getData = async () => {
@@ -64,10 +65,10 @@ function Dashboard() {
     }, [outUrl]);
 
     const handleInTransaction = (page) => {
-        setInUrl(`/transactions/agg/quantity?transaction_type=IN&pageSize=5&page=${page}`);
+        setInUrl(`/transactions/agg/report?transaction_type=IN&pageSize=5&page=${page}`);
     }
     const handleOutTransaction = (page) => {
-        setOutUrl(`/transactions/agg/quantity?transaction_type=OUT&pageSize=5&page=${page}`);
+        setOutUrl(`/transactions/agg/report?transaction_type=OUT&pageSize=5&page=${page}`);
     }
     const handleStockSummary = (page) => {
         setStockSummaryUrl(`/products?pageSize=5&page=${page}`);
