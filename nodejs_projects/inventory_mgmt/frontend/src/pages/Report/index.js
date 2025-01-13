@@ -40,9 +40,11 @@ function Report() {
     const SALES_UNIQUE_CATEGORIES = {};
 
     const inventoryData = useGetFetch({ url: '/products/q/search?sort=quantity_in_stock' });
-    const graphData = useGetFetch({ url: '/transactions/bar' });
+    const graphData = useGetFetch({ url: '/transactions/bar?groupby=yearMonth' });
     const purchaseData = useGetFetch({ url: '/transactions/agg/report?transaction_type=IN' });
     const salesPerCategory = useGetFetch({ url: '/transactions/agg/report?transaction_type=OUT' });
+    const profitMargindata = useGetFetch({ url: '/transactions/agg/product/report' });
+    const dailySalesFrequency = useGetFetch({ url: '/transactions/bar' })
 
 
     useEffect(() => {
@@ -51,12 +53,23 @@ function Report() {
             await inventoryData.fetchData();
             await purchaseData.fetchData();
             await salesPerCategory.fetchData();
+            await profitMargindata.fetchData();
+            await dailySalesFrequency.fetchData();
         }
         getData();
         setYear(new Date().getFullYear())
     }, [])
 
-    !salesPerCategory.isLoading && console.log(salesPerCategory.data)
+
+    const sortedProfitMarginData = !profitMargindata.isLoading && profitMargindata.data?.data?.sort((a, b) => {
+        const tA = (parseFloat(a.average_selling_price) - parseFloat(a.average_cost_price)) / parseFloat(a.average_selling_price)
+        const tB = (parseFloat(b.average_selling_price) - parseFloat(b.average_cost_price)) / parseFloat(b.average_selling_price)
+
+        if (tA > tB) return -1
+        if (tB > tA) return 1
+        return 0
+    })
+
     purchaseData.data?.data?.forEach((p) => {
         if (Object.keys(PURCHASE_UNIQUE_CATEGORIES).includes(p.Product.Category.name)) {
             PURCHASE_UNIQUE_CATEGORIES[p.Product.Category.name] += parseFloat(p.totalAmount);
@@ -74,7 +87,7 @@ function Report() {
     })
 
     const LineOneDataset = {
-        labels: !graphData.isLoading && graphData.data?.data?.map((d) => d.month),
+        labels: !graphData.isLoading && graphData.data?.data?.map((d) => d.yearMonth),
         datasets: [
             {
                 label: 'Revenue',
@@ -106,7 +119,7 @@ function Report() {
     }
 
     const LineTwoDataset = {
-        labels: !graphData.isLoading && graphData.data?.data?.map((d) => d.month),
+        labels: !graphData.isLoading && graphData.data?.data?.map((d) => d.yearMonth),
         datasets: [
             {
                 label: 'Revenue',
@@ -182,13 +195,16 @@ function Report() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {FREQUENCY.map((f, i) => {
-                                            return (
-                                                <tr key={i} className="[&>*]:px-2">
-                                                    <td>{f}</td>
-                                                    <td className="text-right"> Frw</td>
-                                                </tr>
-                                            )
+                                        {!dailySalesFrequency.isLoading && Object.entries(dailySalesFrequency.data?.data[0]).map((f, i) => {
+                                            //ignoring transaction type from API
+                                            if (f[0] !== 'transaction_type') {
+                                                return (
+                                                    <tr key={i} className="[&>*]:px-2">
+                                                        <td className="capitalize">{(f[0])}</td>
+                                                        <td className="text-right"> {parseFloat(f[1]).toLocaleString()} Frw</td>
+                                                    </tr>
+                                                )
+                                            }
                                         })}
                                     </tbody>
                                 </table>
@@ -243,7 +259,7 @@ function Report() {
                             </div>
                         </div>
                         <div>
-                            <h1 className="mx-2">Profit Margins</h1>
+                            <h1 className="mx-2">Top 3 Profitable Products</h1>
                             <div className="my-2 font-light overflow-auto horizontal-custom-scrollbar">
                                 <table className="table w-full text-left">
                                     <thead>
@@ -254,12 +270,14 @@ function Report() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {[1, 2, 3].map((product, index) => {
+                                        {!profitMargindata.isLoading && sortedProfitMarginData.slice(0, 3).map((t, i) => {
                                             return (
-                                                <tr key={index} className="[&>*]:px-2">
-                                                    <td>Umuntu</td>
-                                                    <td>Boutique</td>
-                                                    <td className="text-right">2.5%</td>
+                                                <tr key={i} className="[&>*]:px-2">
+                                                    <td>{t.Product.name}</td>
+                                                    <td>{t.Product.Category.name}</td>
+                                                    <td className="text-right">{
+                                                        (((t.average_selling_price - t.average_cost_price) / t.average_selling_price) * 100).toFixed(1)
+                                                    }% </td>
                                                 </tr>
                                             )
                                         })}

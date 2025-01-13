@@ -33,7 +33,7 @@ function Dashboard() {
     var inTransactions = useGetFetch({ url: inUrl });
     var outTransactions = useGetFetch({ url: outUrl });
     var products = useGetFetch({ url: stockSummaryUrl || '/products?pageSize=5&page=1' });
-    var barData = useGetFetch({ url: '/transactions/bar' })
+    var barData = useGetFetch({ url: '/transactions/bar?groupby=yearMonth' })
 
 
     useEffect(() => {
@@ -76,6 +76,16 @@ function Dashboard() {
 
     const options = {
         responsive: true,
+
+        scales: {
+            y: {
+                ticks: {
+                    callback: function (value, index, values) {
+                        return value / 1000 + 'K';
+                    }
+                },
+            }
+        },
         plugins: {
             legend: {
                 position: 'top',
@@ -87,7 +97,7 @@ function Dashboard() {
         },
     };
 
-    const labels = !barData.isLoading && barData.data?.data?.map((m) => m.month);
+    const labels = !barData.isLoading && barData.data?.data?.map((m) => m.yearMonth);
     const costDataset = !barData.isLoading && barData.data?.data?.map((c) => c.totalCost);
     const revenueDataset = !barData.isLoading && barData.data?.data?.map((r) => r.totalRevenue);
 
@@ -107,7 +117,7 @@ function Dashboard() {
         ],
     };
     return (
-        <div className="px-5 bg-slate-200">
+        <div className="px-5 bg-slate-200" >
             <h1 className="text-2xl font-medium text-blue-500">AHABANZA</h1>
             <div className="md:flex md:basis-3/4 md:space-x-3 mb-4">
                 <div className="md:w-2/4 [&>*]:bg-white [&>*]:rounded-sm [&>*]:shadow-md [&>*]:p-2 space-y-3">
@@ -313,7 +323,7 @@ function Dashboard() {
                 </div>
             </div>
             <Footer />
-        </div>
+        </div >
     )
 }
 

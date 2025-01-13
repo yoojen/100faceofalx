@@ -3,7 +3,7 @@ const sequelize = require('../Config/db.config');
 const apiErrorHandler = require('../Helpers/errorHandler');
 const paginate = require('../Helpers/paginate');
 const getTimeDifference = require('../Helpers/dateOperations');
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 require('dotenv').config()
 
 
@@ -23,24 +23,113 @@ module.exports.getTransactions = async (req, res) => {
 }
 
 module.exports.serveRevenueCostBarGraph = async (req, res) => {
+
+    const { groupby } = req.query;
     try {
-        const data = await InventoryTransaction.findAll({
-            attributes: [
-                [sequelize.fn('date_format', sequelize.col('createdAt'), '%Y-%m'), 'month'],
-                [sequelize.fn('SUM', sequelize.literal('CASE WHEN transaction_type="IN" THEN total_amount ELSE 0 END')), 'totalCost'],
-                [sequelize.fn('SUM', sequelize.literal('CASE WHEN transaction_type="OUT" THEN total_amount ELSE 0 END')), 'totalRevenue']
-            ],
-            group: ['month'],
-            order: ['month']
-        })
-        res.send({ success: true, data: data, message: 'Retrieved successfully', model: 'transaction' });
+        if (groupby === 'month') {
+            var rows = await InventoryTransaction.findAll({
+                attributes: [
+                    [sequelize.fn('date_format', sequelize.col('createdAt'), '%M'), 'month'],
+                    [sequelize.fn('SUM', sequelize.literal('CASE WHEN transaction_type="IN" THEN total_amount ELSE 0 END')), 'totalCost'],
+                    [sequelize.fn('SUM', sequelize.literal('CASE WHEN transaction_type="OUT" THEN total_amount ELSE 0 END')), 'totalRevenue']
+                ],
+                group: [groupby],
+                order: [groupby]
+            })
+        } else if (groupby === 'year') {
+            var rows = await InventoryTransaction.findAll({
+                attributes: [
+                    [sequelize.fn('date_format', sequelize.col('createdAt'), '%Y'), 'year'],
+                    [sequelize.fn('SUM', sequelize.literal('CASE WHEN transaction_type="IN" THEN total_amount ELSE 0 END')), 'totalCost'],
+                    [sequelize.fn('SUM', sequelize.literal('CASE WHEN transaction_type="OUT" THEN total_amount ELSE 0 END')), 'totalRevenue']
+                ],
+                group: [groupby],
+                order: [groupby]
+            })
+        } else if (groupby === 'yearMonth') {
+            var rows = await InventoryTransaction.findAll({
+                attributes: [
+                    [sequelize.fn('date_format', sequelize.col('createdAt'), '%Y-%m'), 'yearMonth'],
+                    [sequelize.fn('SUM', sequelize.literal('CASE WHEN transaction_type="IN" THEN total_amount ELSE 0 END')), 'totalCost'],
+                    [sequelize.fn('SUM', sequelize.literal('CASE WHEN transaction_type="OUT" THEN total_amount ELSE 0 END')), 'totalRevenue']
+                ],
+                group: [groupby],
+                order: [groupby]
+            })
+        } else {
+            const year = req.query.year || new Date().getFullYear();
+
+            var rows = await sequelize.query(`SELECT 
+                transaction_type,
+                    round(SUM(daily_sales)/ abs(timestampdiff(day, MAX(createdAt), MIN(createdAt))), 2) AS daily,
+                    round(AVG(daily_sales) / (abs(timestampdiff(day, MAX(createdAt), MIN(createdAt)))/7), 2) AS weekly,
+                    round(AVG(daily_sales) / (abs(timestampdiff(day, MAX(createdAt), MIN(createdAt)))/30), 2) AS monthly
+                FROM (
+                    SELECT SUM(total_amount) AS daily_sales,
+                    DATE(createdAt) AS createdAt,
+                    transaction_type,
+                    COUNT(DATE(createdAt))
+                    FROM inventorytransactions
+                    WHERE transaction_type='OUT' AND YEAR(createdAt) = ${year}
+                    GROUP BY DATE(createdAt), transaction_type
+                ) AS daily_sales_subquery
+                GROUP BY transaction_type`, { type: Sequelize.QueryTypes.SELECT }
+            );
+
+        }
+
+        res.send({ success: true, data: rows, message: 'Retrieved successfully', model: 'transaction' });
     } catch (error) {
         console.log(error)
         apiErrorHandler(res, error, 'transaction');
     }
 }
 
-//getPurchaseReport and getAggregatedQuantity are similar
+
+module.exports.getProductProfitMargin = async (req, res) => {
+
+    try {
+        const rows = await InventoryTransaction.findAll({
+            attributes: [
+                [
+                    sequelize.fn(
+                        'AVG',
+                        sequelize.col('buying_price')
+
+                    ),
+                    'average_cost_price'
+                ],
+                [
+                    sequelize.fn(
+                        'AVG',
+                        sequelize.col('selling_price')
+                    ),
+                    'average_selling_price'
+                ],
+
+            ],
+            include: [
+                {
+                    model: Product,
+                    attributes: ['name'],
+                    require: true,
+                    include: [
+                        {
+                            model: Category,
+                            attributes: ['name']
+                        }
+                    ]
+                }
+            ],
+            group: ['ProductId']
+        });
+
+        res.status(200).send({ success: true, data: rows, message: 'Retrieved successfully' });
+    } catch (error) {
+        console.log(error)
+        apiErrorHandler(res, error, 'transaction');
+    }
+}
 
 module.exports.getAggreagatedReport = async (req, res) => {
     var page = parseInt(req.query.page) || 1;

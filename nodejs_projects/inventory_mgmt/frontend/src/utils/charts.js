@@ -9,7 +9,9 @@ export const LineOneOptions = {
             },
             beginAtZero: true,
             ticks: {
-                stepSize: 100000,
+                callback: function (value, index, values) {
+                    return value / 1000000 + 'M';
+                }
             },
             border: {
                 color: 'rgba(0, 0, 0, 1)',
@@ -54,7 +56,9 @@ export const LineTwoOptions = {
             },
             beginAtZero: true,
             ticks: {
-                stepSize: 100000,
+                callback: function (value, index, values) {
+                    return value / 1000000 + 'M';
+                }
             },
             border: {
                 color: 'rgba(0, 0, 0, 1)',
