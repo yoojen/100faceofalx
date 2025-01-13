@@ -4,7 +4,6 @@ async function paginate(req, model, options, include) {
         var pageSize = parseInt(req.query.pageSize) || 1000;
         var offset = (page - 1) * pageSize;
         var sort = (req.query.sort || 'createdAt-DESC').split('-');
-        var groupby = req.query.groupby ? req.query.groupby : null;
 
         //exempting query no to pass page to where clause
         delete req.query.page

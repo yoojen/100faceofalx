@@ -39,54 +39,25 @@ module.exports.serveRevenueCostBarGraph = async (req, res) => {
         apiErrorHandler(res, error, 'transaction');
     }
 }
-module.exports.getAggregatedQuantity = async (req, res) => {
-    const page = parseInt(req.query.page) || 1;
-    const pageSize = parseInt(req.query.pageSize) || 100;
-    const offset = (page - 1) * pageSize;
+
+//getPurchaseReport and getAggregatedQuantity are similar
+
+module.exports.getAggreagatedReport = async (req, res) => {
+    var page = parseInt(req.query.page) || 1;
+    var pageSize = parseInt(req.query.pageSize) || 1000;
     const month = getTimeDifference(4);
 
     try {
         var { count, rows } = await InventoryTransaction.findAndCountAll({
-            attributes: ['Product.CategoryId',
-                [sequelize.fn('SUM', sequelize.col('quantity')), 'totalQuantity'],
-                [sequelize.fn('SUM', sequelize.col('total_amount')), 'totalAmount']
-            ],
-            where: {
-                [Op.and]: [
-                    { updatedAt: { [Op.gte]: month } },
-                    { transaction_type: req.query.transaction_type }
-                ]
-            },
-            include: [{ model: Product, required: true, }],
-            order: [['totalAmount', 'DESC']],
-            offset,
-            limit: pageSize,
-            group: ['ProductId']
-        });
-
-        res.status(200).send({
-            success: true, data: rows, totalItems: count.length, currentPage: page,
-            totalPages: Math.ceil(count.length / pageSize), message: 'Retrieved successfully'
-        });
-    } catch (error) {
-        console.error(error)
-        apiErrorHandler(res, error, 'transaction')
-    }
-}
-
-module.exports.getPurchaseReport = async (req, res) => {
-    const transaction_type = req.query.transaction_type;
-    const month = getTimeDifference(4);
-    try {
-        var rows = await InventoryTransaction.findAll({
             attributes: [
-
-                [sequelize.fn('SUM', sequelize.col('total_amount')), 'totalAmount']
+                'transaction_type',
+                [sequelize.fn('SUM', sequelize.col('total_amount')), 'totalAmount'],
+                [sequelize.fn('SUM', sequelize.col('quantity')), 'totalQuantity']
             ],
             where: {
                 [Op.and]: [
-                    // { createdAt: { [Op.gte]: month } },
-                    { transaction_type: transaction_type }
+                    { createdAt: { [Op.gte]: month } },
+                    (req.query.transaction_type) && { transaction_type: req.query.transaction_type }
                 ]
             },
             include: {
@@ -95,15 +66,22 @@ module.exports.getPurchaseReport = async (req, res) => {
                 required: true,
                 include: {
                     model: Category,
-                    attributes: ['id', 'name']
+                    attributes: ['id', 'name'],
+                    required: true
                 }
             },
-            group: ['ProductId'],
+            offset: (page - 1) * pageSize,
+            limit: pageSize,
+            group: ['transaction_type', 'ProductId'],
             order: [['totalAmount', 'DESC']]
         })
 
-        res.status(200).send({ success: true, data: rows, message: 'Retrieved successfully' });
+        res.status(200).send({
+            success: true, data: rows, totalItems: count.length, totalPages: Math.ceil(count.length / pageSize),
+            currentPage: page, message: 'Retrieved successfully'
+        });
     } catch (error) {
+        console.log(error)
         apiErrorHandler(res, error, 'transaction');
     }
 }
