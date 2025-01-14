@@ -22,6 +22,55 @@ module.exports.getTransactions = async (req, res) => {
     }
 }
 
+
+module.exports.getproductInventorySummary = async (req, res) => {
+    const transaction_type = req.query.transaction_type;
+    const productCounts = {};
+
+    try {
+        const rows = await InventoryTransaction.findAll({
+            attributes: [
+                'transaction_type',
+                'ProductId',
+                [sequelize.fn('COUNT', sequelize.col('InventoryTransaction.id')), 'totalTransactions'],
+            ],
+            where: {
+                [Op.and]: [
+                    { createdAt: { [Op.gte]: getTimeDifference(4) } },
+                    (transaction_type) && { transaction_type: transaction_type }
+                ]
+            },
+            include: [
+                {
+                    model: Product,
+                    attributes: ['name'],
+                    required: true,
+                    include: {
+                        model: Category,
+                        attributes: ['name']
+                    }
+                }
+            ],
+            group: ['transaction_type', 'ProductId'],
+            order: [['totalTransactions', 'DESC']],
+        });
+        rows.forEach(item => {
+            const { transaction_type, Product: { name } } = item;
+
+            if (!productCounts[name]) {
+                productCounts[name] = { IN: 0, OUT: 0 };
+            }
+
+            productCounts[name][transaction_type] = item.dataValues.totalTransactions;
+        });
+
+        res.status(200).send({ success: true, data: rows, graphData: productCounts, message: 'Retrieved successfully' });
+    } catch (error) {
+        console.log(error);
+        apiErrorHandler(res, error, 'transaction');
+    }
+}
+
 module.exports.serveRevenueCostBarGraph = async (req, res) => {
 
     const { groupby } = req.query;
@@ -195,12 +244,12 @@ module.exports.getTransactionSummary = async (req, res) => {
             attributes: [
                 [sequelize.fn('SUM', sequelize.col('total_amount')), 'totalRevenue'],
             ],
-            where: { transaction_type: 'OUT' }
+            where: { transaction_type: 'OUT', createdAt: { [Op.gte]: getTimeDifference(4) } }
         })
         let cost = await InventoryTransaction.findAll({
             attributes: [
                 [sequelize.fn('SUM', sequelize.col('total_amount')), 'totalCost']],
-            where: { transaction_type: 'IN' }
+            where: { transaction_type: 'IN', createdAt: { [Op.gte]: getTimeDifference(4) } }
         })
         revenue = revenue[0].dataValues.totalRevenue;
         cost = cost[0].dataValues.totalCost;
