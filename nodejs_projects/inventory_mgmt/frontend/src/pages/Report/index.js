@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import Footer from "../../components/Footer";
 import SideWindow from "../../components/SideWindow";
-import {
-    LineOneOptions, LineTwoOptions,
-    HorizontalBarOptions
-} from "../../utils/charts";
+import { LineOneOptions, LineTwoOptions, } from "../../utils/charts";
+import { getRandomColor } from "../../utils/helpers";
 import { Bar, Line, Doughnut } from 'react-chartjs-2';
 import useGetFetch from "../../hooks/useGetFetch";
 import {
@@ -35,9 +33,12 @@ ChartJS.register(
 function Report() {
     const [year, setYear] = useState(null);
     const [openSideWindow, setOpenSideWindow] = useState(false);
-    const FREQUENCY = ['Daily', 'Weekly', 'Monthly']
     const PURCHASE_UNIQUE_CATEGORIES = {};
     const SALES_UNIQUE_CATEGORIES = {};
+    const CATEGORY_SALES_FREQUENCY = {};
+    const PRODUCT_PURCHASE_FREQUENCY = {};
+    const PRODUCT_SALES_FREQUENCY = {};
+
 
     const inventoryData = useGetFetch({ url: '/products/q/search?sort=quantity_in_stock' });
     const graphData = useGetFetch({ url: '/transactions/bar?groupby=yearMonth' });
@@ -45,6 +46,10 @@ function Report() {
     const salesPerCategory = useGetFetch({ url: '/transactions/agg/report?transaction_type=OUT' });
     const profitMargindata = useGetFetch({ url: '/transactions/agg/product/report' });
     const dailySalesFrequency = useGetFetch({ url: '/transactions/bar' })
+    const salesFrequencyByCategory = useGetFetch({ url: '/transactions/agg/inventory/report?transaction_type=OUT' });
+    const productPurchaseFrequency = useGetFetch({ url: '/transactions/agg/inventory/report?transaction_type=IN' });
+    const productSalesFrequency = useGetFetch({ url: '/transactions/agg/inventory/report?transaction_type=OUT' });
+    const purchaseVsSalesFrequency = useGetFetch({ url: '/transactions/agg/inventory/report' });
 
 
     useEffect(() => {
@@ -55,6 +60,11 @@ function Report() {
             await salesPerCategory.fetchData();
             await profitMargindata.fetchData();
             await dailySalesFrequency.fetchData();
+            await salesFrequencyByCategory.fetchData();
+            await productPurchaseFrequency.fetchData();
+            await productSalesFrequency.fetchData();
+            await purchaseVsSalesFrequency.fetchData();
+
         }
         getData();
         setYear(new Date().getFullYear())
@@ -68,6 +78,31 @@ function Report() {
         if (tA > tB) return -1
         if (tB > tA) return 1
         return 0
+    })
+
+    !salesFrequencyByCategory.isLoading && salesFrequencyByCategory.data?.data?.forEach((p) => {
+        if (Object.keys(CATEGORY_SALES_FREQUENCY).includes(p.Product.Category.name)) {
+            CATEGORY_SALES_FREQUENCY[p.Product.Category.name] += parseFloat(p.totalTransactions);
+        } else {
+            CATEGORY_SALES_FREQUENCY[p.Product.Category.name] = parseFloat(p.totalTransactions);
+        }
+    })
+
+
+    !productSalesFrequency.isLoading && productSalesFrequency.data?.data?.forEach((p) => {
+        if (Object.keys(PRODUCT_SALES_FREQUENCY).includes(p.Product.Category.name)) {
+            PRODUCT_SALES_FREQUENCY[p.Product.name] += parseFloat(p.totalTransactions);
+        } else {
+            PRODUCT_SALES_FREQUENCY[p.Product.name] = parseFloat(p.totalTransactions);
+        }
+    })
+
+    !productPurchaseFrequency.isLoading && productPurchaseFrequency.data?.data?.forEach((p) => {
+        if (Object.keys(PRODUCT_PURCHASE_FREQUENCY).includes(p.Product.Category.name)) {
+            PRODUCT_PURCHASE_FREQUENCY[p.Product.name] += parseFloat(p.totalTransactions);
+        } else {
+            PRODUCT_PURCHASE_FREQUENCY[p.Product.name] = parseFloat(p.totalTransactions);
+        }
     })
 
     purchaseData.data?.data?.forEach((p) => {
@@ -162,20 +197,33 @@ function Report() {
             },
         ]
     }
-    const HorzTwoDataset = {
+    const DoghnutOneDataset = {
         labels: Object.keys(PURCHASE_UNIQUE_CATEGORIES),
         datasets: [
             {
                 label: 'Category',
                 data: Object.values(PURCHASE_UNIQUE_CATEGORIES),
-                backgroundColor: [
-                    'rgba(180, 150, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                ],
+                backgroundColor: Object.keys(PURCHASE_UNIQUE_CATEGORIES).map(() => getRandomColor())
+
             },
         ]
     }
 
+    const HorzTwoDataset = {
+        labels: !purchaseVsSalesFrequency.isLoading && Object.keys(purchaseVsSalesFrequency.data?.graphData),
+        datasets: [
+            {
+                label: 'Purchase Frequency',
+                data: !purchaseVsSalesFrequency.isLoading && Object.values(purchaseVsSalesFrequency.data?.graphData).map((v) => v.IN),
+                backgroundColor: 'rgba(54, 162, 235, 0.5)'
+            },
+            {
+                label: 'Sales Frequency',
+                data: !purchaseVsSalesFrequency.isLoading && Object.values(purchaseVsSalesFrequency.data?.graphData).map((v) => v.OUT),
+                backgroundColor: 'rgba(75,192,192,1)',
+            }
+        ]
+    }
     return (
         <div className="px-5 bg-slate-200" >
             {openSideWindow && (<SideWindow />)}
@@ -287,74 +335,140 @@ function Report() {
                         </div>
                     </div>
                 </div>
-                <div className="[&>*]:bg-white [&>*]:rounded-sm grid grid-cols-2 gap-1 h-70 overflow-auto">
-                    <div className="">
-                        <h1 className="text-xl font-semibold p-2">Inventory Reports</h1>
-                        <div className="flex flex-wrap justify-around mt-2 space-x-2">
-                            <div className="basis-[45%]">
-                                <h1>Low Stock Alerts</h1>
-                                <div className="my-2 font-light overflow-auto horizontal-custom-scrollbar">
-                                    <table className="table w-full text-left">
-                                        <thead>
-                                            <tr className="[&>*]:px-2">
-                                                <th>Product</th>
-                                                <th className="text-right">Quantity</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {inventoryData.data?.data?.slice(0, 3).map((product, index) => {
-                                                return (
-                                                    <tr key={index} className="w-full">
-                                                        <td className="w-1/3">{product.name}</td>
-                                                        <td
-                                                            className={`${parseFloat(product.quantity_in_stock) <= 10 ? 'text-red-500' : 'text-blue-500'} w-1/3 text-right`}>
-                                                            {parseFloat(product.quantity_in_stock).toLocaleString()}
-                                                        </td>
-                                                    </tr>
-                                                )
-                                            })}
-                                        </tbody>
-                                    </table>
+                <div className="bg-white p-2">
+                    <h1 className="text-xl font-semibold p-2">Inventory Reports</h1>
+                    <div className="grid grid-cols-2 gap-1">
+                        <div>
+                            <div className="flex flex-wrap justify-around mt-2 space-x-2">
+                                <div className="basis-[45%]">
+                                    <h1>Low Stock Alerts</h1>
+                                    <div className="my-2 font-light overflow-auto horizontal-custom-scrollbar">
+                                        <table className="table w-full text-left">
+                                            <thead>
+                                                <tr className="[&>*]:px-2">
+                                                    <th>Product</th>
+                                                    <th className="text-right">Quantity</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {inventoryData.data?.data?.slice(0, 3).map((product, index) => {
+                                                    return (
+                                                        <tr key={index} className="w-full">
+                                                            <td className="w-1/3">{product.name}</td>
+                                                            <td
+                                                                className={`${parseFloat(product.quantity_in_stock) <= 10 ? 'text-red-500' : 'text-blue-500'} w-1/3 text-right`}>
+                                                                {parseFloat(product.quantity_in_stock).toLocaleString()}
+                                                            </td>
+                                                        </tr>
+                                                    )
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div className="basis-[45%]">
+                                    <h1>Overstocked Items</h1>
+                                    <div className="my-2 font-light overflow-auto horizontal-custom-scrollbar">
+                                        <table className="table w-full text-left">
+                                            <thead>
+                                                <tr className="[&>*]:px-2">
+                                                    <th>Product</th>
+                                                    <th className="text-right">Quantity</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {inventoryData.data?.data?.slice(inventoryData.data?.data?.length - 3).reverse().map((product, index) => {
+                                                    return (
+                                                        <tr key={index} className="w-full">
+                                                            <td className="w-1/3">{product.name}</td>
+                                                            <td className={`${parseFloat(product.quantity_in_stock) > 200 ? 'text-orange-600' : 'text-blue-500'} w-1/3 text-right`}>{parseFloat(product.quantity_in_stock).toLocaleString()}</td>
+                                                        </tr>
+                                                    )
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="basis-[45%]">
-                                <h1>Overstocked Items</h1>
-                                <div className="my-2 font-light overflow-auto horizontal-custom-scrollbar">
-                                    <table className="table w-full text-left">
-                                        <thead>
-                                            <tr className="[&>*]:px-2">
-                                                <th>Product</th>
-                                                <th className="text-right">Quantity</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {inventoryData.data?.data?.slice(inventoryData.data?.data?.length - 3).reverse().map((product, index) => {
-                                                return (
-                                                    <tr key={index} className="w-full">
-                                                        <td className="w-1/3">{product.name}</td>
-                                                        <td className={`${parseFloat(product.quantity_in_stock) > 200 ? 'text-orange-600' : 'text-blue-500'} w-1/3 text-right`}>{parseFloat(product.quantity_in_stock).toLocaleString()}</td>
-                                                    </tr>
-                                                )
-                                            })}
-                                        </tbody>
-                                    </table>
+                            <div className="flex items-center justify-around flex-wrap mt-2">
+                                <div className="rounded-sm">
+                                    <Doughnut data={DoghnutOneDataset} options={
+                                        {
+                                            responsive: true, aspectRatio: 1,
+                                            plugins: {
+                                                title: { display: true, text: 'Total Purchase/Category', font: { size: 16 } },
+                                            }
+                                        }} />
+                                </div>
+                                <div className="rounded-sm">
+                                    <Bar data={HorzOneDataset} options={
+                                        {
+                                            responsive: true, aspectRatio: 1, indexAxis: 'y',
+                                            scales: { y: { grid: { display: false }, ticks: { padding: 0 } } },
+                                            plugins: { title: { display: true, text: 'Total Purchase/Product', font: { size: 16 } } }
+                                        }} />
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center justify-around flex-wrap mt-2 w-[90%]">
-                            <div className="rounded-sm">
-                                <Doughnut data={HorzTwoDataset} options={
-                                    {
-                                        responsive: true, aspectRatio: 1,
-                                        plugins: { title: { display: true, text: 'Total Purchase/Category', font: { size: 16 } } }
-                                    }} />
+                        <div>
+                            <div className="flex flex-wrap justify-around mt-2 space-x-2">
+                                <div className="basis-[45%]">
+                                    <h1>Top Categories By Frequency - Sales</h1>
+                                    <div className="my-2 font-light overflow-auto horizontal-custom-scrollbar">
+                                        <table className="table w-full text-left">
+                                            <thead>
+                                                <tr className="[&>*]:px-2">
+                                                    <th>Category</th>
+                                                    <th className="text-right">Frequency</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {Object.entries(CATEGORY_SALES_FREQUENCY).slice(0, 3).map((c, i) => {
+                                                    return (
+                                                        <tr key={i} className="w-full">
+                                                            <td>{c[0]}</td>
+                                                            <td className="text-right">
+                                                                {parseFloat(c[1]).toLocaleString()}
+                                                            </td>
+                                                        </tr>
+                                                    )
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div className="basis-[45%]">
+                                    <h1>Top Products By Frequency - Purchase</h1>
+                                    <div className="my-2 font-light overflow-auto horizontal-custom-scrollbar">
+                                        <table className="table w-full text-left">
+                                            <thead>
+                                                <tr className="[&>*]:px-2">
+                                                    <th>Product</th>
+                                                    <th className="text-right">Frequncy</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {Object.entries(PRODUCT_PURCHASE_FREQUENCY).slice(0, 3).map((c, i) => {
+                                                    return (
+                                                        <tr key={i} className="w-full">
+                                                            <td>{c[0]}</td>
+                                                            <td className="text-right">
+                                                                {parseFloat(c[1]).toLocaleString()}
+                                                            </td>
+                                                        </tr>
+                                                    )
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="rounded-sm h-full">
-                                <Bar data={HorzOneDataset} options={
+                            <div className="rounded-sm flex justify-center mt-2">
+                                <Bar data={HorzTwoDataset} options={
                                     {
-                                        responsive: true, aspectRatio: 1, indexAxis: 'y',
+                                        responsive: true,
                                         scales: { y: { grid: { display: false }, ticks: { padding: 0 } } },
-                                        plugins: { title: { display: true, text: 'Total Purchase/Product', font: { size: 16 } } }
+                                        plugins: { title: { display: true, text: 'Product Purchase/Sales Frequency', font: { size: 16 } } }
                                     }} />
                             </div>
                         </div>
