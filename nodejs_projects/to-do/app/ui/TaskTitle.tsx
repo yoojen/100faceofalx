@@ -1,7 +1,6 @@
-'use client';
-
 import React, { SetStateAction, useState } from "react";
 import { todosObjects } from "../page";
+
 
 
 interface Props {
@@ -18,7 +17,6 @@ interface currentTodoType {
 }
 
 function TaskTitle({ todos, todoFilter, setTodos }: Props) {
-
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [currentTodo, setCurrentTodo] = useState<currentTodoType>({ id: 0, content: '', status: 'Pending', date: '' });
 

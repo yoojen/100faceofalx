@@ -1,5 +1,3 @@
-'use client'
-
 import { SetStateAction } from "react";
 
 interface Props {

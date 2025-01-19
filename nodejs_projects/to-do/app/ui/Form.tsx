@@ -1,5 +1,3 @@
-'use client';
-
 import { SetStateAction, useState } from "react";
 import { todosObjects } from "../page";
 import Button from "./Button";
