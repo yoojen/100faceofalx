@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block contents %}
+<div class="container mx-auto">
+    <h1>Schedule Tax Payment</h1>
+    <form class="mt-5">
+        <div class="mb-3">
+            <div class="mb-3 container">
+                <h5>Selected Receipients</h5>
+                <div class="container">
+                    <div id="selected" class="d-flex flex-row">
+
+                    </div>
+                </div>
+            </div>
+            Receipients
+            <select class="form-select" id="selector" aria-label="Default select example">
+                <option selected value="">---</option>
+                <option value="yoojen28@gmail.com">yoojen28@gmail.com</option>
+                <option value="eugeneemm7@gmail.com">netpipo@gmail.com</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            Tax
+            <select class="form-select" id="selector" aria-label="Default select example">
+                <option selected value="">---</option>
+                <option value="emma@gmail.com">VAT/TVA</option>
+                <option value="netpipo@gmail.com">ICQR</option>
+            </select>
+        </div>
+        <div class="mb-3 form-date">
+            Deadline
+            <br>
+            <input type="date" class="form-date-input">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+
+
+{% endblock contents %}
+
+{% block scripts %}
+<script>
+
+    let selected = document.querySelector("#selected")
+    const selector = document.querySelector("#selector")
+    const emails = []
+    let oldEmails = emails.length
+
+    selector.addEventListener("change", (e) => {
+        newEmail = e.target.value.trim().toLowerCase()
+        if (!newEmail) return;
+        if (emails.indexOf(newEmail.toLowerCase()) === -1) {
+            emails.push(e.target.value);
+            selected.innerHTML = ""
+            emails.map((email) => {
+                selected.innerHTML += place_receipient(email);
+            })
+        }
+    })
+
+    function place_receipient(name) {
+        return `<div class="bg-light p-2"> ${name} <span class="text-danger">&Cross;</span> </div>`
+    }
+</script>
+{% endblock scripts %}
