@@ -38,32 +38,32 @@ export default function Task({ content, status, index, id, updateOrDelete }: Pro
                     </div>
                 </div>
             )}
-            <h3>
+            <div className="flex">
                 <span className="text-green-400" > {status === 'Completed' ? '✔' : ''} </span>
                 {index + 1}. {content}
-            </h3>
-            <div className="flex justify-between [&>*]:cursor-pointer">
-                <p
-                    className=" hover:text-sky-500 px-2 font-bold"
+                <span
+                    className=" hover:text-sky-500 px-2 font-bold cursor-pointer"
                     onClick={() => setIsEditing(prev => !prev)}
-                >🖊 <span className=" text-xs">Edit</span></p>
+                >🖊 </span>
+            </div>
+            <div className="flex justify-between [&>*]:cursor-pointer">
                 {
                     status !== 'Completed' && <p
-                        className=" hover:text-green-500 px-2 font-bold"
+                        className=" hover:text-green-500 px-2 font-bold text-xs"
                         onClick={() => updateOrDelete(id, 'status', 'Completed')}
-                    >✅ <span className=" text-xs">Complete</span></p>
+                    >Complete</p>
                 }
                 {
                     status !== 'Archived' && <p
-                        className=" hover:text-violet-500 px-2 font-bold"
+                        className=" hover:text-violet-500 px-2 font-bold text-xs"
                         onClick={() => updateOrDelete(id, 'status', 'Archived')}
-                    >📚 <span className=" text-xs"> Archive</span></p>
+                    > Archive</p>
                 }
                 <p
-                    className=" hover:text-red-500 px-2 font-bold"
+                    className=" hover:text-red-500 px-2 font-bold text-xs"
                     onClick={() => updateOrDelete(id, 'Delete')}
-                >🧹 <span className=" text-xs"> Delete</span></p>
+                > Delete</p>
             </div>
-        </li>
+        </li >
     )
 }

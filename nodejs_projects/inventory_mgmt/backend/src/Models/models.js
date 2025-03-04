@@ -1,7 +1,6 @@
 const { DataTypes, Model } = require('sequelize')
 const sequelize = require('../Config/db.config')
 const crypto = require('crypto');
-const { v4: uuidv4 } = require('uuid');
 
 class User extends Model {
     hashPassword(value) {
